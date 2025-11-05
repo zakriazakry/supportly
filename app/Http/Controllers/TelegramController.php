@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Http;
 
 class TelegramController extends Controller
 {
-    // معرفات الستيكرات النائبة (يجب استبدالها بمعرفات ستيكراتك الحقيقية)
-    private const STICKER_GREETING = 'CAACAgIAAxkBAAI...'; // ستيكر ترحيب
-    private const STICKER_SUCCESS = 'CAACAgIAAxkBAAI...'; // ستيكر نجاح (تسجيل دخول/عملية)
-    private const STICKER_ERROR = 'CAACAgIAAxkBAAI...';   // ستيكر خطأ/فشل
-    private const STICKER_LOADING = 'CAACAgIAAxkBAAI...'; // ستيكر جاري المعالجة (يمكن استخدامه)
 
     // خطوات الجلسة لحالة المستخدم غير المسجل (التسجيل)
     private const STEP_AWAITING_USERNAME = 'awaiting_username';
