@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('telegram_sessions', function (Blueprint $table) {
             $table->id();
+            $table->string('chat_id')->unique();
+            $table->string('step')->nullable();
+            $table->string('username')->nullable();
             $table->timestamps();
         });
     }
