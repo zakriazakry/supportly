@@ -133,10 +133,13 @@ class TelegramController extends Controller
 
                 case '📦 عرض الباقات':
                     $user = DB::table('telegram_users')->where('chat_id', $chatId)->first();
-                    $response = $this->isp->getProfiles($user->token);
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $user->token,
+                    ])->get('https://restsp.sparktech.ly/api/user/packages');
 
+                    Log::info($response);
                     if ($response->successful()) {
-                        $packages = $response->json();
+                        $packages = $response->json()['data'];
                         $msg = "📦 الباقات المتاحة:\n";
                         foreach ($packages as $pkg) {
                             $msg .= "- {$pkg['name']} ({$pkg['price']} ريال)\n";
