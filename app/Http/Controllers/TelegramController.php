@@ -20,6 +20,13 @@ class TelegramController extends Controller
                 'chat_id' => $chatId,
                 'text' => "أهلاً بك في بوت Laravel 🚀",
             ]);
+        } else if ($text === '/local') {
+            $telegram->sendLocation([
+                'chat_id' => $chatId,
+                'latitude' => 37.7749, // Example latitude
+                'longitude' => -122.4194, // Example longitude
+                'live_period' => 60, // Optional: for live locations
+            ]);
         } else {
             $telegram->sendMessage([
                 'chat_id' => $chatId,
