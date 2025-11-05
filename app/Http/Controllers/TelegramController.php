@@ -7,6 +7,7 @@ use Telegram\Bot\Api;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Services\ISPService;
+use Illuminate\Support\Facades\Http;
 
 class TelegramController extends Controller
 {
@@ -68,7 +69,11 @@ class TelegramController extends Controller
                     $username = $session->username;
                     $password = $text;
 
-                    $response = $this->isp->login($username, $password);
+                    $response = Http::post('https://restsp.sparktech.ly/api/auth/login', [
+                        'username' => $username,
+                        'password' => $password,
+                        'firebase_token' => '',
+                    ]);
                     Log::info($response);
                     if ($response->successful()) {
                         $data = $response->json();
