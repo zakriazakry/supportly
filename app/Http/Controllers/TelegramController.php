@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Telegram\Bot\Api;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class TelegramController extends Controller
 {
@@ -13,7 +15,6 @@ class TelegramController extends Controller
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
         $update = $telegram->getWebhookUpdate();
 
-        // سجلّ كامل للـ update القادم من Telegram
         Log::info('Telegram Update Received:', $update->toArray());
 
         try {
@@ -21,109 +22,134 @@ class TelegramController extends Controller
             $chatId = $message->getChat()->getId();
             $text = trim($message->getText());
 
-            Log::info("User Message:", ['chat_id' => $chatId, 'text' => $text]);
+            // التحقق إن كان المستخدم موجودًا في قاعدة البيانات
+            $user = DB::table('telegram_users')->where('chat_id', $chatId)->first();
 
+            if (!$user) {
+                // إذا لم يكن مسجلاً، نبدأ عملية التسجيل
+                $step = DB::table('telegram_sessions')->where('chat_id', $chatId)->value('step');
+
+                if (!$step) {
+                    DB::table('telegram_sessions')->updateOrInsert(
+                        ['chat_id' => $chatId],
+                        ['step' => 'awaiting_username']
+                    );
+
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "👋 أهلاً بك في نظام سبارك.\nمن فضلك أرسل اسم المستخدم الخاص بك:",
+                    ]);
+                    return response('ok', 200);
+                }
+
+                if ($step === 'awaiting_username') {
+                    DB::table('telegram_sessions')->updateOrInsert(
+                        ['chat_id' => $chatId],
+                        ['step' => 'awaiting_password', 'username' => $text]
+                    );
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => '🔐 أدخل كلمة المرور الخاصة بك:'
+                    ]);
+                    return response('ok', 200);
+                }
+
+                if ($step === 'awaiting_password') {
+                    $session = DB::table('telegram_sessions')->where('chat_id', $chatId)->first();
+                    $username = $session->username;
+                    $password = $text;
+
+                    // تحقق من المستخدم في API الشركة
+                    $response = Http::post(env('SPARK_API_URL') . '/auth/login', [
+                        'username' => $username,
+                        'password' => $password,
+                    ]);
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+
+                        // حفظ المستخدم في قاعدة البيانات المحلية
+                        DB::table('telegram_users')->insert([
+                            'chat_id' => $chatId,
+                            'username' => $username,
+                            'token' => $data['token'],
+                        ]);
+
+                        // حذف الجلسة
+                        DB::table('telegram_sessions')->where('chat_id', $chatId)->delete();
+
+                        $telegram->sendMessage([
+                            'chat_id' => $chatId,
+                            'text' => "✅ تم تسجيل الدخول بنجاح!\nاختر من القائمة التالية:",
+                            'reply_markup' => json_encode([
+                                'keyboard' => [["💰 تعبئة الرصيد", "🔄 تجديد الباقة"], ["📦 عرض الباقات", "🛠 الدعم الفني"], ["🚪 تسجيل الخروج"]],
+                                'resize_keyboard' => true,
+                                'one_time_keyboard' => false
+                            ])
+                        ]);
+                    } else {
+                        $telegram->sendMessage([
+                            'chat_id' => $chatId,
+                            'text' => '❌ اسم المستخدم أو كلمة المرور غير صحيحة، حاول مرة أخرى.'
+                        ]);
+                        DB::table('telegram_sessions')->where('chat_id', $chatId)->delete();
+                    }
+                    return response('ok', 200);
+                }
+            }
+
+            // المستخدم موجود بالفعل → عرض القائمة
             switch ($text) {
-                case '/start':
+                case '💰 تعبئة الرصيد':
                     $telegram->sendMessage([
                         'chat_id' => $chatId,
-                        'text' => "👋 أهلاً بك في بوت Laravel التجريبي!\nجرب الأوامر التالية:\n
-/start - بدء\n
-/local - موقع\n
-/animation - فيديو متحرك\n
-/photo - إرسال صورة\n
-/file - إرسال ملف\n
-/audio - إرسال صوت\n
-/sticker - إرسال ملصق\n
-/video - إرسال فيديو\n
-/help - قائمة المساعدة",
+                        'text' => '🔢 أدخل رقم البطاقة أو رمز التعبئة:'
                     ]);
                     break;
 
-                case '/local':
-                    $telegram->sendLocation([
-                        'chat_id' => $chatId,
-                        'latitude' => 37.7749,
-                        'longitude' => -122.4194,
-                    ]);
-                    Log::info("Sent location to user: $chatId");
-                    break;
-
-                case '/animation':
-                    $telegram->sendAnimation([
-                        'chat_id' => $chatId,
-                        'animation' => 'https://file-examples.com/storage/fe340c6007655640a9a73a8/2017/04/file_example_MP4_480_1_5MG.mp4',
-                        'caption' => '🎞 مثال لفيديو متحرك (Animation)',
-                    ]);
-                    Log::info("Sent animation to user: $chatId");
-                    break;
-
-                case '/photo':
-                    $telegram->sendPhoto([
-                        'chat_id' => $chatId,
-                        'photo' => 'https://lightcyan-turtle-491856.hostingersite.com/img.png',
-                        'caption' => '📷 هذه صورة تجريبية من Laravel Bot!',
-                    ]);
-                    Log::info("Sent photo to user: $chatId");
-                    break;
-
-                case '/file':
-                    $telegram->sendDocument([
-                        'chat_id' => $chatId,
-                        'document' => 'https://file-examples.com/storage/fe340c6007655640a9a73a8/2017/10/file-example_PDF_500_kB.pdf',
-                        'caption' => '📄 ملف PDF تجريبي',
-                    ]);
-                    Log::info("Sent document to user: $chatId");
-                    break;
-
-                case '/audio':
-                    $telegram->sendAudio([
-                        'chat_id' => $chatId,
-                        'audio' => 'https://file-examples.com/storage/fe340c6007655640a9a73a8/2017/11/file_example_MP3_700KB.mp3',
-                        'caption' => '🎵 ملف صوتي تجريبي',
-                    ]);
-                    Log::info("Sent audio to user: $chatId");
-                    break;
-
-                case '/sticker':
-                    $telegram->sendSticker([
-                        'chat_id' => $chatId,
-                        'sticker' => 'CAACAgIAAxkBAAEF3Z9mZ3zHYa6j3ICazfJjWcR5mM7eHwACgAADVp29CqTHQX6p8bB4y8E', // مثال Sticker ID
-                    ]);
-                    Log::info("Sent sticker to user: $chatId");
-                    break;
-
-                case '/video':
-                    $telegram->sendVideo([
-                        'chat_id' => $chatId,
-                        'video' => 'https://file-examples.com/storage/fe340c6007655640a9a73a8/2017/04/file_example_MP4_480_1_5MG.mp4',
-                        'caption' => '🎬 فيديو تجريبي من Laravel Bot',
-                    ]);
-                    Log::info("Sent video to user: $chatId");
-                    break;
-
-                case '/help':
+                case '🔄 تجديد الباقة':
                     $telegram->sendMessage([
                         'chat_id' => $chatId,
-                        'text' => "🧭 قائمة الأوامر المتاحة:\n
-/start - ترحيب\n
-/local - موقع\n
-/photo - صورة\n
-/file - ملف\n
-/audio - صوت\n
-/sticker - ملصق\n
-/video - فيديو\n
-/animation - فيديو متحرك\n
-/help - المساعدة",
+                        'text' => '♻️ جارٍ تجديد الباقة الخاصة بك...'
+                    ]);
+                    break;
+
+                case '📦 عرض الباقات':
+                    $user = DB::table('telegram_users')->where('chat_id', $chatId)->first();
+                    $response = Http::withToken($user->token)->get(env('SPARK_API_URL') . '/packages');
+
+                    if ($response->successful()) {
+                        $packages = $response->json();
+                        $msg = "📦 الباقات المتاحة:\n";
+                        foreach ($packages as $pkg) {
+                            $msg .= "- {$pkg['name']} ({$pkg['price']} ريال)\n";
+                        }
+                        $telegram->sendMessage(['chat_id' => $chatId, 'text' => $msg]);
+                    } else {
+                        $telegram->sendMessage(['chat_id' => $chatId, 'text' => '⚠️ تعذر جلب الباقات من السيرفر.']);
+                    }
+                    break;
+
+                case '🛠 الدعم الفني':
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "📞 مرحباً بك في الدعم الفني، اختر مشكلتك:\n- لماذا الإنترنت مقطوع؟\n- لماذا السرعة ضعيفة؟\n- مشكلة أخرى",
+                    ]);
+                    break;
+
+                case '🚪 تسجيل الخروج':
+                    DB::table('telegram_users')->where('chat_id', $chatId)->delete();
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => '👋 تم تسجيل الخروج بنجاح. أرسل /start لتسجيل الدخول من جديد.'
                     ]);
                     break;
 
                 default:
                     $telegram->sendMessage([
                         'chat_id' => $chatId,
-                        'text' => "📨 رسالتك: $text",
+                        'text' => '📨 استخدم الأزرار المتاحة في الأسفل لاختيار الخدمة.'
                     ]);
-                    Log::info("Echoed message back to user: $chatId");
             }
         } catch (\Exception $e) {
             Log::error('Telegram Bot Error:', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
