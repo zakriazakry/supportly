@@ -81,7 +81,7 @@ class TelegramController extends Controller
                         DB::table('telegram_users')->insert([
                             'chat_id' => $chatId,
                             'username' => $username,
-                            'token' => $data['auth_key'] ?? $data['token'] ?? null,
+                            'token' => $data['api_key'],
                         ]);
 
                         DB::table('telegram_sessions')->where('chat_id', $chatId)->delete();
