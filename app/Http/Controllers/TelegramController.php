@@ -72,7 +72,7 @@ class TelegramController extends Controller
                     $response = Http::post('https://restsp.sparktech.ly/api/auth/login', [
                         'username' => $username,
                         'password' => $password,
-                        'firebase_token' => '',
+                        'firebase_token' => 'aaa',
                     ]);
                     Log::info($response);
                     if ($response->successful()) {
