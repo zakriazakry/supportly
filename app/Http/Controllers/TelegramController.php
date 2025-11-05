@@ -61,7 +61,7 @@ class TelegramController extends Controller
                 case '/photo':
                     $telegram->sendPhoto([
                         'chat_id' => $chatId,
-                        'photo' => 'https://picsum.photos/400',
+                        'photo' => 'https://lightcyan-turtle-491856.hostingersite.com/img.png',
                         'caption' => '📷 هذه صورة تجريبية من Laravel Bot!',
                     ]);
                     Log::info("Sent photo to user: $chatId");
