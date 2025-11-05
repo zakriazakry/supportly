@@ -39,10 +39,10 @@ class TelegramController extends Controller
     {
         $update = $this->telegram->getWebhookUpdate();
 
-        // يجب أن تحتوي التحديثات على رسالة لكي يتم معالجتها
-        if (!$update->hasMessage()) {
-            return response('ok', 200);
-        }
+        // // يجب أن تحتوي التحديثات على رسالة لكي يتم معالجتها
+        // if (!$update->hasMessage()) {
+        //     return response('ok', 200);
+        // }
 
         try {
             $message = $update->getMessage();
