@@ -69,7 +69,7 @@ class TelegramController extends Controller
                     $password = $text;
 
                     $response = $this->isp->login($username, $password);
-
+                    Log::info($response);
                     if ($response->successful()) {
                         $data = $response->json();
 
