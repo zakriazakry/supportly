@@ -27,6 +27,12 @@ class TelegramController extends Controller
                 'longitude' => -122.4194, // Example longitude
                 'live_period' => 60, // Optional: for live locations
             ]);
+        } else if ($text === '/aimation') {
+            $telegram->sendAnimation([
+                'chat_id' => $chatId,
+                'animation' => 'https://file-examples.com/storage/fe340c6007655640a9a73a8/2017/04/file_example_MP4_480_1_5MG.mp4',
+                'caption' => 'This is an animation example.',
+            ]);
         } else {
             $telegram->sendMessage([
                 'chat_id' => $chatId,
