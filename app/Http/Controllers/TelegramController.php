@@ -76,7 +76,7 @@ class TelegramController extends Controller
                     ]);
                     Log::info($response);
                     if ($response->successful()) {
-                        $data = $response->json();
+                        $data = $response->json()['data'];
 
                         DB::table('telegram_users')->insert([
                             'chat_id' => $chatId,
