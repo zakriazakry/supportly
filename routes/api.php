@@ -11,7 +11,12 @@ Route::get('/user', function (Request $request) {
 Route::post('/bot/webhook', [TelegramController::class, 'handle']);
 Route::get('facebook/webhook', function (Request $request) {
     Log::info($request->all());
+    if ($request->hub_verify_token === "test") {
+        return response($request->hub_challenge, 200);
+    }
+    return response("Invalid token", 403);
 });
 Route::post('facebook/webhook', function (Request $request) {
     Log::info($request->all());
+    return response("OK", 200);
 });
