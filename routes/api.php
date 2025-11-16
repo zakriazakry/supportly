@@ -8,3 +8,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 Route::post('/bot/webhook', [TelegramController::class, 'handle']);
+Route::get('facebook/webhook', function (Request $request) {
+    Log::info($request->all());
+});
