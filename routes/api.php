@@ -21,7 +21,7 @@ Route::get('facebook/webhook', function (Request $request) {
 Route::post('facebook/webhook', function (Request $request) {
     Log::info("Facebook Webhook Received:", $request->all());
 
-    $pageAccessToken = "YOUR_PAGE_ACCESS_TOKEN"; // ضع هنا توكن الصفحة
+    $pageAccessToken = "EAAL6cDIxiFcBP2HKE26H0urVMN95OyTCdyh8aXBp80QxeS6lkS23Pu1kxnMfJrGCv9rZCAveZAcdlQJ9OukyCmeoLTDy3MsZAIg9URsqZBgZAVfZBn8ILZCIKozDWnZADThShBPb4g2ZC1CTrxZAoqvC0x9AcfeOGCWtMRx5f7guVoVEZAsdYnCjOGquHZAgx1sGZCETMYdOvKM435Vo5VZCDMB2OFF3FPr5dRkXzoKSO54QZDZD"; // ضع هنا توكن الصفحة
 
     if (!isset($request['entry'])) {
         return response("OK", 200);
