@@ -12,22 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // Primary key (ID)
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+
+            // Allow password to be nullable for users who log in only via Facebook (OAuth)
             $table->string('password')->nullable();
 
-            // --- حقول فيسبوك المضافة ---
+            // --- حقول فيسبوك المضافة (Facebook Bot Fields) ---
 
             $table->bigInteger('facebook_id')->unique()->nullable();
 
-            // نستخدم 'text' لأن رموز الوصول طويلة جداً
+            // Using 'text' for long access tokens
             $table->text('facebook_token')->nullable();
 
             $table->bigInteger('selected_page_id')->nullable();
@@ -35,10 +32,8 @@ return new class extends Migration
 
             $table->boolean('is_bot_active')->default(false);
 
-            // ---------------------------
+            // -------------------------------------------------
 
-            $table->rememberToken();
-            $table->timestamps();
             $table->rememberToken();
             $table->timestamps();
         });
