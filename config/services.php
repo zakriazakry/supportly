@@ -34,5 +34,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    // config/services.php
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI'),
+        // تحديد الصلاحيات المطلوبة
+        'scopes' => [
+            'pages_show_list',      // لعرض قائمة صفحات المستخدم
+            'pages_manage_posts',   // للردود العامة على المنشورات
+            'pages_messaging',      // للردود الخاصة (Private Replies)
+            'public_profile',
+        ],
+    ],
 ];

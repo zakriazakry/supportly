@@ -17,6 +17,28 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password')->nullable();
+
+            // --- حقول فيسبوك المضافة ---
+
+            $table->bigInteger('facebook_id')->unique()->nullable();
+
+            // نستخدم 'text' لأن رموز الوصول طويلة جداً
+            $table->text('facebook_token')->nullable();
+
+            $table->bigInteger('selected_page_id')->nullable();
+            $table->text('page_access_token')->nullable();
+
+            $table->boolean('is_bot_active')->default(false);
+
+            // ---------------------------
+
+            $table->rememberToken();
+            $table->timestamps();
             $table->rememberToken();
             $table->timestamps();
         });
