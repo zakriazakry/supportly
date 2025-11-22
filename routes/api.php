@@ -10,6 +10,8 @@ $repliedComments = file_exists($repliedCommentsFile)
     ? json_decode(file_get_contents($repliedCommentsFile), true)
     : [];
 
+$pageId = '61579627401428'; // ضع هنا معرف الصفحة الخاصة بك
+
 Route::get('facebook/webhook', function (Request $request) {
     if ($request->hub_verify_token === "test") {
         return response($request->hub_challenge, 200);
@@ -17,7 +19,7 @@ Route::get('facebook/webhook', function (Request $request) {
     return response("Invalid token", 403);
 });
 
-Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile) {
+Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId) {
     $pageAccessToken = "EAAL6cDIxiFcBQOgKKLSpZCC9qQGEdDmXZAMsx7UDKkSmG5jdd4lJAMUzh7CAHABajZCZAiCMTc2YIUwbjXqAijuZCZCCPxAR48vYTXLzSVoVPNYRzYDhT4JqzKg4W50YSduiEaWav0R7ZCmMiyzxUioqRtsOF3RqMqC0MBkijF7ar4C5y3ZAEPNK02tMabZCp6Xfsun0ZBZCRPnas7ZAjCV6H0ZCQlASyAZCOHMgXU5msEMga6HZAIZD";
 
     if (!isset($request['entry'])) return response("OK", 200);
@@ -37,27 +39,43 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
 
             if (!$commentId) continue;
 
+            // تجاهل التعليقات التي أنشأتها الصفحة نفسها
+            if ($fromId === $pageId) continue;
+
             // تجاهل التعليقات التي تم الرد عليها مسبقًا
             if (in_array($commentId, $repliedComments)) continue;
 
             // فلترة كلمة "السعر"
             if (!str_contains($commentText, 'السعر')) continue;
 
-            Log::info("Replying to comment: $commentId");
+            Log::info("Processing private reply for comment: $commentId");
 
-            // إرسال الرد
-            $reply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/comments", [
+            // محاولة الرد الخاص أولاً
+            $privateReply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/private_replies", [
                 'message' => 'مرحباً! السعر هو 15$',
                 'access_token' => $pageAccessToken
             ]);
 
-            $responseJson = $reply->json();
-            Log::info("Reply response:", $responseJson);
+            $responseJson = $privateReply->json();
+            Log::info("Private reply response:", $responseJson);
 
-            // تخزين التعليق الأصلي الذي تم الرد عليه
+            // إذا فشل الرد الخاص، أرسل رد عام كـ fallback
+            if (isset($responseJson['error'])) {
+                Log::warning("Private reply failed, sending public reply for comment: $commentId");
+
+                $publicReply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/comments", [
+                    'message' => 'مرحباً! السعر هو 15$',
+                    'access_token' => $pageAccessToken
+                ]);
+
+                $responseJson = $publicReply->json();
+                Log::info("Public reply response:", $responseJson);
+            }
+
+            // تخزين التعليق الأصلي كمعلق عليه لتجنب التكرار
             $repliedComments[] = $commentId;
 
-            // تخزين أي تعليقات جديدة تم إنشاؤها بواسطة الرد لتجنب التكرار لاحقًا
+            // تخزين أي رد تم إنشاؤه (private أو public) لتجنب تكرار الرد لاحقًا
             if (isset($responseJson['id'])) {
                 $repliedComments[] = $responseJson['id'];
             }
