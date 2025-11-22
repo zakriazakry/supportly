@@ -20,7 +20,7 @@ Route::get('facebook/webhook', function (Request $request) {
 Route::post('facebook/webhook', function (Request $request) {
     Log::info("POST Webhook Received:", $request->all());
 
-    $pageAccessToken = "YOUR_PAGE_ACCESS_TOKEN";
+    $pageAccessToken = "EAAL6cDIxiFcBQCX2ZBCZCTinN0MMTkibGDyRXk0FqT0y1vjdI5K61QjBLkGmBJuL1CcCUB5ZBDZCz3vtrUcimwKL2EWW85dYQ0F7BaRZBiLZAeIqn9LB6RJoa0OIuyKDDvRKT5QMIfiaQWxd5bsZCSBLlhbOARzajl2Hqf1ORaA6u7EAJ78z1FcjOaZBOm9EhNVjx1woiWqm01ZB1ZC9zNB5Lexo4H41FJquyWl49Vxg36IVF3sB2OqCgn6abujcdX7UVWN437AcppuRg2tWGMGAZDZD";
 
     if (!isset($request['entry'])) {
         Log::info("No 'entry' found in Webhook payload.");
