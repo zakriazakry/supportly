@@ -18,7 +18,7 @@ Route::get('facebook/webhook', function (Request $request) {
 Route::post('facebook/webhook', function (Request $request) {
     Log::info("POST Webhook Received:", $request->all());
 
-    $pageAccessToken = "EAAL6cDIxiFcBQCX2ZBCZCTinN0MMTkibGDyRXk0FqT0y1vjdI5K61QjBLkGmBJuL1CcCUB5ZBDZCz3vtrUcimwKL2EWW85dYQ0F7BaRZBiLZAeIqn9LB6RJoa0OIuyKDDvRKT5QMIfiaQWxd5bsZCSBLlhbOARzajl2Hqf1ORaA6u7EAJ78z1FcjOaZBOm9EhNVjx1woiWqm01ZB1ZC9zNB5Lexo4H41FJquyWl49Vxg36IVF3sB2OqCgn6abujcdX7UVWN437AcppuRg2tWGMGAZDZD"; // ← ضَع التوكن الخاص بك هنا
+    $pageAccessToken = "EAAL6cDIxiFcBQIZAUN1w50CQE58MDjoTxFgaw5iIa0MRaAjC7jkxAPakcU3NxtDqpDolr38O2WhF6QkvbvYu1KRgCCpKcBn5mV79bLq5buLPRtZCHrqPj12wcZCZCNhscAepay7djIZAHPh9fwEwFnkLUKbM9Ec79Il5ZAusc0Mb2mu9nIR7EZC0FFl3ZBypnhnjXEPwW5QJdmlX3xD0q909UIEOmZBFbmvQlmwNFAtaVXjdeg5ynty8Dvw9TnIzU34DPMZB55VGbKnAWzD2eF"; // ← ضَع التوكن الخاص بك هنا
 
     if (!isset($request['entry'])) {
         return response("OK", 200);
