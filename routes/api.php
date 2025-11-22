@@ -9,21 +9,18 @@ Route::get('facebook/webhook', function (Request $request) {
     Log::info("GET Webhook Check:", $request->all());
 
     if ($request->hub_verify_token === "test") {
-        Log::info("Webhook Verified Successfully.");
         return response($request->hub_challenge, 200);
     }
 
-    Log::warning("Invalid Webhook Token:", $request->all());
     return response("Invalid token", 403);
 });
 
 Route::post('facebook/webhook', function (Request $request) {
     Log::info("POST Webhook Received:", $request->all());
 
-    $pageAccessToken = "YOUR_PAGE_ACCESS_TOKEN";  // 🔥 ضع التوكن الخاص بك هنا
+    $pageAccessToken = "EAAL6cDIxiFcBQCX2ZBCZCTinN0MMTkibGDyRXk0FqT0y1vjdI5K61QjBLkGmBJuL1CcCUB5ZBDZCz3vtrUcimwKL2EWW85dYQ0F7BaRZBiLZAeIqn9LB6RJoa0OIuyKDDvRKT5QMIfiaQWxd5bsZCSBLlhbOARzajl2Hqf1ORaA6u7EAJ78z1FcjOaZBOm9EhNVjx1woiWqm01ZB1ZC9zNB5Lexo4H41FJquyWl49Vxg36IVF3sB2OqCgn6abujcdX7UVWN437AcppuRg2tWGMGAZDZD"; // ← ضَع التوكن الخاص بك هنا
 
     if (!isset($request['entry'])) {
-        Log::info("No 'entry' found in Webhook payload.");
         return response("OK", 200);
     }
 
@@ -37,47 +34,68 @@ Route::post('facebook/webhook', function (Request $request) {
                 continue;
             }
 
-            $comment = $change['value'] ?? null;
-            if (!$comment) continue;
+            $commentRaw = $change['value'] ?? null;
+            if (!$commentRaw) continue;
 
-            $commentText = $comment['message'] ?? '';
-            $commentId   = $comment['comment_id'] ?? null;
+            $commentText = $commentRaw['message'] ?? '';
+            $commentId   = $commentRaw['comment_id'] ?? null;
+            $postId      = $commentRaw['post_id'] ?? null;
+            $from        = $commentRaw['from']['id'] ?? null;
 
-            if (!$commentId) continue;
+            if (!$commentId || !$postId) {
+                Log::warning("Missing comment_id or post_id");
+                continue;
+            }
 
             Log::info("Comment detected: $commentId with message: $commentText");
 
-            // فلترة التعليقات
+            // فلترة كلمة "السعر"
             if (!str_contains($commentText, 'السعر')) {
                 continue;
             }
 
             Log::info("Processing keyword 'السعر' for comment: $commentId");
 
-            // 1️⃣ Lookup للحصول على الـ ID الحقيقي
-            $lookup = Http::get("https://graph.facebook.com/v24.0/{$commentId}", [
-                'fields' => 'id,message,from,can_reply_privately,parent',
+            // 1️⃣ جلب التعليقات الحقيقية من المنشور
+            $commentsList = Http::get("https://graph.facebook.com/v24.0/{$postId}/comments", [
+                'fields' => 'id,message,from,created_time,can_reply_privately',
                 'access_token' => $pageAccessToken
             ]);
 
-            Log::info("Comment lookup:", $lookup->json());
+            Log::info("Comments list:", $commentsList->json());
 
-            if (!$lookup->successful() || !isset($lookup['id'])) {
-                Log::warning("Failed to lookup comment or inaccessible comment.");
+            if (!$commentsList->successful()) {
+                Log::warning("Failed to fetch comments for post $postId");
                 continue;
             }
 
-            // استخراج ID الحقيقي
-            $realId = $lookup['id'];
+            // 2️⃣ البحث عن الـ comment_id الحقيقي
+            $realCommentId = null;
+            $realCommentObj = null;
 
-            // 2️⃣ تحقق من إمكانية الرد الخاص
-            if (!($lookup['can_reply_privately'] ?? false)) {
-                Log::warning("Private reply not allowed for this comment: $realId");
+            foreach ($commentsList['data'] as $c) {
+                if ($c['message'] === $commentText && ($c['from']['id'] ?? '') === $from) {
+                    $realCommentId = $c['id'];
+                    $realCommentObj = $c;
+                    break;
+                }
+            }
+
+            if (!$realCommentId) {
+                Log::warning("Real comment ID NOT found for: $commentId");
                 continue;
             }
 
-            // 3️⃣ إرسال رسالة خاصة
-            $replyResponse = Http::post("https://graph.facebook.com/v24.0/{$realId}/private_replies", [
+            Log::info("Real comment ID resolved: $realCommentId");
+
+            // 3️⃣ التحقق من إمكانية الرد الخاص
+            if (!($realCommentObj['can_reply_privately'] ?? false)) {
+                Log::warning("Private reply NOT allowed for this comment: $realCommentId");
+                continue;
+            }
+
+            // 4️⃣ إرسال الرد الخاص
+            $replyResponse = Http::post("https://graph.facebook.com/v24.0/{$realCommentId}/private_replies", [
                 'message'      => 'مرحباً! السعر هو 15$',
                 'access_token' => $pageAccessToken
             ]);
