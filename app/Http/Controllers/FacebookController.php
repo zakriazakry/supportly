@@ -1,4 +1,3 @@
-// app/Http/Controllers/FacebookController.php
 <?php
 
 namespace App\Http\Controllers;
