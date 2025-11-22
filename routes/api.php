@@ -10,7 +10,8 @@ $repliedComments = file_exists($repliedCommentsFile)
     ? json_decode(file_get_contents($repliedCommentsFile), true)
     : [];
 
-$pageId = '61579627401428'; // ضع هنا معرف الصفحة الخاصة بك
+$pageId = '61579627401428'; // معرف الصفحة
+$pageAccessToken = "EAAL6cDIxiFcBQOgKKLSpZCC9qQGEdDmXZAMsx7UDKkSmG5jdd4lJAMUzh7CAHABajZCZAiCMTc2YIUwbjXqAijuZCZCCPxAR48vYTXLzSVoVPNYRzYDhT4JqzKg4W50YSduiEaWav0R7ZCmMiyzxUioqRtsOF3RqMqC0MBkijF7ar4C5y3ZAEPNK02tMabZCp6Xfsun0ZBZCRPnas7ZAjCV6H0ZCQlASyAZCOHMgXU5msEMga6HZAIZD";
 
 Route::get('facebook/webhook', function (Request $request) {
     if ($request->hub_verify_token === "test") {
@@ -19,9 +20,7 @@ Route::get('facebook/webhook', function (Request $request) {
     return response("Invalid token", 403);
 });
 
-Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId) {
-    $pageAccessToken = "EAAL6cDIxiFcBQOgKKLSpZCC9qQGEdDmXZAMsx7UDKkSmG5jdd4lJAMUzh7CAHABajZCZAiCMTc2YIUwbjXqAijuZCZCCPxAR48vYTXLzSVoVPNYRzYDhT4JqzKg4W50YSduiEaWav0R7ZCmMiyzxUioqRtsOF3RqMqC0MBkijF7ar4C5y3ZAEPNK02tMabZCp6Xfsun0ZBZCRPnas7ZAjCV6H0ZCQlASyAZCOHMgXU5msEMga6HZAIZD";
-
+Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId, $pageAccessToken) {
     if (!isset($request['entry'])) return response("OK", 200);
 
     foreach ($request['entry'] as $entry) {
@@ -50,9 +49,10 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
 
             Log::info("Processing private reply for comment: $commentId");
 
-            // محاولة الرد الخاص أولاً
-            $privateReply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/private_replies", [
-                'message' => 'مرحباً! السعر هو 15$',
+            // إرسال الرد الخاص بطريقة حديثة عبر /PAGE-ID/messages
+            $privateReply = Http::post("https://graph.facebook.com/v24.0/{$pageId}/messages", [
+                'recipient' => ['comment_id' => $commentId],
+                'message'   => ['text' => 'مرحباً! السعر هو 15$'],
                 'access_token' => $pageAccessToken
             ]);
 
@@ -75,7 +75,7 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             // تخزين التعليق الأصلي كمعلق عليه لتجنب التكرار
             $repliedComments[] = $commentId;
 
-            // تخزين أي رد تم إنشاؤه (private أو public) لتجنب تكرار الرد لاحقًا
+            // تخزين أي رد تم إنشاؤه (private أو public) لتجنب التكرار لاحقًا
             if (isset($responseJson['id'])) {
                 $repliedComments[] = $responseJson['id'];
             }
