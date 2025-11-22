@@ -20,19 +20,19 @@ Route::get('facebook/webhook', function (Request $request) {
 Route::post('facebook/webhook', function (Request $request) {
     Log::info("POST Webhook Received:", $request->all());
 
-    $pageAccessToken = "EAAL6cDIxiFcBQCX2ZBCZCTinN0MMTkibGDyRXk0FqT0y1vjdI5K61QjBLkGmBJuL1CcCUB5ZBDZCz3vtrUcimwKL2EWW85dYQ0F7BaRZBiLZAeIqn9LB6RJoa0OIuyKDDvRKT5QMIfiaQWxd5bsZCSBLlhbOARzajl2Hqf1ORaA6u7EAJ78z1FcjOaZBOm9EhNVjx1woiWqm01ZB1ZC9zNB5Lexo4H41FJquyWl49Vxg36IVF3sB2OqCgn6abujcdX7UVWN437AcppuRg2tWGMGAZDZD";
+    $pageAccessToken = "YOUR_PAGE_ACCESS_TOKEN";  // 🔥 ضع التوكن الخاص بك هنا
 
     if (!isset($request['entry'])) {
         Log::info("No 'entry' found in Webhook payload.");
         return response("OK", 200);
     }
 
-    foreach ($request['entry'] as $entryIndex => $entry) {
+    foreach ($request['entry'] as $entry) {
         if (!isset($entry['changes'])) {
             continue;
         }
 
-        foreach ($entry['changes'] as $changeIndex => $change) {
+        foreach ($entry['changes'] as $change) {
             if ($change['field'] !== 'feed') {
                 continue;
             }
@@ -47,21 +47,42 @@ Route::post('facebook/webhook', function (Request $request) {
 
             Log::info("Comment detected: $commentId with message: $commentText");
 
-            // فلترة التعليقات على كلمة السعر
-            if (str_contains($commentText, 'السعر')) {
-
-                Log::info("Processing 'السعر' keyword in comment: $commentId");
-
-                // ❌ حذف جزء الـ Like لأنه ممنوع في NPE
-                // ✔ فقط Private Reply
-
-                $replyResponse = Http::post("https://graph.facebook.com/v24.0/{$commentId}/private_replies", [
-                    'message'      => 'مرحباً! السعر هو 15$',
-                    'access_token' => $pageAccessToken
-                ]);
-
-                Log::info("Private reply response for comment $commentId", $replyResponse->json());
+            // فلترة التعليقات
+            if (!str_contains($commentText, 'السعر')) {
+                continue;
             }
+
+            Log::info("Processing keyword 'السعر' for comment: $commentId");
+
+            // 1️⃣ Lookup للحصول على الـ ID الحقيقي
+            $lookup = Http::get("https://graph.facebook.com/v24.0/{$commentId}", [
+                'fields' => 'id,message,from,can_reply_privately,parent',
+                'access_token' => $pageAccessToken
+            ]);
+
+            Log::info("Comment lookup:", $lookup->json());
+
+            if (!$lookup->successful() || !isset($lookup['id'])) {
+                Log::warning("Failed to lookup comment or inaccessible comment.");
+                continue;
+            }
+
+            // استخراج ID الحقيقي
+            $realId = $lookup['id'];
+
+            // 2️⃣ تحقق من إمكانية الرد الخاص
+            if (!($lookup['can_reply_privately'] ?? false)) {
+                Log::warning("Private reply not allowed for this comment: $realId");
+                continue;
+            }
+
+            // 3️⃣ إرسال رسالة خاصة
+            $replyResponse = Http::post("https://graph.facebook.com/v24.0/{$realId}/private_replies", [
+                'message'      => 'مرحباً! السعر هو 15$',
+                'access_token' => $pageAccessToken
+            ]);
+
+            Log::info("Private reply response:", $replyResponse->json());
         }
     }
 
