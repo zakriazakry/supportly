@@ -80,28 +80,8 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
                 'recipient' => [
                     'comment_id' => $commentId
                 ],
-                'message' => [
-                    'attachment' => [
-                        'type' => 'template',
-                        'payload' => [
-                            'template_type' => 'generic',
-                            'elements' => [
-                                [
-                                    'title' => "🔥 السعر والعرض المميز 🔥",
-                                    'subtitle' => $price . "\nلا تفوت الفرصة!",
-                                    'image_url' => $imageUrl,
-                                    // إذا أردت زر يمكن إضافته هنا، أو احذفه تمامًا
-                                    'buttons' => [
-                                        [
-                                            'type' => 'web_url',
-                                            'url' => $postUrl,
-                                            'title' => 'مشاهدة المنشور'
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
+                'message' =>  [
+                    'text' => $price
                 ],
                 'messaging_type' => 'RESPONSE'
             ]);
