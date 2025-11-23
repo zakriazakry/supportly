@@ -100,11 +100,13 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
                                 [
                                     'title' => "السعر",
                                     'subtitle' => $price,
+                                    'image_url' => 'https://store-images.s-microsoft.com/image/apps.3117.14492969036550054.5a1d40f5-fe0d-427a-bd14-9a9ed15a423c.f601beb2-973f-47de-ad1a-ccec296ee4d1', // ضع رابط الصورة هنا
                                 ]
                             ]
                         ]
                     ]
                 ],
+
                 'messaging_type' => 'RESPONSE'
             ]);
 
