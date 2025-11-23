@@ -48,16 +48,17 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             $commentText = $commentRaw['message'] ?? '';
             $commentId   = $commentRaw['comment_id'] ?? null;
             $fromId      = $commentRaw['from']['id'] ?? '';
+            $postId      = $commentRaw['post_id'] ?? null;
 
             if (!$commentId) continue;
 
             // 1. Ignore comments made by the page itself
             if ($fromId === $pageId) continue;
 
-            // 2. Ignore comments already processed
+            // 2. Ignore comments already replied to
             if (in_array($commentId, $repliedComments)) continue;
 
-            // 3. Filter: only reply if comment contains 'السعر'
+            // 3. Filter only comments containing the keyword "السعر"
             if (!str_contains($commentText, 'السعر')) continue;
 
             Log::info("Processing comment: " . $commentId);
@@ -67,13 +68,23 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             // STEP 1 — LIKE the comment
             // -------------------------
 
-            Http::post(
-                "https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}"
-            );
+            Http::post("https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}");
 
 
             // -------------------------
-            // STEP 2 — SEND TEMPLATE REPLY (PRIVATE REPLY)
+            // STEP 2 — BUILD POST URL
+            // -------------------------
+
+            $postUrl = $postId
+                ? "https://www.facebook.com/{$pageId}/posts/{$postId}"
+                : "https://www.facebook.com/{$pageId}";
+
+            // السعر — تستطيع تغييره ديناميكيًا
+            $price = "السعر هو 99 دينار فقط";
+
+
+            // -------------------------
+            // STEP 3 — SEND TEMPLATE PRIVATE REPLY
             // -------------------------
 
             $sendTemplate = Http::post("https://graph.facebook.com/v17.0/me/messages?access_token={$pageAccessToken}", [
@@ -87,13 +98,13 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
                             'template_type' => 'generic',
                             'elements' => [
                                 [
-                                    'title' => 'تفاصيل السعر',
-                                    'subtitle' => 'اضغط على الزر لعرض السعر.',
+                                    'title' => "السعر",
+                                    'subtitle' => $price,
                                     'buttons' => [
                                         [
                                             'type' => 'web_url',
-                                            'url'  => 'https://yourwebsite.com/pricing',
-                                            'title' => 'عرض السعر'
+                                            'url'  => $postUrl,
+                                            'title' => 'مشاهدة المنشور'
                                         ]
                                     ]
                                 ]
@@ -106,7 +117,7 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
 
 
             // -------------------------
-            // STEP 3 — SAVE comment_id
+            // STEP 4 — SAVE comment_id
             // -------------------------
 
             $repliedComments[] = $commentId;
