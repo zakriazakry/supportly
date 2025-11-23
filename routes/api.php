@@ -65,7 +65,7 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             $price = "🎯 العرض الخاص: 99 دينار فقط!";
 
             // صورة احترافية عالية الجودة
-            $imageUrl = "https://yourwebsite.com/path-to-professional-image.jpg"; // رابط الصورة
+            $imageUrl = "https://store-images.s-microsoft.com/image/apps.3117.14492969036550054.5a1d40f5-fe0d-427a-bd14-9a9ed15a423c.f601beb2-973f-47de-ad1a-ccec296ee4d1"; // رابط الصورة
 
             // ارسال القالب الاحترافي
             $sendTemplate = Http::post("https://graph.facebook.com/v17.0/me/messages?access_token={$pageAccessToken}", [
