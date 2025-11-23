@@ -5,10 +5,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
-// -------------------------
-// Configuration
-// -------------------------
-
 $repliedCommentsFile = storage_path('replied_comments.json');
 $repliedComments = file_exists($repliedCommentsFile)
     ? json_decode(file_get_contents($repliedCommentsFile), true)
@@ -17,10 +13,7 @@ $repliedComments = file_exists($repliedCommentsFile)
 $pageId = '61579627401428';
 $pageAccessToken = "EAAL6cDIxiFcBQDqT9FcbYL85ZBTwQutkHZBRPSTiAxuwbKQsNTMJSGO1dJZAPfoHiD2fpOPhp1F5DPnbZB5UyUuVZBuZCwGZBEOlz11h9yPo8HflY3ERYrgGYx6aaD0ZAbDRSSUEAAz5x8PLYACRVd1EPPTBBq9pVu5wPfZAqltlTYcg1ej5ZBZCXPjfdLNchQYWBxWJvcxeRzMWQljoS81V9O04FmJ6pxEADcIOwfnHQQZD";
 
-// -------------------------
-// Webhook VERIFY (GET)
-// -------------------------
-
+// Webhook Verification
 Route::get('facebook/webhook', function (Request $request) {
     if ($request->hub_verify_token === "test") {
         return response($request->hub_challenge, 200);
@@ -28,10 +21,7 @@ Route::get('facebook/webhook', function (Request $request) {
     return response("Invalid token", 403);
 });
 
-// -------------------------
-// Webhook Receiver (POST)
-// -------------------------
-
+// Webhook Receiver
 Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId, $pageAccessToken) {
 
     if (!isset($request['entry'])) return response("OK", 200);
@@ -52,41 +42,32 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
 
             if (!$commentId) continue;
 
-            // 1. Ignore comments made by the page itself
+            // Ignore page's own comments
             if ($fromId === $pageId) continue;
 
-            // 2. Ignore comments already replied to
+            // Ignore already replied comments
             if (in_array($commentId, $repliedComments)) continue;
 
-            // 3. Filter only comments containing the keyword "السعر"
+            // Filter keyword
             if (!str_contains($commentText, 'السعر')) continue;
 
             Log::info("Processing comment: " . $commentId);
 
-
-            // -------------------------
-            // STEP 1 — LIKE the comment
-            // -------------------------
-
+            // Like the comment
             Http::post("https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}");
 
-
-            // -------------------------
-            // STEP 2 — BUILD POST URL
-            // -------------------------
-
+            // Build Post URL
             $postUrl = $postId
                 ? "https://www.facebook.com/{$pageId}/posts/{$postId}"
                 : "https://www.facebook.com/{$pageId}";
 
-            // السعر — تستطيع تغييره ديناميكيًا
-            $price = "السعر هو 99 دينار فقط";
+            // السعر أو العرض
+            $price = "🎯 العرض الخاص: 99 دينار فقط!";
 
+            // صورة احترافية عالية الجودة
+            $imageUrl = "https://yourwebsite.com/path-to-professional-image.jpg"; // رابط الصورة
 
-            // -------------------------
-            // STEP 3 — SEND TEMPLATE PRIVATE REPLY
-            // -------------------------
-
+            // ارسال القالب الاحترافي
             $sendTemplate = Http::post("https://graph.facebook.com/v17.0/me/messages?access_token={$pageAccessToken}", [
                 'recipient' => [
                     'comment_id' => $commentId
@@ -98,23 +79,26 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
                             'template_type' => 'generic',
                             'elements' => [
                                 [
-                                    'title' => "السعر",
-                                    'subtitle' => $price,
-                                    'image_url' => 'https://store-images.s-microsoft.com/image/apps.3117.14492969036550054.5a1d40f5-fe0d-427a-bd14-9a9ed15a423c.f601beb2-973f-47de-ad1a-ccec296ee4d1', // ضع رابط الصورة هنا
+                                    'title' => "🔥 السعر والعرض المميز 🔥",
+                                    'subtitle' => $price . "\nلا تفوت الفرصة!",
+                                    'image_url' => $imageUrl,
+                                    // إذا أردت زر يمكن إضافته هنا، أو احذفه تمامًا
+                                    'buttons' => [
+                                        [
+                                            'type' => 'web_url',
+                                            'url' => $postUrl,
+                                            'title' => 'مشاهدة المنشور'
+                                        ]
+                                    ]
                                 ]
                             ]
                         ]
                     ]
                 ],
-
                 'messaging_type' => 'RESPONSE'
             ]);
 
-
-            // -------------------------
-            // STEP 4 — SAVE comment_id
-            // -------------------------
-
+            // حفظ comment_id لمنع التكرار
             $repliedComments[] = $commentId;
             file_put_contents($repliedCommentsFile, json_encode($repliedComments));
         }
