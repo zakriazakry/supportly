@@ -56,6 +56,14 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             // Like the comment
             Http::post("https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}");
 
+            $replyText = "تم الرد في الخاص ✅";
+            $replyComment = Http::post("https://graph.facebook.com/v24.0/{$commentId}/comments", [
+                'message' => $replyText,
+                'access_token' => $pageAccessToken
+            ]);
+            Log::info("Replied on comment {$commentId} with message: '{$replyText}'");
+
+
             // Build Post URL
             $postUrl = $postId
                 ? "https://www.facebook.com/{$pageId}/posts/{$postId}"
