@@ -100,13 +100,6 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
                                 [
                                     'title' => "السعر",
                                     'subtitle' => $price,
-                                    'buttons' => [
-                                        [
-                                            'type' => 'web_url',
-                                            'url'  => $postUrl,
-                                            'title' => 'مشاهدة المنشور'
-                                        ]
-                                    ]
                                 ]
                             ]
                         ]
