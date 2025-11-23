@@ -69,21 +69,7 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
             $responseJson = $privateReply->json();
             Log::info("Private reply response:", $responseJson);
 
-            // --- 4. Public Reply Fallback (If Private Fails) ---
-
-            // إذا فشل الرد الخاص، أرسل رد عام كـ fallback
-            if (isset($responseJson['error'])) {
-                Log::warning("Private reply failed, sending public reply for comment: $commentId");
-
-                // إرسال رد عام (Public Reply)
-                $publicReply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/comments", [
-                    'message' => 'مرحباً! السعر هو 15$',
-                    'access_token' => $pageAccessToken
-                ]);
-
-                $responseJson = $publicReply->json();
-                Log::info("Public reply response:", $responseJson);
-            }
+    
 
             // --- 5. State Storage ---
 
