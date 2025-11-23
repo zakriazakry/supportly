@@ -5,17 +5,21 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
-// --- Configuration and Initialization ---
+// -------------------------
+// Configuration
+// -------------------------
 
 $repliedCommentsFile = storage_path('replied_comments.json');
 $repliedComments = file_exists($repliedCommentsFile)
     ? json_decode(file_get_contents($repliedCommentsFile), true)
     : [];
 
-$pageId = '61579627401428'; // معرف الصفحة
+$pageId = '61579627401428';
 $pageAccessToken = "EAAL6cDIxiFcBQDqT9FcbYL85ZBTwQutkHZBRPSTiAxuwbKQsNTMJSGO1dJZAPfoHiD2fpOPhp1F5DPnbZB5UyUuVZBuZCwGZBEOlz11h9yPo8HflY3ERYrgGYx6aaD0ZAbDRSSUEAAz5x8PLYACRVd1EPPTBBq9pVu5wPfZAqltlTYcg1ej5ZBZCXPjfdLNchQYWBxWJvcxeRzMWQljoS81V9O04FmJ6pxEADcIOwfnHQQZD";
 
-// --- Webhook Verification Route (GET) ---
+// -------------------------
+// Webhook VERIFY (GET)
+// -------------------------
 
 Route::get('facebook/webhook', function (Request $request) {
     if ($request->hub_verify_token === "test") {
@@ -24,10 +28,12 @@ Route::get('facebook/webhook', function (Request $request) {
     return response("Invalid token", 403);
 });
 
-// --- Webhook Event Handling Route (POST) ---
+// -------------------------
+// Webhook Receiver (POST)
+// -------------------------
 
 Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId, $pageAccessToken) {
-    // 1. Basic validation and structure check
+
     if (!isset($request['entry'])) return response("OK", 200);
 
     foreach ($request['entry'] as $entry) {
@@ -45,38 +51,65 @@ Route::post('facebook/webhook', function (Request $request) use (&$repliedCommen
 
             if (!$commentId) continue;
 
-            // 2. Filtration Logic
-
-            // Ignore comments made by the page itself
+            // 1. Ignore comments made by the page itself
             if ($fromId === $pageId) continue;
 
-            // Ignore comments that have been replied to already
+            // 2. Ignore comments already processed
             if (in_array($commentId, $repliedComments)) continue;
 
-            // Filter for the keyword "السعر" (Price)
+            // 3. Filter: only reply if comment contains 'السعر'
             if (!str_contains($commentText, 'السعر')) continue;
 
-            Log::info("Processing reply for comment: $commentId");
+            Log::info("Processing comment: " . $commentId);
 
-            // --- 3. Corrected Private Reply Attempt (Preferred) ---
 
-            // استخدام المسار الصحيح لإرسال الرد الخاص: /COMMENT-ID/private_replies
-            $privateReply = Http::post("https://graph.facebook.com/v24.0/{$commentId}/private_replies", [
-                'message'   => 'مرحباً! السعر هو 15$', // The message text directly
-                'access_token' => $pageAccessToken
+            // -------------------------
+            // STEP 1 — LIKE the comment
+            // -------------------------
+
+            Http::post(
+                "https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}"
+            );
+
+
+            // -------------------------
+            // STEP 2 — SEND TEMPLATE REPLY (PRIVATE REPLY)
+            // -------------------------
+
+            $sendTemplate = Http::post("https://graph.facebook.com/v17.0/me/messages?access_token={$pageAccessToken}", [
+                'recipient' => [
+                    'comment_id' => $commentId
+                ],
+                'message' => [
+                    'attachment' => [
+                        'type' => 'template',
+                        'payload' => [
+                            'template_type' => 'generic',
+                            'elements' => [
+                                [
+                                    'title' => 'تفاصيل السعر',
+                                    'subtitle' => 'اضغط على الزر لعرض السعر.',
+                                    'buttons' => [
+                                        [
+                                            'type' => 'web_url',
+                                            'url'  => 'https://yourwebsite.com/pricing',
+                                            'title' => 'عرض السعر'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'messaging_type' => 'RESPONSE'
             ]);
 
-            $responseJson = $privateReply->json();
-            Log::info("Private reply response:", $responseJson);
 
-    
+            // -------------------------
+            // STEP 3 — SAVE comment_id
+            // -------------------------
 
-            // --- 5. State Storage ---
-
-            // تخزين التعليق الأصلي كمعلق عليه لتجنب التكرار في المستقبل
             $repliedComments[] = $commentId;
-
-            // حفظ التغييرات على ملف التخزين
             file_put_contents($repliedCommentsFile, json_encode($repliedComments));
         }
     }
