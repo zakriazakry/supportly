@@ -13,7 +13,7 @@ $repliedComments = file_exists($repliedCommentsFile)
     : [];
 
 $pageId = '61579627401428'; // معرف الصفحة
-$pageAccessToken = "EAAL6cDIxiFcBQIFNYGqZBTL0ATSg4o7ZCMP5cMwplAW67AqWbRf3g7vEDflqZAD94xzhIa2KSGpk22NRtPy6VaiaNZCd8VBs5lsR9VRupmz9PZCXqbv66uXoxomEiLhcmRHrwm371KZBaULJDZBcZBqWkjATu3lxDhAWA5TTGfm8nXAO73y5WHFykLYTUsuW9RUTPQkGUfpY0mZAecowbKEGQwst3ab3mjUsZCNW2xnJai";
+$pageAccessToken = "EAAL6cDIxiFcBQDqT9FcbYL85ZBTwQutkHZBRPSTiAxuwbKQsNTMJSGO1dJZAPfoHiD2fpOPhp1F5DPnbZB5UyUuVZBuZCwGZBEOlz11h9yPo8HflY3ERYrgGYx6aaD0ZAbDRSSUEAAz5x8PLYACRVd1EPPTBBq9pVu5wPfZAqltlTYcg1ej5ZBZCXPjfdLNchQYWBxWJvcxeRzMWQljoS81V9O04FmJ6pxEADcIOwfnHQQZD";
 
 // --- Webhook Verification Route (GET) ---
 
