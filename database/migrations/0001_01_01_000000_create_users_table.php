@@ -20,6 +20,10 @@ return new class extends Migration
             // Allow password to be nullable for users who log in only via Facebook (OAuth)
             $table->string('password')->nullable();
 
+            // Phone and status fields
+            $table->string('phone', 50)->nullable();
+            $table->tinyInteger('status')->default(1); // 1 = active, 0 = disabled
+
             // --- حقول فيسبوك المضافة (Facebook Bot Fields) ---
 
             $table->bigInteger('facebook_id')->unique()->nullable();

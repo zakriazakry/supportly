@@ -86,4 +86,50 @@ class FacebookController extends Controller
         // عرض صفحة Blade لاختيار الصفحة
         return view('facebook.select-page', compact('pages'));
     }
+
+    public function exchangeToken(Request $request)
+    {
+        $shortLivedToken = $request->input('short_token');
+
+        if (!$shortLivedToken) {
+            return response()->json(['error' => 'short_token is required'], 400);
+        }
+
+        // ------------------------------------------
+        // 1) تحويل Short Token → Long Token
+        // ------------------------------------------
+        $longTokenResponse = Http::get('https://graph.facebook.com/v24.0/oauth/access_token', [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => env('FACEBOOK_APP_ID'),
+            'client_secret' => env('FACEBOOK_APP_SECRET'),
+            'fb_exchange_token' => $shortLivedToken
+        ]);
+
+        if ($longTokenResponse->failed()) {
+            return response()->json(['error' => 'Failed to exchange token'], 500);
+        }
+
+        $longToken = $longTokenResponse->json()['access_token'];
+
+        // ------------------------------------------
+        // 2) الحصول على الصفحات الخاصة بالمستخدم
+        // ------------------------------------------
+        $pagesResponse = Http::get('https://graph.facebook.com/v24.0/me/accounts', [
+            'access_token' => $longToken
+        ]);
+
+        if ($pagesResponse->failed()) {
+            return response()->json(['error' => 'Failed to get pages'], 500);
+        }
+
+        $pages = $pagesResponse->json()['data'];
+
+        // ------------------------------------------
+        // 3) إرجاع التوكن الطويل + الصفحات
+        // ------------------------------------------
+        return response()->json([
+            'long_lived_user_token' => $longToken,
+            'pages' => $pages
+        ]);
+    }
 }
