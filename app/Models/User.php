@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -21,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'status',
     ];
 
     /**
@@ -43,6 +46,48 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'status' => 'integer',
         ];
     }
+
+    /**
+     * Get the wallets for the user.
+     */
+    public function wallets(): HasMany
+    {
+        return $this->hasMany(Wallet::class);
+    }
+
+    /**
+     * Get the Facebook accounts for the user.
+     */
+    public function facebookAccounts(): HasMany
+    {
+        return $this->hasMany(FacebookAccount::class);
+    }
+
+    /**
+     * Get the auto reply templates for the user.
+     */
+    public function autoReplyTemplates(): HasMany
+    {
+        return $this->hasMany(AutoReplyTemplate::class);
+    }
+
+    /**
+     * Get the posts for the user.
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get the post reply states for the user.
+     */
+    public function postReplyStates(): HasMany
+    {
+        return $this->hasMany(PostReplyState::class);
+    }
+}
 }

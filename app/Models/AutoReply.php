@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PostReplyState extends Model
+class AutoReply extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -13,10 +13,11 @@ class PostReplyState extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'post_id',
-        'user_id',
-        'reply',
-        'if_has',
+        'template_id',
+        'trigger_type',
+        'trigger_keyword',
+        'page_id',
+        'active',
     ];
 
     /**
@@ -27,23 +28,23 @@ class PostReplyState extends Model
     protected function casts(): array
     {
         return [
-            'if_has' => 'boolean',
+            'active' => 'boolean',
         ];
     }
 
     /**
-     * Get the post that owns the reply state.
+     * Get the template for this auto reply.
      */
-    public function post(): BelongsTo
+    public function template(): BelongsTo
     {
-        return $this->belongsTo(Post::class);
+        return $this->belongsTo(AutoReplyTemplate::class, 'template_id');
     }
 
     /**
-     * Get the user that owns the reply state.
+     * Get the Facebook page for this auto reply.
      */
-    public function user(): BelongsTo
+    public function page(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(FacebookPage::class, 'page_id');
     }
 }

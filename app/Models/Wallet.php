@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PostReplyState extends Model
+class Wallet extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -13,10 +13,10 @@ class PostReplyState extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'post_id',
         'user_id',
-        'reply',
-        'if_has',
+        'currency',
+        'balance',
+        'status',
     ];
 
     /**
@@ -27,20 +27,13 @@ class PostReplyState extends Model
     protected function casts(): array
     {
         return [
-            'if_has' => 'boolean',
+            'balance' => 'decimal:2',
+            'status' => 'integer',
         ];
     }
 
     /**
-     * Get the post that owns the reply state.
-     */
-    public function post(): BelongsTo
-    {
-        return $this->belongsTo(Post::class);
-    }
-
-    /**
-     * Get the user that owns the reply state.
+     * Get the user that owns the wallet.
      */
     public function user(): BelongsTo
     {

@@ -5,18 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PostReplyState extends Model
+class Log extends Model
 {
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'post_id',
-        'user_id',
-        'reply',
-        'if_has',
+        'page_id',
+        'type',
+        'reference_id',
+        'content',
+        'created_at',
     ];
 
     /**
@@ -27,23 +35,15 @@ class PostReplyState extends Model
     protected function casts(): array
     {
         return [
-            'if_has' => 'boolean',
+            'created_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the post that owns the reply state.
+     * Get the Facebook page for this log.
      */
-    public function post(): BelongsTo
+    public function page(): BelongsTo
     {
-        return $this->belongsTo(Post::class);
-    }
-
-    /**
-     * Get the user that owns the reply state.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(FacebookPage::class, 'page_id');
     }
 }
