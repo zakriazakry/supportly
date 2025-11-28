@@ -16,28 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-
-            // Allow password to be nullable for users who log in only via Facebook (OAuth)
             $table->string('password')->nullable();
-
-            // Phone and status fields
             $table->string('phone', 50)->nullable();
             $table->tinyInteger('status')->default(1); // 1 = active, 0 = disabled
-
-            // --- حقول فيسبوك المضافة (Facebook Bot Fields) ---
-
-            $table->bigInteger('facebook_id')->unique()->nullable();
-
-            // Using 'text' for long access tokens
-            $table->text('facebook_token')->nullable();
-
-            $table->bigInteger('selected_page_id')->nullable();
-            $table->text('page_access_token')->nullable();
-
-            $table->boolean('is_bot_active')->default(false);
-
-            // -------------------------------------------------
-
             $table->rememberToken();
             $table->timestamps();
         });
