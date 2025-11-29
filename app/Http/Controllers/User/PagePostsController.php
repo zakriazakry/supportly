@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Services\FacebookLibsServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PagePostsController extends Controller
 {
@@ -28,7 +29,9 @@ class PagePostsController extends Controller
 
         $rawPosts = $this->fb->getPagePosts($page->page_id, $page->access_token);
 
-        $posts = $this->formatPosts($rawPosts);
+        $posts = Cache::remember('page_posts_' . $page_id, now()->addMinutes(10), function () use ($rawPosts) {
+            return $this->formatPosts($rawPosts);
+        });
 
         return responseFormat($posts, 200);
     }
