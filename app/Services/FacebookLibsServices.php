@@ -99,7 +99,7 @@ class FacebookLibsServices
     {
         return $this->call("$pageId/posts", 'GET', [
             'access_token' => $pageAccessToken,
-            'fields' => 'id,message,created_time'
+            'fields' => 'id,message,created_time,full_picture,attachments{media_type,media,url,subattachments},likes.summary(true),comments.summary(true),from'
         ]);
     }
 
