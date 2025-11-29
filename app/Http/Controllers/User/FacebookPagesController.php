@@ -32,11 +32,11 @@ class FacebookPagesController extends Controller
             $pages = $this->fb->getPages($account->access_token);
 
             $pagesData = collect($pages['data'] ?? [])->map(function ($page) use ($account) {
-                // تحقق إذا كانت الصفحة موجودة في قاعدة البيانات
                 $dbPage = FacebookPage::where('page_id', $page['id'])->first();
                 return [
                     'page_id' => $page['id'],
                     'name' => $page['name'],
+                    'image' => $page['image'],
                     'category' => $page['category'] ?? null,
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
