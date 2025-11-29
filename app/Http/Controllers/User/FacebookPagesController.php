@@ -41,7 +41,6 @@ class FacebookPagesController extends Controller
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
                     'linked' => $dbPage ? true : false,
-                    'etc' => $page,
                 ];
             });
 
