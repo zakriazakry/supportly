@@ -41,7 +41,7 @@ class FacebookAccountsController extends Controller
 
             Log::info('Attempting to get Facebook profile for user.', ['user_id' => $user->id]);
             $profile = $this->fb->getProfile($access_token);
-            Log::info('Successfully retrieved Facebook profile for user.', ['user_id' => $user->id, 'facebook_user_id' => $profile['id']]);
+            Log::info('Successfully retrieved Facebook profile for user.', ['user_id' => $user->id, 'facebook_user_id' => $profile['id'], 'name' => $profile['name'], 'image' => $profile['picture']]);
 
             $account = $user->facebookAccounts()->create([
                 'facebook_user_id' => $profile['id'],
