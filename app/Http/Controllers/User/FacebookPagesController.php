@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\FacebookPage; // تأكد أن لديك الموديل
 use DB;
+use Illuminate\Support\Facades\Cache;
 
 class FacebookPagesController extends Controller
 {
@@ -29,14 +30,17 @@ class FacebookPagesController extends Controller
         $data = [];
 
         foreach ($accounts as $account) {
-            $pages = $this->fb->getPages($account->access_token);
+            $cacheKey = 'facebook_pages_' . $account->id;
+            $pages = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($account) {
+                return $this->fb->getPages($account->access_token);
+            });
 
             $pagesData = collect($pages['data'] ?? [])->map(function ($page) use ($account) {
                 $dbPage = FacebookPage::where('page_id', $page['id'])->first();
                 return [
                     'page_id' => $page['id'],
                     'name' => $page['name'],
-                    'image' => $page['picture']['data']['url'],
+                    'image' => $page['picture']['data']['url'] ?? null, // Added null coalescing for safety
                     'category' => $page['category'] ?? null,
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
