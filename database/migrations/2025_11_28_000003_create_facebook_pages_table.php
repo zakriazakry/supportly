@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('facebook_pages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('facebook_account_id')->constrained()->onDelete('cascade');
+            $table->foreignId('facebook_account_id')->constrained('facebook_accounts')->onDelete('cascade');
             $table->string('page_id', 100);
             $table->string('name', 255);
             $table->text('image');
