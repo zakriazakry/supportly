@@ -16,18 +16,75 @@ class PagePostsController extends Controller
     }
 
     /**
-     * عرض جميع صفحات كل حساب
+     * عرض منشورات صفحة معينة
      */
     public function index(Request $request, $page_id)
     {
         $page = $request->user()->facebookPages()->find($page_id);
+
         if (!$page) {
             return responseFormat('الصفحة غير موجودة.', 422);
         }
 
-        $cacheKey = 'page_posts_' . $page->page_id;
-        return $this->fb->getPagePosts($page->page_id, $page->access_token);
+        $rawPosts = $this->fb->getPagePosts($page->page_id, $page->access_token);
+
+        $posts = $this->formatPosts($rawPosts);
 
         return responseFormat($posts, 200);
+    }
+
+    private function formatPosts($posts)
+    {
+        if (!isset($posts['data'])) return [];
+
+        return array_values(collect($posts['data'])->map(function ($post) {
+            return [
+                'id' => $post['id'] ?? null,
+                'message' => $post['message'] ?? null,
+                'created_time' => $post['created_time'] ?? null,
+
+                // الصور
+                'images' => $this->extractPostImages($post),
+
+                // عدد الإعجابات
+                'likes' => $post['likes']['summary']['total_count'] ?? 0,
+
+                // عدد التعليقات
+                'comments' => $post['comments']['summary']['total_count'] ?? 0,
+
+                // معلومات الناشر
+                'from' => [
+                    'id' => $post['from']['id'] ?? null,
+                    'name' => $post['from']['name'] ?? null,
+                ]
+            ];
+        })->toArray());
+    }
+
+    private function extractPostImages($post)
+    {
+        $images = [];
+
+        if (!empty($post['full_picture'])) {
+            $images[] = $post['full_picture'];
+        }
+
+        if (!empty($post['attachments']['data'])) {
+            foreach ($post['attachments']['data'] as $att) {
+                if (!empty($att['media']['image']['src'])) {
+                    $images[] = $att['media']['image']['src'];
+                }
+
+                if (!empty($att['subattachments']['data'])) {
+                    foreach ($att['subattachments']['data'] as $sub) {
+                        if (!empty($sub['media']['image']['src'])) {
+                            $images[] = $sub['media']['image']['src'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($images));
     }
 }
