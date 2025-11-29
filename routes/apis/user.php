@@ -3,6 +3,7 @@
 use App\Http\Controllers\User\FacebookAccountsController;
 use App\Http\Controllers\User\FacebookPagesController;
 use App\Http\Controllers\User\HomeController;
+use App\Http\Controllers\User\PagePostsController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\SupportingPagesController;
 use App\Http\Controllers\User\TemeplatesController;
@@ -29,8 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', 'index');
     });
 
-    Route::controller(TemeplatesController::class)->prefix('templates')->group(function () {
-        Route::get('/', 'index');
+    Route::controller(PagePostsController::class)->prefix('page-posts')->group(function () {
+        Route::get('/{page_id}', 'index');
     });
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
