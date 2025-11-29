@@ -65,10 +65,10 @@ class FacebookPagesController extends Controller
     /**
      * إضافة صفحة جديدة إلى قاعدة البيانات
      */
-    public function store(Request $request)
+    public function linkPage(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'facebook_account_id' => 'required|exists:facebook_accounts,id',
+            'account_id' => 'required|exists:facebook_accounts,id',
             'page_id' => 'required|string|max:100',
         ]);
 
@@ -76,7 +76,7 @@ class FacebookPagesController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
 
-        $account = $request->user()->facebookAccounts()->find($request->facebook_account_id);
+        $account = $request->user()->facebookAccounts()->find($request->account_id);
         if (!$account) {
             return responseFormat('الحساب غير موجود أو لا يخصك.', 422);
         }
@@ -98,6 +98,7 @@ class FacebookPagesController extends Controller
             'facebook_account_id' => $account->id,
             'page_id' => $pageData['id'],
             'name' => $pageData['name'],
+            'image' => $pageData['picture']['data']['url'] ?? null,
             'access_token' => $pageData['access_token'], // Page Access Token
             'category' => $pageData['category'] ?? null,
         ]);

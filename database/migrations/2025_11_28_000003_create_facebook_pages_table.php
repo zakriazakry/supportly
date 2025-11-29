@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('facebook_account_id')->constrained()->onDelete('cascade');
             $table->string('page_id', 100);
             $table->string('name', 255);
+            $table->string('image', 255);
             $table->text('access_token'); // Page Access Token (long-lived)
             $table->string('category', 100)->nullable();
             $table->timestamps();

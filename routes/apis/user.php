@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(FacebookPagesController::class)->prefix('facebook-pages')->group(function () {
         Route::get('/', 'index');
+        Route::post('link-page', 'linkPage');
+        Route::delete('unlink-page/{account_id}/{page_id}', 'unlinkPage');
     });
 
     Route::controller(SupportingPagesController::class)->prefix('supporting-pages')->group(function () {
