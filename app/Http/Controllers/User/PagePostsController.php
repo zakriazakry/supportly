@@ -144,11 +144,11 @@ class PagePostsController extends Controller
                 'reply_to_private_message_enabled' => $request->reply_to_private_message_enabled,
                 'mention_enabled' => $request->mention_enabled,
                 'share_enabled' => $request->share_enabled,
-                'comment_reply_template' => $request->comment_reply_template,
-                'private_message_template' => $request->private_message_template,
-                'mention_reply_template' => $request->mention_reply_template,
-                'keywords' => json_encode($request->keywords),
-                'exclude_keywords' => json_encode($request->exclude_keywords),
+                'comment_reply_template' => $request->comment_reply_template ?? '',
+                'private_message_template' => $request->private_message_template ?? '',
+                'mention_reply_template' => $request->mention_reply_template ?? '',
+                'keywords' => $request->keywords ?? [],
+                'exclude_keywords' => $request->exclude_keywords ?? [],
             ]
         );
 
