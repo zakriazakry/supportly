@@ -134,8 +134,8 @@ class PagePostsController extends Controller
         }
 
         // upsert باستخدام updateOrCreate
-        $post = $request->user()->pagePosts()->updateOrCreate(
-            ['id' => $request->post_id], // شرط البحث
+        $post = $request->user()->posts()->updateOrCreate(
+            ['post_id' => $request->post_id], // شرط البحث
             [
                 'page_id' => $request->page_id,
                 'enabled' => $request->enabled,
