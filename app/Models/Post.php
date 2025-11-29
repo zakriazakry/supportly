@@ -37,12 +37,12 @@ class Post extends Model
     protected function casts(): array
     {
         return [
-            'enabled' => 'boolean',
-            'like_comment_enabled' => 'boolean',
-            'reply_to_comment_enabled' => 'boolean',
-            'reply_to_private_message_enabled' => 'boolean',
-            'mention_enabled' => 'boolean',
-            'share_enabled' => 'boolean',
+            'enabled' => 'integer',
+            'like_comment_enabled' => 'integer',
+            'reply_to_comment_enabled' => 'integer',
+            'reply_to_private_message_enabled' => 'integer',
+            'mention_enabled' => 'integer',
+            'share_enabled' => 'integer',
             'keywords' => 'array',
             'exclude_keywords' => 'array',
         ];
