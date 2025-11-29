@@ -20,7 +20,7 @@ class PagePostsController extends Controller
      */
     public function index(Request $request, $page_id)
     {
-        $page = $request->user()->facebookPages()->find($page_id);
+        $page = $request->user()->facebookPages()->where('page_id', $page_id)->first();
 
         if (!$page) {
             return responseFormat('الصفحة غير موجودة.', 422);
