@@ -16,7 +16,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
         if ($validator->fails()) {
-            return responseFormat($validator->errors(), 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
         $user = User::where('email', $request->email)->first();
         if (!$user) {
@@ -41,7 +41,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
         if ($validator->fails()) {
-            return responseFormat($validator->errors(), 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
         $user = User::create([
             'name' => $request->name,
