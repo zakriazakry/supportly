@@ -22,7 +22,7 @@ class FacebookPagesController extends Controller
      * عرض جميع صفحات كل حساب
      */
     public function index(Request $request)
-{
+    {
         $user = $request->user();
         $accounts = $user->facebookAccounts;
 
@@ -40,7 +40,7 @@ class FacebookPagesController extends Controller
                     'category' => $page['category'] ?? null,
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
-                    'stored_in_db' => $dbPage ? true : false
+                    'linked' => $dbPage ? true : false
                 ];
             });
 
@@ -83,7 +83,6 @@ class FacebookPagesController extends Controller
             return responseFormat('هذه الصفحة موجودة بالفعل في النظام.', 422);
         }
 
-        // جلب الصفحات من Facebook API
         $pages = $this->fb->getPages($account->access_token);
         $pageData = collect($pages['data'] ?? [])->firstWhere('id', $request->page_id);
 
@@ -91,7 +90,6 @@ class FacebookPagesController extends Controller
             return responseFormat('الصفحة غير موجودة أو لا يمكن الوصول إليها عبر Facebook API.', 422);
         }
 
-        // حفظ الصفحة في قاعدة البيانات
         $page = FacebookPage::create([
             'facebook_account_id' => $account->id,
             'page_id' => $pageData['id'],
