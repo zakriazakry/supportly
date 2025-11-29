@@ -36,6 +36,7 @@ class FacebookPagesController extends Controller
                 return [
                     'page_id' => $page['id'],
                     'name' => $page['name'],
+                    'image' => $page['picture']['data']['url'],
                     'category' => $page['category'] ?? null,
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
