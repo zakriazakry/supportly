@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(PagePostsController::class)->prefix('page-posts')->group(function () {
         Route::get('/{page_id}', 'index');
+        Route::get('get-settings/{post_id}', 'getSettings');
         Route::post('update-settings', 'updateSettings');
     });
 

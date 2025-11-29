@@ -93,25 +93,17 @@ class PagePostsController extends Controller
         return array_values(array_unique($images));
     }
     // ------------------------------
-    //     {
-    //     "post_id": "702602156278377_122126980910987580",
-    //     "page_id": "702602156278377",
-    //     "enabled": true,
-    //     "like_comment_enabled": true,
-    //     "reply_to_comment_enabled": true,
-    //     "reply_to_private_message_enabled": false,
-    //     "mention_enabled": true,
-    //     "share_enabled": false,
-    //     "comment_reply_template": "",
-    //     "private_message_template": "",
-    //     "mention_reply_template": "منوووووور ي غالي",
-    //     "keywords": [
-    //         "سشيشسي"
-    //     ],
-    //     "exclude_keywords": [
-    //         "كلب"
-    //     ]
-    // }
+    public function getSettings(Request $request, $post_id)
+    {
+        $post = $request->user()->posts()->where('post_id', $post_id)->first();
+
+        if (!$post) {
+            return responseFormat('المنشور غير موجود.', 422);
+        }
+
+        return responseFormat($post, 200);
+    }
+
     public function updateSettings(Request $request)
     {
         $validator = Validator::make($request->all(), [
