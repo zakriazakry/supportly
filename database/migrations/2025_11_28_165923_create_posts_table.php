@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('page_id')->constrained('facebook_pages')->cascadeOnDelete();
+            $table->string('page_id');
+            $table->foreign('page_id')->references('page_id')->on('facebook_pages')->cascadeOnDelete();
             $table->string('post_id')->unique();
             $table->boolean('enabled')->default(true);
             $table->boolean('like_comment_enabled')->default(true);
