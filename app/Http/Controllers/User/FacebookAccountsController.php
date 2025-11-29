@@ -32,7 +32,7 @@ class FacebookAccountsController extends Controller
         $user = $request->user();
         $access_token = $this->fb->exchangeLongLivedUserToken($request->access_token)['access_token'];
         $profile = $this->fb->getProfile($access_token);
-        $account = $user->facebookAccounts()->createOrUpdate([
+        $account = $user->facebookAccounts()->firstOrCreate([
             'facebook_user_id' => $profile['id'],
         ], [
             'name' => $profile['name'],
