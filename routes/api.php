@@ -11,6 +11,6 @@ Route::controller(AuthController::class)->prefix('auth')->group(function () {
 });
 Route::post('test', function (Request $request) {
     $fb = new FacebookLibsServices();
-    return responseFormat($fb->exchangeLongLivedUserToken($request->token), 200);
+    return responseFormat($fb->exchangeLongLivedUserToken($request->token)['access_token'], 200);
 });
 require_once base_path('routes/apis/user.php');
