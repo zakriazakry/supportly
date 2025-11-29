@@ -14,13 +14,19 @@ class Post extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
+        'post_id',
         'page_id',
-        'facebook_post_id',
-        'allow_like',
-        'allow_comment',
-        'allow_reply',
-        'for_ever_one',
+        'enabled',
+        'like_comment_enabled',
+        'reply_to_comment_enabled',
+        'reply_to_private_message_enabled',
+        'mention_enabled',
+        'share_enabled',
+        'comment_reply_template',
+        'private_message_template',
+        'mention_reply_template',
+        'keywords',
+        'exclude_keywords',
     ];
 
     /**
@@ -31,10 +37,14 @@ class Post extends Model
     protected function casts(): array
     {
         return [
-            'allow_like' => 'boolean',
-            'allow_comment' => 'boolean',
-            'allow_reply' => 'boolean',
-            'for_ever_one' => 'boolean',
+            'enabled' => 'boolean',
+            'like_comment_enabled' => 'boolean',
+            'reply_to_comment_enabled' => 'boolean',
+            'reply_to_private_message_enabled' => 'boolean',
+            'mention_enabled' => 'boolean',
+            'share_enabled' => 'boolean',
+            'keywords' => 'array',
+            'exclude_keywords' => 'array',
         ];
     }
 

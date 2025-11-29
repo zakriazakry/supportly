@@ -114,17 +114,17 @@ class PagePostsController extends Controller
     public function updateSettings(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'post_id' => 'required',
-            'page_id' => 'required',
+            'post_id' => 'required|integer',
+            'page_id' => 'required|integer',
             'enabled' => 'required|boolean',
             'like_comment_enabled' => 'required|boolean',
             'reply_to_comment_enabled' => 'required|boolean',
             'reply_to_private_message_enabled' => 'required|boolean',
             'mention_enabled' => 'required|boolean',
             'share_enabled' => 'required|boolean',
-            'comment_reply_template' => 'required',
-            'private_message_template' => 'required',
-            'mention_reply_template' => 'required',
+            'comment_reply_template' => 'required|string',
+            'private_message_template' => 'required|string',
+            'mention_reply_template' => 'required|string',
             'keywords' => 'required|array',
             'exclude_keywords' => 'required|array',
         ]);
@@ -133,9 +133,24 @@ class PagePostsController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
 
-        $post = $request->user()->pagePosts();
-
-        $post->updateOrCreate($request->all());
+        // upsert باستخدام updateOrCreate
+        $post = $request->user()->pagePosts()->updateOrCreate(
+            ['id' => $request->post_id], // شرط البحث
+            [
+                'page_id' => $request->page_id,
+                'enabled' => $request->enabled,
+                'like_comment_enabled' => $request->like_comment_enabled,
+                'reply_to_comment_enabled' => $request->reply_to_comment_enabled,
+                'reply_to_private_message_enabled' => $request->reply_to_private_message_enabled,
+                'mention_enabled' => $request->mention_enabled,
+                'share_enabled' => $request->share_enabled,
+                'comment_reply_template' => $request->comment_reply_template,
+                'private_message_template' => $request->private_message_template,
+                'mention_reply_template' => $request->mention_reply_template,
+                'keywords' => json_encode($request->keywords),
+                'exclude_keywords' => json_encode($request->exclude_keywords),
+            ]
+        );
 
         return responseFormat('تم تحديث الإعدادات بنجاح.', 200);
     }
