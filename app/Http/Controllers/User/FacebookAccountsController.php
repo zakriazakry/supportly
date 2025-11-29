@@ -46,4 +46,15 @@ class FacebookAccountsController extends Controller
 
         return responseFormat($account, 200);
     }
+
+    public function deleteAccount(Request $request, $id)
+    {
+        $user = $request->user();
+        $account = $user->facebookAccounts()->where('id', $id)->first();
+        if (!$account) {
+            return responseFormat('Account not found', 404);
+        }
+        $account->delete();
+        return responseFormat('Account deleted successfully', 200);
+    }
 }
