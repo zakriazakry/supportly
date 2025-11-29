@@ -68,6 +68,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the Facebook pages for the user.
+     */
+    public function facebookPages(): HasMany
+    {
+        return $this->hasMany(FacebookPage::class);
+    }
+
+    /**
      * Get the auto reply templates for the user.
      */
     public function autoReplyTemplates(): HasMany
