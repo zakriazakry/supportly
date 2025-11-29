@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('facebook_user_id', 100);
             $table->string('name', 255);
+            $table->string('image', 255);
             $table->text('access_token'); // Long-Lived User Token
             $table->datetime('token_expires_at')->nullable();
             $table->timestamps();
