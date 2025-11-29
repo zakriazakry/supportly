@@ -15,6 +15,7 @@ class FacebookPagesController extends Controller
     }
     public function index(Request $request)
     {
+        return responseFormat('ok', 200);
         $user = $request->user();
         $accounts = $user->facebookAccounts;
         $pages = collect([]);
