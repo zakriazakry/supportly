@@ -20,8 +20,6 @@ return new class extends Migration
             $table->text('access_token'); // Long-Lived User Token
             $table->datetime('token_expires_at')->nullable();
             $table->timestamps();
-
-            // Add index for faster lookups
             $table->index('facebook_user_id');
         });
     }

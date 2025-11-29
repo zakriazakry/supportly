@@ -56,7 +56,7 @@ class FacebookLibsServices
     public function getProfile($accessToken)
     {
         return $this->call('me', 'GET', [
-            'fields' => 'id,name,picture',
+            'fields' => 'id,name,picture.type(large)',
             'access_token' => $accessToken
         ]);
     }
