@@ -61,7 +61,7 @@ class Post extends Model
      */
     public function page(): BelongsTo
     {
-        return $this->belongsTo(FacebookPage::class, 'page_id');
+        return $this->belongsTo(FacebookPage::class, 'page_id', 'page_id');
     }
 
     /**
