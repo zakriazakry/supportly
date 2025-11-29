@@ -114,8 +114,8 @@ class PagePostsController extends Controller
     public function updateSettings(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'post_id' => 'required|integer',
-            'page_id' => 'required|integer',
+            'post_id' => 'required',
+            'page_id' => 'required',
             'enabled' => 'required|boolean',
             'like_comment_enabled' => 'required|boolean',
             'reply_to_comment_enabled' => 'required|boolean',
