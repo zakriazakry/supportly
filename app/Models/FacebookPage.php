@@ -17,6 +17,7 @@ class FacebookPage extends Model
         'facebook_account_id',
         'page_id',
         'name',
+        'image',
         'access_token',
         'category',
     ];
