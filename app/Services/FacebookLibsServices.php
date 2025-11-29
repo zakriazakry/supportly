@@ -66,10 +66,14 @@ class FacebookLibsServices
     // -----------------------------
     public function getPages($userAccessToken)
     {
-        return $this->call('me/accounts', 'GET', [
-            'access_token' => $userAccessToken
+        $pages = $this->call('me/accounts', 'GET', [
+            'access_token' => $userAccessToken,
+            'fields' => 'id,name,category,access_token,picture.type(large),tasks'
         ]);
+
+        return $pages;
     }
+
 
     // -----------------------------
     // 4) البحث عن Page Access Token
