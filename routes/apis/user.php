@@ -14,9 +14,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::controller(FacebookAccountsController::class)->prefix('facebook-accounts')->group(function () {
-        Route::get('/', 'index');
-        Route::post('/add-account', 'addAccount');
-        Route::delete('/delete-account/{id}', 'deleteAccount');
+        Route::get('', 'index');
+        Route::post('add-account', 'addAccount');
+        Route::delete('delete-account/{facebook_user_id}', 'deleteAccount');
     });
 
     Route::controller(FacebookPagesController::class)->prefix('facebook-pages')->group(function () {
