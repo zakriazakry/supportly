@@ -105,4 +105,22 @@ class FacebookPagesController extends Controller
 
         return responseFormat($page, 201);
     }
+
+    public function unlinkPage(Request $request, $account_id, $page_id)
+    {
+
+        $account = $request->user()->facebookAccounts()->find($account_id);
+        if (!$account) {
+            return responseFormat('الحساب غير موجود أو لا يخصك.', 422);
+        }
+
+        $page = FacebookPage::where('page_id', $page_id)->first();
+        if (!$page) {
+            return responseFormat('الصفحة غير موجودة.', 422);
+        }
+
+        $page->delete();
+
+        return responseFormat('تم إزالة الصفحة بنجاح.', 200);
+    }
 }
