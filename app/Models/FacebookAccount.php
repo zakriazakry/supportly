@@ -17,6 +17,7 @@ class FacebookAccount extends Model
         'user_id',
         'facebook_user_id',
         'name',
+        'image',
         'access_token',
         'token_expires_at',
     ];
