@@ -15,11 +15,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('page_id')->constrained('facebook_pages')->cascadeOnDelete();
-            $table->string('facebook_post_id')->unique();
-            $table->boolean('allow_like')->default(true);
-            $table->boolean('allow_comment')->default(true);
-            $table->boolean('allow_reply')->default(true);
-            $table->boolean('for_ever_one')->default(false);
+            $table->string('post_id')->unique();
+            $table->boolean('enabled')->default(true);
+            $table->boolean('like_comment_enabled')->default(true);
+            $table->boolean('reply_to_comment_enabled')->default(true);
+            $table->boolean('reply_to_private_message_enabled')->default(false);
+            $table->boolean('mention_enabled')->default(true);
+            $table->boolean('share_enabled')->default(false);
+            $table->text('comment_reply_template')->nullable();
+            $table->text('private_message_template')->nullable();
+            $table->text('mention_reply_template')->nullable();
+            $table->json('keywords')->nullable();
+            $table->json('exclude_keywords')->nullable();
             $table->timestamps();
         });
     }

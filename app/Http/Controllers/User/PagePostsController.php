@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\FacebookLibsServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 
 class PagePostsController extends Controller
 {
@@ -89,5 +90,53 @@ class PagePostsController extends Controller
         }
 
         return array_values(array_unique($images));
+    }
+    // ------------------------------
+    //     {
+    //     "post_id": "702602156278377_122126980910987580",
+    //     "page_id": "702602156278377",
+    //     "enabled": true,
+    //     "like_comment_enabled": true,
+    //     "reply_to_comment_enabled": true,
+    //     "reply_to_private_message_enabled": false,
+    //     "mention_enabled": true,
+    //     "share_enabled": false,
+    //     "comment_reply_template": "",
+    //     "private_message_template": "",
+    //     "mention_reply_template": "منوووووور ي غالي",
+    //     "keywords": [
+    //         "سشيشسي"
+    //     ],
+    //     "exclude_keywords": [
+    //         "كلب"
+    //     ]
+    // }
+    public function updateSettings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'post_id' => 'required',
+            'page_id' => 'required',
+            'enabled' => 'required|boolean',
+            'like_comment_enabled' => 'required|boolean',
+            'reply_to_comment_enabled' => 'required|boolean',
+            'reply_to_private_message_enabled' => 'required|boolean',
+            'mention_enabled' => 'required|boolean',
+            'share_enabled' => 'required|boolean',
+            'comment_reply_template' => 'required',
+            'private_message_template' => 'required',
+            'mention_reply_template' => 'required',
+            'keywords' => 'required|array',
+            'exclude_keywords' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $post = $request->user()->pagePosts();
+
+        $post->updateOrCreate($request->all());
+
+        return responseFormat('تم تحديث الإعدادات بنجاح.', 200);
     }
 }
