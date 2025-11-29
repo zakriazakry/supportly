@@ -36,11 +36,11 @@ class FacebookPagesController extends Controller
                 return [
                     'page_id' => $page['id'],
                     'name' => $page['name'],
-                    'image' => $page['image'],
                     'category' => $page['category'] ?? null,
                     'access_token' => $page['access_token'],
                     'tasks' => $page['tasks'] ?? [],
-                    'linked' => $dbPage ? true : false
+                    'linked' => $dbPage ? true : false,
+                    'etc' => $page,
                 ];
             });
 
