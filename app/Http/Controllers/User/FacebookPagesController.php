@@ -63,6 +63,16 @@ class FacebookPagesController extends Controller
     }
 
     /**
+     * عرض جميع صفحات المستخدم
+     */
+    public function myPages(Request $request)
+    {
+        $user = $request->user();
+        $pages = $user->facebookPages;
+
+        return responseFormat($pages, 200);
+    }
+    /**
      * إضافة صفحة جديدة إلى قاعدة البيانات
      */
     public function linkPage(Request $request)
