@@ -26,9 +26,7 @@ class PagePostsController extends Controller
         }
 
         $cacheKey = 'page_posts_' . $page->page_id;
-        $posts = cache()->remember($cacheKey, 60 * 10, function () use ($page) {
-            return $this->fb->getPagePosts($page->page_id, $page->access_token);
-        });
+        return $this->fb->getPagePosts($page->page_id, $page->access_token);
 
         return responseFormat($posts, 200);
     }
