@@ -98,7 +98,7 @@ class FacebookPagesController extends Controller
             'facebook_account_id' => $account->id,
             'page_id' => $pageData['id'],
             'name' => $pageData['name'],
-            'image' => $pageData['picture']['data']['url'] ?? null,
+            'image' => $pageData['picture']['data']['url'] ?? '-',
             'access_token' => $pageData['access_token'], // Page Access Token
             'category' => $pageData['category'] ?? null,
         ]);
