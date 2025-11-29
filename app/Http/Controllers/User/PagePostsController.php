@@ -122,11 +122,11 @@ class PagePostsController extends Controller
             'reply_to_private_message_enabled' => 'required|boolean',
             'mention_enabled' => 'required|boolean',
             'share_enabled' => 'required|boolean',
-            'comment_reply_template' => 'string',
-            'private_message_template' => 'string',
-            'mention_reply_template' => 'string',
-            'keywords' => 'array',
-            'exclude_keywords' => 'array',
+            'comment_reply_template' => 'nullable|string',
+            'private_message_template' => 'nullable|string',
+            'mention_reply_template' => 'nullable|string',
+            'keywords' => 'nullable|array',
+            'exclude_keywords' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
