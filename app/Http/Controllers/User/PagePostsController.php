@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\FacebookPage;
 use App\Services\FacebookLibsServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -133,6 +134,15 @@ class PagePostsController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
 
+        // التحقق من وجود الصفحة
+        $pageExists = FacebookPage::where('page_id', $request->page_id)
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        if (!$pageExists) {
+            return responseFormat('الصفحة غير موجودة أو غير مملوكة لك.', 422);
+        }
+
         // upsert باستخدام updateOrCreate
         $post = $request->user()->posts()->updateOrCreate(
             ['post_id' => $request->post_id], // شرط البحث
@@ -147,8 +157,8 @@ class PagePostsController extends Controller
                 'comment_reply_template' => $request->comment_reply_template ?? '',
                 'private_message_template' => $request->private_message_template ?? '',
                 'mention_reply_template' => $request->mention_reply_template ?? '',
-                'keywords' => $request->keywords ?? [],
-                'exclude_keywords' => $request->exclude_keywords ?? [],
+                'keywords' => json_encode($request->keywords ?? []),
+                'exclude_keywords' => json_encode($request->exclude_keywords ?? []),
             ]
         );
 
