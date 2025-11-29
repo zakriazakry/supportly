@@ -96,6 +96,7 @@ class FacebookPagesController extends Controller
 
         $page = FacebookPage::create([
             'facebook_account_id' => $account->id,
+            'user_id' => $request->user()->id,
             'page_id' => $pageData['id'],
             'name' => $pageData['name'],
             'image' => $pageData['picture']['data']['url'] ?? '-',

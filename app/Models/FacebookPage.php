@@ -15,6 +15,7 @@ class FacebookPage extends Model
      */
     protected $fillable = [
         'facebook_account_id',
+        'user_id',
         'page_id',
         'name',
         'image',
@@ -37,6 +38,14 @@ class FacebookPage extends Model
     public function facebookAccount(): BelongsTo
     {
         return $this->belongsTo(FacebookAccount::class);
+    }
+
+    /**
+     * Get the user that owns the page.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**
