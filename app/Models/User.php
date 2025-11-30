@@ -103,4 +103,92 @@ class User extends Authenticatable
     {
         return $this->hasMany(SupportTicket::class);
     }
+
+    /**
+     * Get the subscriptions for the user.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the active subscription for the user.
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(Subscription::class)
+            ->where('status', 'active')
+            ->where('end_date', '>=', now())
+            ->latest('end_date');
+    }
+
+    /**
+     * Check if user has an active subscription.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    /**
+     * Get the current active subscription.
+     */
+    public function getCurrentSubscription()
+    {
+        return $this->activeSubscription()->first();
+    }
+
+    /**
+     * Check if user has a specific feature.
+     */
+    public function hasFeature(string $feature): bool
+    {
+        $subscription = $this->getCurrentSubscription();
+
+        if (!$subscription || !$subscription->package) {
+            return false;
+        }
+
+        $featureColumn = 'feature_' . $feature;
+        return $subscription->package->$featureColumn ?? false;
+    }
+
+    /**
+     * Get limit for a specific resource.
+     */
+    public function getLimit(string $resource): ?int
+    {
+        $subscription = $this->getCurrentSubscription();
+
+        if (!$subscription || !$subscription->package) {
+            return 0;
+        }
+
+        $limitColumn = 'limit_' . $resource;
+        return $subscription->package->$limitColumn;
+    }
+
+    /**
+     * Check if user can add more of a resource.
+     */
+    public function canAdd(string $resource): bool
+    {
+        $limit = $this->getLimit($resource);
+
+        // null means unlimited
+        if ($limit === null) {
+            return true;
+        }
+
+        // Get current count based on resource type
+        $count = match ($resource) {
+            'facebook_accounts' => $this->facebookAccounts()->count(),
+            'facebook_pages' => $this->facebookPages()->count(),
+            'templates' => $this->autoReplyTemplates()->count(),
+            default => 0,
+        };
+
+        return $count < $limit;
+    }
 }

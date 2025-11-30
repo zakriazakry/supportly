@@ -44,8 +44,6 @@ class FacebookWebhookController extends Controller
     {
         $data = $request->all();
 
-        Log::info('Facebook Webhook received', ['data' => $data]);
-
         if (!isset($data['entry'])) {
             return response("OK", 200);
         }
@@ -73,64 +71,46 @@ class FacebookWebhookController extends Controller
         $commentId = $value['comment_id'];
         $postId = $value['post_id'];
         $commentText = $value['message'] ?? '';
-        $verb = $value['verb'] ?? 'add'; // add, edited, remove
+        $verb = $value['verb'] ?? 'add';
 
         if ($verb === 'remove') return;
 
-        Log::info("Processing comment", [
-            'comment_id' => $commentId,
-            'post_id' => $postId,
-            'text' => $commentText,
-        ]);
 
         $post = Post::where('post_id', $postId)->first();
         if (!$post || !$post->enabled) {
-            Log::info("Post not found or disabled", ['post_id' => $postId]);
             return;
         }
 
         $page = FacebookPage::where('page_id', $post->page_id)->first();
         if (!$page) {
-            Log::error("Facebook page not found", ['page_id' => $post->page_id]);
             return;
         }
 
-        // الحصول على معلومات المعلق من webhook data
         $fromId = $value['from']['id'] ?? '';
         $fromName = $value['from']['name'] ?? '';
 
         if (!$fromId) {
-            Log::warning("Cannot get PSID from webhook data", ['comment_id' => $commentId]);
             return;
         }
 
-        // تجاهل تعليقات الصفحة نفسها
         if ($fromId === $post->page_id) return;
-
-        // التحقق من عدم تكرار الرد على نفس التعليق
         $alreadyReplied = PostReplyState::where('post_id', $post->id)
             ->where('user_id', $fromId)
             ->where('reply', $commentId)
             ->exists();
 
         if ($alreadyReplied) {
-            Log::info("Already replied to this comment", ['comment_id' => $commentId]);
             return;
         }
 
-        // فحص الكلمات المستبعدة
         if ($this->hasExcludedKeywords($commentText, $post->exclude_keywords)) {
-            Log::info("Comment contains excluded keywords", ['comment_id' => $commentId]);
             return;
         }
 
-        // فحص الكلمات المفتاحية المطلوبة
         if (!$this->hasRequiredKeywords($commentText, $post->keywords)) {
-            Log::info("Comment doesn't contain required keywords", ['comment_id' => $commentId]);
             return;
         }
 
-        // تنفيذ الإجراءات المطلوبة
         $this->executeAutoReply($post, $page, $commentId, $fromId, $fromName);
     }
 
@@ -142,48 +122,31 @@ class FacebookWebhookController extends Controller
         $pageAccessToken = $page->access_token;
 
         try {
-            // 1. الإعجاب بالتعليق
             if ($post->like_comment_enabled) {
                 $this->facebookService->likeComment($commentId, $pageAccessToken);
-                Log::info("Liked comment", ['comment_id' => $commentId]);
             }
 
-            // 2. الرد على التعليق
             if ($post->reply_to_comment_enabled && $post->comment_reply_template) {
                 $replyText = $this->processTemplate($post->comment_reply_template, $fromName);
 
-                // إضافة المنشن
                 if ($post->mention_enabled) {
                     $replyText = "@[$fromId] " . $replyText;
                 }
 
                 $this->facebookService->replyToComment($commentId, $pageAccessToken, $replyText);
-                Log::info("Replied to comment", [
-                    'comment_id' => $commentId,
-                    'reply' => $replyText,
-                    'mention_enabled' => $post->mention_enabled
-                ]);
             }
 
-            // 3. إرسال رسالة خاصة
             if ($post->reply_to_private_message_enabled) {
                 $privateMessage = $this->processTemplate($post->private_message_template, $fromName);
                 $this->facebookService->sendPrivateMessage($commentId, $pageAccessToken, $privateMessage, $page->page_id);
-                Log::info("Sent private message", [
-                    'comment_id' => $commentId,
-                    'message' => $privateMessage
-                ]);
             }
 
-            // حفظ حالة الرد لمنع التكرار
             PostReplyState::create([
                 'post_id' => $post->id,
                 'user_id' => $fromId,
                 'reply' => $commentId,
                 'if_has' => true
             ]);
-
-            Log::info("Auto-reply completed successfully", ['comment_id' => $commentId]);
         } catch (\Exception $e) {
             Log::error("Error in auto-reply", [
                 'comment_id' => $commentId,

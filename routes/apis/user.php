@@ -40,5 +40,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'index');
+
+        // Subscription routes
+        Route::get('subscription/current', 'getCurrentSubscription');
+        Route::get('subscription/history', 'getSubscriptionHistory');
+        Route::post('subscription/subscribe', 'subscribe');
+        Route::post('subscription/cancel', 'cancelSubscription');
+        Route::get('subscription/check-limits', 'checkLimits');
+
+        // Packages routes
+        Route::get('packages', 'getPackages');
     });
 });
