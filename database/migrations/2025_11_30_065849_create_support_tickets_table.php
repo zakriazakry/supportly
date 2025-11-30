@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('issueType');
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->enum('status', ['open', 'closed', 'pending'])->default('pending');
             $table->string('subject');
             $table->text('description');
             $table->timestamps();
