@@ -191,4 +191,69 @@ class User extends Authenticatable
 
         return $count < $limit;
     }
+
+    /**
+     * Get the monthly usage stats for the user.
+     */
+    public function monthlyUsageStats(): HasMany
+    {
+        return $this->hasMany(MonthlyUsageStat::class);
+    }
+
+    /**
+     * Get current month usage stats.
+     */
+    public function getCurrentMonthUsage()
+    {
+        return MonthlyUsageStat::getCurrentMonthStats($this->id);
+    }
+
+    /**
+     * Check if user can send auto reply (monthly limit).
+     */
+    public function canSendAutoReply(): bool
+    {
+        // إذا كانت الردود غير محدودة
+        if ($this->hasFeature('unlimited_replies')) {
+            return true;
+        }
+
+        $limit = $this->getLimit('auto_replies_per_month');
+
+        // إذا لم يكن هناك حد
+        if ($limit === null) {
+            return true;
+        }
+
+        $currentUsage = $this->getCurrentMonthUsage();
+        return $currentUsage->auto_replies_count < $limit;
+    }
+
+    /**
+     * Get remaining auto replies for current month.
+     */
+    public function getRemainingAutoReplies(): ?int
+    {
+        if ($this->hasFeature('unlimited_replies')) {
+            return null; // Unlimited
+        }
+
+        $limit = $this->getLimit('auto_replies_per_month');
+
+        if ($limit === null) {
+            return null; // Unlimited
+        }
+
+        $currentUsage = $this->getCurrentMonthUsage();
+        return max(0, $limit - $currentUsage->auto_replies_count);
+    }
+
+    /**
+     * Increment auto reply count.
+     */
+    public function incrementAutoReplyCount(): void
+    {
+        $stats = $this->getCurrentMonthUsage();
+        $stats->incrementAutoReplies();
+    }
 }

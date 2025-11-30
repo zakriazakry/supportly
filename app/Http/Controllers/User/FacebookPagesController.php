@@ -86,7 +86,21 @@ class FacebookPagesController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
 
-        $account = $request->user()->facebookAccounts()->find($request->account_id);
+        $user = $request->user();
+
+        // التحقق من وجود اشتراك نشط
+        if (!$user->hasActiveSubscription()) {
+            return responseFormat('يجب أن يكون لديك اشتراك نشط لربط صفحات فيسبوك', 403);
+        }
+
+        // التحقق من القيود
+        if (!$user->canAdd('facebook_pages')) {
+            $limit = $user->getLimit('facebook_pages');
+            $current = $user->facebookPages()->count();
+            return responseFormat('لقد وصلت للحد الأقصى من صفحات فيسبوك المسموحة في باقتك', 403);
+        }
+
+        $account = $user->facebookAccounts()->find($request->account_id);
         if (!$account) {
             return responseFormat('الحساب غير موجود أو لا يخصك.', 422);
         }
@@ -106,7 +120,7 @@ class FacebookPagesController extends Controller
 
         $page = FacebookPage::create([
             'facebook_account_id' => $account->id,
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'page_id' => $pageData['id'],
             'name' => $pageData['name'],
             'image' => $pageData['picture']['data']['url'] ?? '-',

@@ -29,7 +29,19 @@ class FacebookAccountsController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
+
         $user = $request->user();
+
+        // التحقق من وجود اشتراك نشط
+        if (!$user->hasActiveSubscription()) {
+            return responseFormat('يجب أن يكون لديك اشتراك نشط لإضافة حسابات فيسبوك', 403);
+        }
+
+        // التحقق من القيود
+        if (!$user->canAdd('facebook_accounts')) {
+            return responseFormat('لقد وصلت للحد الأقصى من حسابات فيسبوك المسموحة في باقتك', 403);
+        }
+
         $access_token = $this->fb->exchangeLongLivedUserToken($request->access_token)['access_token'];
         $profile = $this->fb->getProfile($access_token);
         $account = $user->facebookAccounts()->updateOrCreate(
