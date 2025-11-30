@@ -17,10 +17,14 @@ class ProfileController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        unset($user->activeSubscription);
+        $user->loadCount(['facebookAccounts', 'facebookPages']);
+
+        $subscriptionResponse = $this->getCurrentSubscription($request);
+        $subscriptionData = $subscriptionResponse->original;
+
         return responseFormat([
             'user' => $user,
-            'package' => $this->getCurrentSubscription($request)->original,
+            'package' => $subscriptionData,
         ]);
     }
 
