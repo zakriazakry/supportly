@@ -17,8 +17,9 @@ class ProfileController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $subscription = $user->getCurrentSubscription();
 
-        return responseFormat($user->load('activeSubscription.package'));
+        return responseFormat($subscription ? $subscription->package : null);
     }
 
     /**
