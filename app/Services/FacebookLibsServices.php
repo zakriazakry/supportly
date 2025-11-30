@@ -162,13 +162,20 @@ class FacebookLibsServices
     // -----------------------------
     public function sendPrivateMessage($commentId, $pageAccessToken, $message)
     {
+        $commentData = $this->call("$commentId", "GET", [
+            'fields' => 'from',
+            'access_token' => $pageAccessToken
+        ]);
+
+        if (!isset($commentData['from']['id'])) {
+            return ['error' => 'Cannot fetch PSID'];
+        }
+
+        $psid = $commentData['from']['id'];
+
         return $this->call('me/messages', 'POST', [
-            'recipient' => [
-                'comment_id' => $commentId
-            ],
-            'message' => [
-                'text' => $message
-            ],
+            'recipient' => ['id' => $psid],
+            'message' => ['text' => $message],
             'messaging_type' => 'RESPONSE',
             'access_token' => $pageAccessToken
         ]);
