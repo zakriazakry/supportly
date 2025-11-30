@@ -11,7 +11,7 @@ class SupportingPagesController extends Controller
 {
     public function index(Request $request)
     {
-        return responseFormat($request->user()->tickets, 200);
+        return responseFormat($request->user()->tickets->latest(5)->get(), 200);
     }
 
     public function sendTicket(Request $request)
