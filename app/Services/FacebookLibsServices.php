@@ -143,12 +143,29 @@ class FacebookLibsServices
     // -----------------------------
     // 8) الرد على تعليق
     // -----------------------------
-    public function replyToComment($commentId, $pageAccessToken, $reply)
+    public function replyToComment($commentId, $pageAccessToken, $reply, $mentionUserId = null)
     {
-        return $this->call("$commentId/comments", 'POST', [
+        $params = [
             'message' => $reply,
             'access_token' => $pageAccessToken
-        ]);
+        ];
+
+        // إذا كان هناك mention، نضيف message_tags
+        if ($mentionUserId) {
+            // Facebook يحتاج إلى message_tags بصيغة JSON
+            // Format: [{"id":"USER_ID","name":"User Name","type":"user","offset":0,"length":X}]
+            $messageTags = [
+                [
+                    'id' => $mentionUserId,
+                    'offset' => 0,
+                    'length' => strlen("@[$mentionUserId]")
+                ]
+            ];
+
+            $params['message_tags'] = json_encode($messageTags);
+        }
+
+        return $this->call("$commentId/comments", 'POST', $params);
     }
 
     // -----------------------------
