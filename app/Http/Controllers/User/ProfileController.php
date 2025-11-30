@@ -18,7 +18,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        return responseFormat($user);
+        return responseFormat($user->load('subscription.package'));
     }
 
     /**
@@ -30,7 +30,7 @@ class ProfileController extends Controller
         $subscription = $user->getCurrentSubscription();
 
         if (!$subscription) {
-            return responseFormat(null, 'لا يوجد اشتراك نشط', 404);
+            return responseFormat('لا يوجد اشتراك نشط', 404);
         }
 
         $subscription->load('package');
@@ -120,19 +120,19 @@ class ProfileController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return responseFormat(null, $validator->errors()->first(), 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $user = $request->user();
         $package = Package::findOrFail($request->package_id);
 
         if (!$package->is_active) {
-            return responseFormat(null, 'هذه الباقة غير متاحة حالياً', 400);
+            return responseFormat('هذه الباقة غير متاحة حالياً', 400);
         }
 
         // Check if user already has an active subscription
         if ($user->hasActiveSubscription()) {
-            return responseFormat(null, 'لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً', 400);
+            return responseFormat('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً', 400);
         }
 
         // Calculate dates
@@ -171,19 +171,19 @@ class ProfileController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return responseFormat(null, $validator->errors()->first(), 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $user = $request->user();
         $subscription = $user->getCurrentSubscription();
 
         if (!$subscription) {
-            return responseFormat(null, 'لا يوجد اشتراك نشط للإلغاء', 404);
+            return responseFormat('لا يوجد اشتراك نشط للإلغاء', 404);
         }
 
         $subscription->cancel($request->reason);
 
-        return responseFormat(null, 'تم إلغاء الاشتراك بنجاح');
+        return responseFormat('تم إلغاء الاشتراك بنجاح');
     }
 
     /**
@@ -220,7 +220,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         if (!$user->hasActiveSubscription()) {
-            return responseFormat(null, 'لا يوجد اشتراك نشط', 404);
+            return responseFormat('لا يوجد اشتراك نشط', 404);
         }
 
         $data = [
