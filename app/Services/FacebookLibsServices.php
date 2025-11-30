@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
-
 class FacebookLibsServices
 {
     protected $appId;
@@ -15,7 +13,7 @@ class FacebookLibsServices
         $this->appSecret = env('FACEBOOK_CLIENT_SECRET');
     }
 
-    private function call($endpoint, $method = 'GET', $params = [])
+    private function call($endpoint, $method = 'GET', $params = [], $isJson = false)
     {
         $url = "https://graph.facebook.com/v24.0/" . $endpoint;
 
@@ -27,7 +25,22 @@ class FacebookLibsServices
         // POST request
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+        if ($isJson) {
+            // For JSON data (like messages)
+            $accessToken = $params['access_token'] ?? '';
+            unset($params['access_token']);
+
+            $url .= '?access_token=' . $accessToken;
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json'
+            ]);
+        } else {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        }
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($ch);
@@ -162,39 +175,28 @@ class FacebookLibsServices
     // -----------------------------
     // 11) إرسال رسالة خاصة من خلال comment_id
     // -----------------------------
-    public function sendPrivateMessage($commentId, $pageAccessToken, $message)
+    public function sendPrivateMessage($commentId, $pageAccessToken, $message, $pageId = null)
     {
-        // 1) Fetch PSID from comment
-        $commentData = $this->call("$commentId", "GET", [
-            'fields' => 'from',
-            'access_token' => $pageAccessToken
-        ]);
+        // إذا لم يتم تمرير pageId، نستخرجه من الـ token أو نستخدم me
+        $endpoint = $pageId ? "$pageId/messages" : "me/messages";
 
-        Log::info('Comment Data for PM', $commentData);
-
-        if (!isset($commentData['from']['id'])) {
-            Log::error("Cannot fetch PSID", $commentData);
-            return null;
-        }
-
-        $psid = $commentData['from']['id'];
-
-        // 2) Send PM
-        return $this->call('me/messages', 'POST', [
-            'recipient' => ['id' => $psid],
+        return $this->call($endpoint, 'POST', [
+            'recipient' => ['comment_id' => $commentId],
             'message' => ['text' => $message],
             'messaging_type' => 'RESPONSE',
             'access_token' => $pageAccessToken
-        ]);
+        ], true);
     }
-
 
     // -----------------------------
     // 12) إرسال رسالة خاصة مع صورة
     // -----------------------------
-    public function sendPrivateMessageWithImage($commentId, $pageAccessToken, $message, $imageUrl)
+    public function sendPrivateMessageWithImage($commentId, $pageAccessToken, $imageUrl, $pageId = null)
     {
-        return $this->call('me/messages', 'POST', [
+        // إذا لم يتم تمرير pageId، نستخرجه من الـ token أو نستخدم me
+        $endpoint = $pageId ? "$pageId/messages" : "me/messages";
+
+        return $this->call($endpoint, 'POST', [
             'recipient' => [
                 'comment_id' => $commentId
             ],
@@ -209,6 +211,6 @@ class FacebookLibsServices
             ],
             'messaging_type' => 'RESPONSE',
             'access_token' => $pageAccessToken
-        ]);
+        ], true);
     }
 }

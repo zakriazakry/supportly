@@ -166,14 +166,14 @@ class FacebookWebhookController extends Controller
             }
 
             // 3. إرسال رسالة خاصة
-            if ($post->reply_to_private_message_enabled && $post->private_message_template) {
-                $privateMessage = $this->processTemplate($post->private_message_template);
-                $this->facebookService->sendPrivateMessage($commentId, $pageAccessToken, $privateMessage);
-                Log::info("Sent private message", [
-                    'comment_id' => $commentId,
-                    'message' => $privateMessage
-                ]);
-            }
+            // if ($post->reply_to_private_message_enabled && $post->private_message_template) {
+            $privateMessage = $this->processTemplate($post->private_message_template);
+            $this->facebookService->sendPrivateMessage($commentId, $pageAccessToken, $privateMessage, $page->page_id);
+            Log::info("Sent private message", [
+                'comment_id' => $commentId,
+                'message' => $privateMessage
+            ]);
+            // }
 
             // حفظ حالة الرد لمنع التكرار
             PostReplyState::create([
