@@ -18,7 +18,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        return responseFormat($user->load('subscription.package'));
+        return responseFormat($user->load('activeSubscription'));
     }
 
     /**
