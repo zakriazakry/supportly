@@ -95,23 +95,12 @@ class FacebookWebhookController extends Controller
             return;
         }
 
-        // جلب التعليق من API للحصول على PSID الصحيح
-        $commentData = $this->facebookService->getPostComments($postId, $page->access_token);
-        $fromId = '';
-        $fromName = '';
-
-        if (!empty($commentData['data'])) {
-            foreach ($commentData['data'] as $c) {
-                if ($c['id'] === $commentId) {
-                    $fromId = $c['from']['id'];
-                    $fromName = $c['from']['name'];
-                    break;
-                }
-            }
-        }
+        // الحصول على معلومات المعلق من webhook data
+        $fromId = $value['from']['id'] ?? '';
+        $fromName = $value['from']['name'] ?? '';
 
         if (!$fromId) {
-            Log::warning("Cannot get PSID for comment", ['comment_id' => $commentId]);
+            Log::warning("Cannot get PSID from webhook data", ['comment_id' => $commentId]);
             return;
         }
 
