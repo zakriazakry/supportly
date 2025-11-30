@@ -38,12 +38,4 @@ class PostReplyState extends Model
     {
         return $this->belongsTo(Post::class);
     }
-
-    /**
-     * Get the user that owns the reply state.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 }

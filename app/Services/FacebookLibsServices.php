@@ -156,4 +156,44 @@ class FacebookLibsServices
             'method' => 'delete'
         ]);
     }
+
+    // -----------------------------
+    // 11) إرسال رسالة خاصة من خلال comment_id
+    // -----------------------------
+    public function sendPrivateMessage($commentId, $pageAccessToken, $message)
+    {
+        return $this->call('me/messages', 'POST', [
+            'recipient' => [
+                'comment_id' => $commentId
+            ],
+            'message' => [
+                'text' => $message
+            ],
+            'messaging_type' => 'RESPONSE',
+            'access_token' => $pageAccessToken
+        ]);
+    }
+
+    // -----------------------------
+    // 12) إرسال رسالة خاصة مع صورة
+    // -----------------------------
+    public function sendPrivateMessageWithImage($commentId, $pageAccessToken, $message, $imageUrl)
+    {
+        return $this->call('me/messages', 'POST', [
+            'recipient' => [
+                'comment_id' => $commentId
+            ],
+            'message' => [
+                'attachment' => [
+                    'type' => 'image',
+                    'payload' => [
+                        'url' => $imageUrl,
+                        'is_reusable' => true
+                    ]
+                ]
+            ],
+            'messaging_type' => 'RESPONSE',
+            'access_token' => $pageAccessToken
+        ]);
+    }
 }

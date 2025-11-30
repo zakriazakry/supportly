@@ -1,99 +1,21 @@
 <?php
 
+use App\Http\Controllers\Webhook\FacebookWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
-$repliedCommentsFile = storage_path('replied_comments.json');
-$repliedComments = file_exists($repliedCommentsFile)
-    ? json_decode(file_get_contents($repliedCommentsFile), true)
-    : [];
+
 
 $pageId = '702602156278377';
 $pageAccessToken = "EAAL6cDIxiFcBQIHYFAqCI77jnqf8eS1XxO60ZAwflZBYBOx6BJBZA2iyEJvV4iJMJ9gBl9EjpsMZBHf6MRfiZBcxkH0ytnz8slrionT3TkiJwSgEzGildjB9rooLSK6SBcmZCpQ1sHHLHZC8RzAHxQSFZAHDXgU52MBpWM2XAe7kjj7TrgVHGjAezOM4KL0csIq8BBqtqMblebZCPyZC8xvx9yZBW5QDsII3teZCNVm4teUZD";
 
 // Webhook Verification
-Route::get('facebook/webhook', function (Request $request) {
-    if ($request->hub_verify_token === "test") {
-        return response($request->hub_challenge, 200);
-    }
-    return response("Invalid token", 403);
-});
+Route::get('facebook/webhook', [FacebookWebhookController::class, 'verify']);
 
 // Webhook Receiver
-Route::post('facebook/webhook', function (Request $request) use (&$repliedComments, $repliedCommentsFile, $pageId, $pageAccessToken) {
-
-    if (!isset($request['entry'])) return response("OK", 200);
-
-    foreach ($request['entry'] as $entry) {
-        if (!isset($entry['changes'])) continue;
-
-        foreach ($entry['changes'] as $change) {
-            if ($change['field'] !== 'feed') continue;
-
-            $commentRaw = $change['value'] ?? null;
-            if (!$commentRaw) continue;
-
-            $commentText = $commentRaw['message'] ?? '';
-            $commentId   = $commentRaw['comment_id'] ?? null;
-            $fromId      = $commentRaw['from']['id'] ?? '';
-            $postId      = $commentRaw['post_id'] ?? null;
-
-            if (!$commentId) continue;
-
-            // Ignore page's own comments
-            if ($fromId === $pageId) continue;
-
-            // Ignore already replied comments
-            if (in_array($commentId, $repliedComments)) continue;
-
-            // Filter keyword
-            if (!str_contains($commentText, 'السعر')) continue;
-
-            Log::info("Processing comment: " . $commentId);
-
-            // Like the comment
-            Http::post("https://graph.facebook.com/v24.0/{$commentId}/likes?access_token={$pageAccessToken}");
-
-            $replyText = "تم الرد في الخاص ✅";
-            $replyComment = Http::post("https://graph.facebook.com/v24.0/{$commentId}/comments", [
-                'message' => $replyText,
-                'access_token' => $pageAccessToken
-            ]);
-            Log::info("Replied on comment {$commentId} with message: '{$replyText}'");
-
-
-            // Build Post URL
-            $postUrl = $postId
-                ? "https://www.facebook.com/{$pageId}/posts/{$postId}"
-                : "https://www.facebook.com/{$pageId}";
-
-            // السعر أو العرض
-            $price = "🎯 العرض الخاص: 99 دينار فقط!";
-
-            // صورة احترافية عالية الجودة
-            $imageUrl = "https://store-images.s-microsoft.com/image/apps.3117.14492969036550054.5a1d40f5-fe0d-427a-bd14-9a9ed15a423c.f601beb2-973f-47de-ad1a-ccec296ee4d1"; // رابط الصورة
-
-            // ارسال القالب الاحترافي
-            $sendTemplate = Http::post("https://graph.facebook.com/v17.0/me/messages?access_token={$pageAccessToken}", [
-                'recipient' => [
-                    'comment_id' => $commentId
-                ],
-                'message' =>  [
-                    'text' => $price
-                ],
-                'messaging_type' => 'RESPONSE'
-            ]);
-
-            // حفظ comment_id لمنع التكرار
-            $repliedComments[] = $commentId;
-            file_put_contents($repliedCommentsFile, json_encode($repliedComments));
-        }
-    }
-
-    return response("OK", 200);
-});
+Route::post('facebook/webhook', [FacebookWebhookController::class, 'receive']);
 
 
 // 492c0ee5a47b60eb24cdfec83b11e29e90b0165f2370cebeb10e119f76d9460c

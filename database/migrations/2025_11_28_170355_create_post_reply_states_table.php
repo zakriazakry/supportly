@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('post_reply_states', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->text('reply')->nullable();
-            $table->boolean('if_has')->default(false);
+            $table->string('user_id'); // Facebook User ID
+            $table->string('reply'); // Comment ID
+            $table->boolean('if_has')->default(true);
             $table->timestamps();
+
+            // فهرس فريد لمنع تكرار الرد على نفس التعليق
+            $table->unique(['post_id', 'reply']);
         });
     }
 
