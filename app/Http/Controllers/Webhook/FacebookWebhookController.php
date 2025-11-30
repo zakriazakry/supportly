@@ -162,18 +162,16 @@ class FacebookWebhookController extends Controller
                 $replyText = $this->processTemplate($post->comment_reply_template, $fromName);
 
                 // إضافة الإشارة (mention) في بداية الرد إذا كان مفعل
-                $mentionUserId = null;
+                // حسب توثيق Facebook: يكفي إضافة @[PSID] في الرسالة
                 if ($post->mention_enabled) {
                     $replyText = "@[$fromId] " . $replyText;
-                    $mentionUserId = $fromId;
                 }
 
-                $this->facebookService->replyToComment($commentId, $pageAccessToken, $replyText, $mentionUserId);
+                $this->facebookService->replyToComment($commentId, $pageAccessToken, $replyText);
                 Log::info("Replied to comment", [
                     'comment_id' => $commentId,
                     'reply' => $replyText,
-                    'mention_enabled' => $post->mention_enabled,
-                    'mention_user_id' => $mentionUserId
+                    'mention_enabled' => $post->mention_enabled
                 ]);
             }
 
