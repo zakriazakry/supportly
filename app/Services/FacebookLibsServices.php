@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class FacebookLibsServices
 {
     protected $appId;
@@ -162,17 +164,22 @@ class FacebookLibsServices
     // -----------------------------
     public function sendPrivateMessage($commentId, $pageAccessToken, $message)
     {
+        // 1) Fetch PSID from comment
         $commentData = $this->call("$commentId", "GET", [
             'fields' => 'from',
             'access_token' => $pageAccessToken
         ]);
 
+        Log::info('Comment Data for PM', $commentData);
+
         if (!isset($commentData['from']['id'])) {
-            return ['error' => 'Cannot fetch PSID'];
+            Log::error("Cannot fetch PSID", $commentData);
+            return null;
         }
 
         $psid = $commentData['from']['id'];
 
+        // 2) Send PM
         return $this->call('me/messages', 'POST', [
             'recipient' => ['id' => $psid],
             'message' => ['text' => $message],
@@ -180,6 +187,7 @@ class FacebookLibsServices
             'access_token' => $pageAccessToken
         ]);
     }
+
 
     // -----------------------------
     // 12) إرسال رسالة خاصة مع صورة
