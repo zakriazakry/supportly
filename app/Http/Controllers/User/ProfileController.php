@@ -16,11 +16,11 @@ class ProfileController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user()->with('activeSubscription.package');
+        $user = $request->user();
         unset($user->activeSubscription);
         return responseFormat([
             'user' => $user,
-            'package' => $this->getCurrentSubscription($request),
+            'package' => $this->getCurrentSubscription($request)->original,
         ]);
     }
 
