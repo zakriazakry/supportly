@@ -14,3 +14,4 @@ Route::post('test', function (Request $request) {
     return responseFormat($fb->exchangeLongLivedUserToken($request->token)['access_token'], 200);
 });
 require_once base_path('routes/apis/user.php');
+require_once base_path('routes/apis/webhook.php');
