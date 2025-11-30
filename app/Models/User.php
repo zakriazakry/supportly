@@ -98,4 +98,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(PostReplyState::class);
     }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
 }
