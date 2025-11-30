@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::controller(SupportingPagesController::class)->prefix('support')->group(function () {
-        Route::get('send-ticket', 'sendTicket');
+        Route::post('send-ticket', 'sendTicket');
     });
 
     Route::controller(PagePostsController::class)->prefix('page-posts')->group(function () {
