@@ -27,8 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('unlink-page/{account_id}/{page_id}', 'unlinkPage');
     });
 
-    Route::controller(SupportingPagesController::class)->prefix('supporting-pages')->group(function () {
-        Route::get('/', 'index');
+    Route::controller(SupportingPagesController::class)->prefix('support')->group(function () {
+        Route::get('send-ticket', 'sendTicket');
     });
 
     Route::controller(PagePostsController::class)->prefix('page-posts')->group(function () {
