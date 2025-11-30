@@ -51,14 +51,10 @@ class FacebookWebhookController extends Controller
         }
 
         foreach ($data['entry'] as $entry) {
-            if (!isset($entry['changes'])) {
-                continue;
-            }
+            if (!isset($entry['changes'])) continue;
 
             foreach ($entry['changes'] as $change) {
-                if ($change['field'] !== 'feed') {
-                    continue;
-                }
+                if ($change['field'] !== 'feed') continue;
 
                 $this->handleFeedChange($change['value'] ?? []);
             }
@@ -72,49 +68,55 @@ class FacebookWebhookController extends Controller
      */
     protected function handleFeedChange($value)
     {
-        if (!isset($value['comment_id']) || !isset($value['post_id'])) {
-            return;
-        }
+        if (!isset($value['comment_id']) || !isset($value['post_id'])) return;
 
         $commentId = $value['comment_id'];
         $postId = $value['post_id'];
         $commentText = $value['message'] ?? '';
-        $fromId = $value['from']['id'] ?? '';
-        $fromName = $value['from']['name'] ?? '';
         $verb = $value['verb'] ?? 'add'; // add, edited, remove
 
-        // تجاهل التعليقات المحذوفة
-        if ($verb === 'remove') {
-            return;
-        }
+        if ($verb === 'remove') return;
 
         Log::info("Processing comment", [
             'comment_id' => $commentId,
             'post_id' => $postId,
             'text' => $commentText,
-            'from_name' => $fromName
         ]);
 
-        // البحث عن إعدادات المنشور في قاعدة البيانات
         $post = Post::where('post_id', $postId)->first();
-
         if (!$post || !$post->enabled) {
             Log::info("Post not found or disabled", ['post_id' => $postId]);
             return;
         }
 
-        // الحصول على معلومات الصفحة
         $page = FacebookPage::where('page_id', $post->page_id)->first();
-
         if (!$page) {
             Log::error("Facebook page not found", ['page_id' => $post->page_id]);
             return;
         }
 
-        // تجاهل تعليقات الصفحة نفسها
-        if ($fromId === $post->page_id) {
+        // جلب التعليق من API للحصول على PSID الصحيح
+        $commentData = $this->facebookService->getPostComments($postId, $page->access_token);
+        $fromId = '';
+        $fromName = '';
+
+        if (!empty($commentData['data'])) {
+            foreach ($commentData['data'] as $c) {
+                if ($c['id'] === $commentId) {
+                    $fromId = $c['from']['id'];
+                    $fromName = $c['from']['name'];
+                    break;
+                }
+            }
+        }
+
+        if (!$fromId) {
+            Log::warning("Cannot get PSID for comment", ['comment_id' => $commentId]);
             return;
         }
+
+        // تجاهل تعليقات الصفحة نفسها
+        if ($fromId === $post->page_id) return;
 
         // التحقق من عدم تكرار الرد على نفس التعليق
         $alreadyReplied = PostReplyState::where('post_id', $post->id)
@@ -161,8 +163,7 @@ class FacebookWebhookController extends Controller
             if ($post->reply_to_comment_enabled && $post->comment_reply_template) {
                 $replyText = $this->processTemplate($post->comment_reply_template, $fromName);
 
-                // إضافة الإشارة (mention) في بداية الرد إذا كان مفعل
-                // حسب توثيق Facebook: يكفي إضافة @[PSID] في الرسالة
+                // إضافة المنشن
                 if ($post->mention_enabled) {
                     $replyText = "@[$fromId] " . $replyText;
                 }
@@ -203,93 +204,36 @@ class FacebookWebhookController extends Controller
         }
     }
 
-    /**
-     * فحص وجود كلمات مستبعدة
-     * 
-     * المنطق:
-     * - إذا كانت الكلمات المستبعدة فارغة: لا يتم استبعاد أي تعليق
-     * - إذا كانت هناك كلمات مستبعدة: يتم تجاهل التعليقات التي تحتوي على أي منها
-     * 
-     * أمثلة:
-     * - exclude_keywords = [] أو null → لا يستبعد أي تعليق
-     * - exclude_keywords = ['شكراً', 'تم'] → يتجاهل التعليقات التي فيها "شكراً" أو "تم"
-     */
     protected function hasExcludedKeywords($text, $excludeKeywords)
     {
-        if (empty($excludeKeywords) || !is_array($excludeKeywords)) {
-            return false;
-        }
+        if (empty($excludeKeywords) || !is_array($excludeKeywords)) return false;
 
         $text = mb_strtolower($text);
-        $foundExcluded = [];
-
         foreach ($excludeKeywords as $keyword) {
-            if (empty($keyword)) {
-                continue;
-            }
-
-            if (mb_stripos($text, mb_strtolower($keyword)) !== false) {
-                $foundExcluded[] = $keyword;
+            if (!empty($keyword) && mb_stripos($text, mb_strtolower($keyword)) !== false) {
+                Log::info("Comment contains excluded keyword", ['keyword' => $keyword]);
+                return true;
             }
         }
-
-        if (!empty($foundExcluded)) {
-            Log::info("Comment contains excluded keywords", ['excluded' => $foundExcluded]);
-            return true;
-        }
-
         return false;
     }
 
-    /**
-     * فحص وجود الكلمات المفتاحية المطلوبة
-     * 
-     * المنطق:
-     * - إذا كانت الكلمات المفتاحية فارغة أو null: يرد على جميع التعليقات
-     * - إذا كانت هناك كلمات مفتاحية: يرد فقط على التعليقات التي تحتوي على أي كلمة منها
-     * 
-     * أمثلة:
-     * - keywords = [] أو null → يرد على كل التعليقات
-     * - keywords = ['السعر', 'الباقات'] → يرد فقط على التعليقات التي فيها "السعر" أو "الباقات"
-     */
     protected function hasRequiredKeywords($text, $keywords)
     {
-        // إذا لم تكن هناك كلمات مفتاحية، نقبل جميع التعليقات
-        if (empty($keywords) || !is_array($keywords)) {
-            Log::info("No keywords defined - accepting all comments");
-            return true;
-        }
+        if (empty($keywords) || !is_array($keywords)) return true;
 
         $text = mb_strtolower($text);
-        $foundKeywords = [];
-
         foreach ($keywords as $keyword) {
-            if (empty($keyword)) {
-                continue;
-            }
-
-            if (mb_stripos($text, mb_strtolower($keyword)) !== false) {
-                $foundKeywords[] = $keyword;
+            if (!empty($keyword) && mb_stripos($text, mb_strtolower($keyword)) !== false) {
+                return true;
             }
         }
 
-        if (!empty($foundKeywords)) {
-            Log::info("Comment matches keywords", ['found' => $foundKeywords]);
-            return true;
-        }
-
-        Log::info("Comment doesn't match any keyword", ['keywords' => $keywords]);
         return false;
     }
 
-    /**
-     * معالجة القالب واستبدال المتغيرات
-     */
     protected function processTemplate($template, $userName = '')
     {
-        // يمكن إضافة متغيرات ديناميكية هنا
-        // مثل: {name}, {time}, {date}, إلخ
-
         $replacements = [
             '{name}' => $userName,
             '{time}' => now()->format('H:i'),
@@ -297,10 +241,6 @@ class FacebookWebhookController extends Controller
             '{datetime}' => now()->format('Y-m-d H:i:s'),
         ];
 
-        return str_replace(
-            array_keys($replacements),
-            array_values($replacements),
-            $template
-        );
+        return str_replace(array_keys($replacements), array_values($replacements), $template);
     }
 }

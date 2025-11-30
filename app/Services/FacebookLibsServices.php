@@ -145,7 +145,7 @@ class FacebookLibsServices
     // -----------------------------
     public function replyToComment($commentId, $pageAccessToken, $reply)
     {
-        return $this->call("$commentId/comments", 'POST', [
+        return $this->call("$commentId/comments?fields=from,message", 'POST', [
             'message' => $reply,
             'access_token' => $pageAccessToken
         ]);
