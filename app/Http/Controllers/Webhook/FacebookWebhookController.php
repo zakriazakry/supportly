@@ -80,6 +80,7 @@ class FacebookWebhookController extends Controller
         $postId = $value['post_id'];
         $commentText = $value['message'] ?? '';
         $fromId = $value['from']['id'] ?? '';
+        $fromName = $value['from']['name'] ?? '';
         $verb = $value['verb'] ?? 'add'; // add, edited, remove
 
         // تجاهل التعليقات المحذوفة
@@ -90,7 +91,8 @@ class FacebookWebhookController extends Controller
         Log::info("Processing comment", [
             'comment_id' => $commentId,
             'post_id' => $postId,
-            'text' => $commentText
+            'text' => $commentText,
+            'from_name' => $fromName
         ]);
 
         // البحث عن إعدادات المنشور في قاعدة البيانات
@@ -138,13 +140,13 @@ class FacebookWebhookController extends Controller
         }
 
         // تنفيذ الإجراءات المطلوبة
-        $this->executeAutoReply($post, $page, $commentId, $fromId);
+        $this->executeAutoReply($post, $page, $commentId, $fromId, $fromName);
     }
 
     /**
      * تنفيذ الرد التلقائي
      */
-    protected function executeAutoReply($post, $page, $commentId, $fromId)
+    protected function executeAutoReply($post, $page, $commentId, $fromId, $fromName = '')
     {
         $pageAccessToken = $page->access_token;
 
@@ -157,7 +159,7 @@ class FacebookWebhookController extends Controller
 
             // 2. الرد على التعليق
             if ($post->reply_to_comment_enabled && $post->comment_reply_template) {
-                $replyText = $this->processTemplate($post->comment_reply_template);
+                $replyText = $this->processTemplate($post->comment_reply_template, $fromName);
                 $this->facebookService->replyToComment($commentId, $pageAccessToken, $replyText);
                 Log::info("Replied to comment", [
                     'comment_id' => $commentId,
@@ -165,9 +167,23 @@ class FacebookWebhookController extends Controller
                 ]);
             }
 
-            // 3. إرسال رسالة خاصة
+            // 3. الإشارة للمعلق (Mention)
+            if ($post->mention_enabled && $post->mention_reply_template) {
+                $mentionText = $this->processTemplate($post->mention_reply_template, $fromName);
+                // إضافة الإشارة باستخدام @[USER_ID]
+                $mentionTextWithTag = "@[$fromId] " . $mentionText;
+                $this->facebookService->replyToComment($commentId, $pageAccessToken, $mentionTextWithTag);
+                Log::info("Mentioned user in comment", [
+                    'comment_id' => $commentId,
+                    'user_id' => $fromId,
+                    'user_name' => $fromName,
+                    'mention' => $mentionTextWithTag
+                ]);
+            }
+
+            // 4. إرسال رسالة خاصة
             if ($post->reply_to_private_message_enabled) {
-                $privateMessage = $this->processTemplate($post->private_message_template);
+                $privateMessage = $this->processTemplate($post->private_message_template, $fromName);
                 $this->facebookService->sendPrivateMessage($commentId, $pageAccessToken, $privateMessage, $page->page_id);
                 Log::info("Sent private message", [
                     'comment_id' => $commentId,
@@ -275,12 +291,13 @@ class FacebookWebhookController extends Controller
     /**
      * معالجة القالب واستبدال المتغيرات
      */
-    protected function processTemplate($template)
+    protected function processTemplate($template, $userName = '')
     {
         // يمكن إضافة متغيرات ديناميكية هنا
         // مثل: {name}, {time}, {date}, إلخ
 
         $replacements = [
+            '{name}' => $userName,
             '{time}' => now()->format('H:i'),
             '{date}' => now()->format('Y-m-d'),
             '{datetime}' => now()->format('Y-m-d H:i:s'),
