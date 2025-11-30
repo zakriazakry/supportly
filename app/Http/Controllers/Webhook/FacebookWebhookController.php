@@ -160,28 +160,21 @@ class FacebookWebhookController extends Controller
             // 2. الرد على التعليق
             if ($post->reply_to_comment_enabled && $post->comment_reply_template) {
                 $replyText = $this->processTemplate($post->comment_reply_template, $fromName);
+
+                // إضافة الإشارة (mention) في بداية الرد إذا كان مفعل
+                if ($post->mention_enabled) {
+                    $replyText = "@[$fromId] " . $replyText;
+                }
+
                 $this->facebookService->replyToComment($commentId, $pageAccessToken, $replyText);
                 Log::info("Replied to comment", [
                     'comment_id' => $commentId,
-                    'reply' => $replyText
+                    'reply' => $replyText,
+                    'mention_enabled' => $post->mention_enabled
                 ]);
             }
 
-            // 3. الإشارة للمعلق (Mention)
-            if ($post->mention_enabled && $post->mention_reply_template) {
-                $mentionText = $this->processTemplate($post->mention_reply_template, $fromName);
-                // إضافة الإشارة باستخدام @[USER_ID]
-                $mentionTextWithTag = "@[$fromId] " . $mentionText;
-                $this->facebookService->replyToComment($commentId, $pageAccessToken, $mentionTextWithTag);
-                Log::info("Mentioned user in comment", [
-                    'comment_id' => $commentId,
-                    'user_id' => $fromId,
-                    'user_name' => $fromName,
-                    'mention' => $mentionTextWithTag
-                ]);
-            }
-
-            // 4. إرسال رسالة خاصة
+            // 3. إرسال رسالة خاصة
             if ($post->reply_to_private_message_enabled) {
                 $privateMessage = $this->processTemplate($post->private_message_template, $fromName);
                 $this->facebookService->sendPrivateMessage($commentId, $pageAccessToken, $privateMessage, $page->page_id);
