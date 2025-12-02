@@ -8,6 +8,8 @@ use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Pest\Mutate\Mutators\Visibility\FunctionPublicToProtected;
+use Symfony\Component\ErrorHandler\Error\UndefinedFunctionError;
 
 class ProfileController extends Controller
 {
@@ -259,5 +261,12 @@ class ProfileController extends Controller
         ];
 
         return responseFormat($data);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+        $user->delete();
+        return responseFormat('تم حذف الحساب بنجاح');
     }
 }

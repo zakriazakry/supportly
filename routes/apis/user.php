@@ -50,5 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Packages routes
         Route::get('packages', 'getPackages');
+
+        // delete Account
+        Route::delete('delete-account', 'deleteAccount');
     });
 });
