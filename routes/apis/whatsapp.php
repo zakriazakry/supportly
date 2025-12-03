@@ -8,6 +8,7 @@ Route::post('/evolution/webhook', [WebhookController::class, 'handle']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('whatsapp')->group(function () {
+        Route::get('/instances', [WhatsAppController::class, 'getInstances']);
         Route::post('/instances', [WhatsAppController::class, 'createInstance']);
         Route::get('/instances/{instanceName}/qrcode', [WhatsAppController::class, 'getQRCode']);
         Route::get('/instances/{instanceName}/status', [WhatsAppController::class, 'getConnectionStatus']);
