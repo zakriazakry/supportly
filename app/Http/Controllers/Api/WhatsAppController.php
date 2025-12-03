@@ -94,7 +94,7 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+            ->first();
 
         $result = $this->evolutionService->connectInstance($instanceName);
 
