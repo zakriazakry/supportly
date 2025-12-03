@@ -1,0 +1,477 @@
+{
+    "info": {
+        "name": "WhatsApp API - Supportly",
+        "description": "مجموعة كاملة من API endpoints لنظام WhatsApp",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        },
+        {
+            "key": "auth_token",
+            "value": "YOUR_AUTH_TOKEN_HERE",
+            "type": "string"
+        },
+        {
+            "key": "instance_name",
+            "value": "my_whatsapp_bot",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Instance Management",
+            "item": [
+                {
+                    "name": "Create Instance",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"instance_name\": \"{{instance_name}}\",\n    \"integration\": \"WHATSAPP-BAILEYS\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances",
+                            "host": ["{{base_url}}"],
+                            "path": ["whatsapp", "instances"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get QR Code",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/qrcode",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "qrcode"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Connection Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/status",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "status"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout Instance",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/logout",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "logout"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Instance",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Messages",
+            "item": [
+                {
+                    "name": "Send Text Message",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"text\": \"مرحباً! هذه رسالة تجريبية من البوت 🎉\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/text",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "text"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Image",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"media_type\": \"image\",\n    \"media_url\": \"https://example.com/image.jpg\",\n    \"caption\": \"صورة جميلة 📸\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/media",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "media"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Video",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"media_type\": \"video\",\n    \"media_url\": \"https://example.com/video.mp4\",\n    \"caption\": \"فيديو رائع 🎥\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/media",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "media"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"media_type\": \"document\",\n    \"media_url\": \"https://example.com/document.pdf\",\n    \"file_name\": \"العقد.pdf\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/media",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "media"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Buttons",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"title\": \"اختر خياراً\",\n    \"description\": \"هل تريد المتابعة؟\",\n    \"buttons\": [\n        {\n            \"text\": \"نعم ✅\",\n            \"id\": \"yes\"\n        },\n        {\n            \"text\": \"لا ❌\",\n            \"id\": \"no\"\n        },\n        {\n            \"text\": \"ربما 🤔\",\n            \"id\": \"maybe\"\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/buttons",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "buttons"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send List",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"number\": \"218912345678\",\n    \"title\": \"القائمة الرئيسية\",\n    \"description\": \"اختر قسماً من القائمة\",\n    \"button_text\": \"عرض الخيارات\",\n    \"sections\": [\n        {\n            \"title\": \"الخدمات\",\n            \"rows\": [\n                {\n                    \"title\": \"خدمة 1\",\n                    \"description\": \"وصف الخدمة الأولى\",\n                    \"rowId\": \"service_1\"\n                },\n                {\n                    \"title\": \"خدمة 2\",\n                    \"description\": \"وصف الخدمة الثانية\",\n                    \"rowId\": \"service_2\"\n                }\n            ]\n        },\n        {\n            \"title\": \"الدعم\",\n            \"rows\": [\n                {\n                    \"title\": \"تواصل معنا\",\n                    \"description\": \"للتواصل مع فريق الدعم\",\n                    \"rowId\": \"contact_support\"\n                }\n            ]\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/list",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "list"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"messages\": [\n        {\n            \"remoteJid\": \"218912345678@s.whatsapp.net\",\n            \"fromMe\": false,\n            \"id\": \"MESSAGE_ID_HERE\"\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages/mark-read",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages",
+                                "mark-read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Messages",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/messages?remote_jid=218912345678@s.whatsapp.net",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "messages"
+                            ],
+                            "query": [
+                                {
+                                    "key": "remote_jid",
+                                    "value": "218912345678@s.whatsapp.net"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Groups",
+            "item": [
+                {
+                    "name": "Create Group",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"subject\": \"مجموعة العمل\",\n    \"participants\": [\n        \"218912345678\",\n        \"218987654321\"\n    ],\n    \"description\": \"مجموعة للتنسيق بين الفريق\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/groups",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "groups"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Groups",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/groups",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "groups"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Contacts",
+            "item": [
+                {
+                    "name": "Get All Contacts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{auth_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/whatsapp/instances/{{instance_name}}/contacts",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "whatsapp",
+                                "instances",
+                                "{{instance_name}}",
+                                "contacts"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
