@@ -123,7 +123,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
 
         $result = $this->evolutionService->getConnectionStatus($instanceName);
 
@@ -133,6 +137,7 @@ class WhatsAppController extends Controller
 
         return responseFormat($result['data']);
     }
+
 
     /**
      * Send text message
