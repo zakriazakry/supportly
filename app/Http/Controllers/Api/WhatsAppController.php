@@ -37,10 +37,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         // Create instance via Evolution API
@@ -67,11 +64,7 @@ class WhatsAppController extends Controller
         ]);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في إنشاء الـ instance',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
         // Save instance to database
@@ -84,13 +77,10 @@ class WhatsAppController extends Controller
             'integration_type' => $request->integration ?? 'WHATSAPP-BAILEYS',
         ]);
 
-        return response()->json([
-            'success' => true,
+        return responseFormat([
             'message' => 'تم إنشاء الـ instance بنجاح',
-            'data' => [
-                'instance' => $instance,
-                'qr_code' => $result['data']['qrcode']['base64'] ?? null,
-            ]
+            'instance' => $instance,
+            'qr_code' => $result['data']['qrcode']['base64'] ?? null,
         ]);
     }
 
@@ -109,11 +99,7 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->connectInstance($instanceName);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في الحصول على QR Code',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
         // Update QR code in database
@@ -122,11 +108,8 @@ class WhatsAppController extends Controller
             'status' => 'qr_code',
         ]);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'qr_code' => $result['data']['base64'] ?? null,
-            ]
+        return responseFormat([
+            'qr_code' => $result['data']['base64'] ?? null,
         ]);
     }
 
@@ -145,17 +128,10 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->getConnectionStatus($instanceName);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في الحصول على حالة الاتصال',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['data']
-        ]);
+        return responseFormat($result['data']);
     }
 
     /**
@@ -173,10 +149,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
@@ -190,15 +163,10 @@ class WhatsAppController extends Controller
         ]);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في إرسال الرسالة',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
+        return responseFormat([
             'message' => 'تم إرسال الرسالة بنجاح',
             'data' => $result['data']
         ]);
@@ -222,10 +190,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
@@ -242,15 +207,10 @@ class WhatsAppController extends Controller
         ]);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في إرسال الوسائط',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
+        return responseFormat([
             'message' => 'تم إرسال الوسائط بنجاح',
             'data' => $result['data']
         ]);
@@ -273,10 +233,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
@@ -292,15 +249,10 @@ class WhatsAppController extends Controller
         );
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في إنشاء المجموعة',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
+        return responseFormat([
             'message' => 'تم إنشاء المجموعة بنجاح',
             'data' => $result['data']
         ]);
@@ -322,17 +274,10 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->fetchAllGroups($instanceName, true);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في الحصول على المجموعات',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['data']
-        ]);
+        return responseFormat($result['data']);
     }
 
     /**
@@ -351,17 +296,10 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->findContacts($instanceName);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في الحصول على جهات الاتصال',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['data']
-        ]);
+        return responseFormat($result['data']);
     }
 
     /**
@@ -380,10 +318,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
@@ -399,17 +334,10 @@ class WhatsAppController extends Controller
         );
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في الحصول على الرسائل',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['data']
-        ]);
+        return responseFormat($result['data']);
     }
 
     /**
@@ -428,10 +356,7 @@ class WhatsAppController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
@@ -459,8 +384,7 @@ class WhatsAppController extends Controller
             $results['picture'] = $result;
         }
 
-        return response()->json([
-            'success' => true,
+        return responseFormat([
             'message' => 'تم تحديث الملف الشخصي بنجاح',
             'data' => $results
         ]);
@@ -481,20 +405,13 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->deleteInstance($instanceName);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في حذف الـ instance',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
         // Delete from database
         $instance->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم حذف الـ instance بنجاح'
-        ]);
+        return responseFormat('تم حذف الـ instance بنجاح');
     }
 
     /**
@@ -512,11 +429,7 @@ class WhatsAppController extends Controller
         $result = $this->evolutionService->logoutInstance($instanceName);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في تسجيل الخروج',
-                'error' => $result['error']
-            ], 500);
+            return responseFormat($result['error'], 500);
         }
 
         // Update status in database
@@ -525,9 +438,6 @@ class WhatsAppController extends Controller
             'qr_code' => null,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تسجيل الخروج بنجاح'
-        ]);
+        return responseFormat('تم تسجيل الخروج بنجاح');
     }
 }

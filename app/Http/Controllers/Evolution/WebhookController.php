@@ -35,10 +35,7 @@ class WebhookController extends Controller
             $event = $data['event'] ?? null;
 
             if (!$event) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No event type provided'
-                ], 400);
+                return responseFormat('No event type provided', 400);
             }
 
             // Route to appropriate handler based on event type
@@ -50,17 +47,14 @@ class WebhookController extends Controller
                 Log::warning('No handler for event type', ['event' => $event]);
             }
 
-            return response()->json(['status' => 'ok']);
+            return responseFormat('ok');
         } catch (\Exception $e) {
             Log::error('Webhook handling error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
