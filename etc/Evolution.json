@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "d8395a17-da99-40bb-9f5c-333b8d1d0049",
 		"name": "Evolution API | v2.3.*",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "23962402",
 		"_collection_link": "https://www.postman.com/agenciadgcode/evolution-api/collection/nm0wqgt/evolution-api-v2-3?action=share&source=collection_link&creator=23962402"
 	},
@@ -34,23 +34,11 @@
 					"request": {
 						"auth": {
 							"type": "apikey",
-							"apikey": [
-								{
-									"key": "in",
-									"value": "header",
-									"type": "string"
-								},
-								{
-									"key": "key",
-									"value": "apikey",
-									"type": "string"
-								},
-								{
-									"key": "value",
-									"value": "{{globalApikey}}",
-									"type": "string"
-								}
-							]
+							"apikey": {
+								"in": "header",
+								"key": "apikey",
+								"value": "{{globalApikey}}"
+							}
 						},
 						"method": "POST",
 						"header": [],
@@ -63,16 +51,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/instance/create",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"create"
-							]
-						}
+						"url": "{{baseUrl}}/instance/create"
 					},
 					"response": []
 				},
@@ -81,23 +60,11 @@
 					"request": {
 						"auth": {
 							"type": "apikey",
-							"apikey": [
-								{
-									"key": "value",
-									"value": "{{apikey}}",
-									"type": "string"
-								},
-								{
-									"key": "in",
-									"value": "header",
-									"type": "string"
-								},
-								{
-									"key": "key",
-									"value": "apikey",
-									"type": "string"
-								}
-							]
+							"apikey": {
+								"value": "{{apikey}}",
+								"in": "header",
+								"key": "apikey"
+							}
 						},
 						"method": "GET",
 						"header": [],
@@ -187,17 +154,7 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/instance/restart/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"restart",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/instance/restart/{{instance}}"
 					},
 					"response": []
 				},
@@ -230,17 +187,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/instance/setPresence/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"setPresence",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/instance/setPresence/{{instance}}"
 					},
 					"response": []
 				},
@@ -249,17 +196,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/instance/connectionState/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"connectionState",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/instance/connectionState/{{instance}}"
 					},
 					"response": []
 				},
@@ -268,17 +205,7 @@
 					"request": {
 						"method": "DELETE",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/instance/logout/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"logout",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/instance/logout/{{instance}}"
 					},
 					"response": []
 				},
@@ -287,37 +214,15 @@
 					"request": {
 						"auth": {
 							"type": "apikey",
-							"apikey": [
-								{
-									"key": "value",
-									"value": "{{globalApikey}}",
-									"type": "string"
-								},
-								{
-									"key": "key",
-									"value": "apikey",
-									"type": "string"
-								},
-								{
-									"key": "in",
-									"value": "header",
-									"type": "string"
-								}
-							]
+							"apikey": {
+								"value": "{{globalApikey}}",
+								"key": "apikey",
+								"in": "header"
+							}
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/instance/delete/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"instance",
-								"delete",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/instance/delete/{{instance}}"
 					},
 					"response": []
 				}
@@ -360,17 +265,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/proxy/set/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"proxy",
-								"set",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/proxy/set/{{instance}}"
 					},
 					"response": []
 				},
@@ -379,17 +274,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/proxy/find/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"proxy",
-								"find",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/proxy/find/{{instance}}"
 					},
 					"response": []
 				}
@@ -412,17 +297,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/settings/set/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"settings",
-								"set",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/settings/set/{{instance}}"
 					},
 					"response": []
 				},
@@ -431,17 +306,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/settings/find/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"settings",
-								"find",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/settings/find/{{instance}}"
 					},
 					"response": []
 				}
@@ -464,17 +329,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendText/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendText",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendText/{{instance}}"
 					},
 					"response": []
 				},
@@ -492,17 +347,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendMedia/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendMedia",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendMedia/{{instance}}"
 					},
 					"response": []
 				},
@@ -515,17 +360,7 @@
 							"mode": "formdata",
 							"formdata": []
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendMedia/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendMedia",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendMedia/{{instance}}"
 					},
 					"response": []
 				},
@@ -543,17 +378,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendPtv/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendPtv",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendPtv/{{instance}}"
 					},
 					"response": []
 				},
@@ -577,17 +402,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendPtv/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendPtv",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendPtv/{{instance}}"
 					},
 					"response": []
 				},
@@ -605,17 +420,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendWhatsAppAudio/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendWhatsAppAudio",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendWhatsAppAudio/{{instance}}"
 					},
 					"response": []
 				},
@@ -633,17 +438,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendStatus/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendStatus",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendStatus/{{instance}}"
 					},
 					"response": []
 				},
@@ -661,17 +456,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendSticker/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendSticker",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendSticker/{{instance}}"
 					},
 					"response": []
 				},
@@ -689,17 +474,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendLocation/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendLocation",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendLocation/{{instance}}"
 					},
 					"response": []
 				},
@@ -717,17 +492,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendContact/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendContact",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendContact/{{instance}}"
 					},
 					"response": []
 				},
@@ -745,17 +510,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendReaction/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendReaction",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendReaction/{{instance}}"
 					},
 					"response": []
 				},
@@ -773,17 +528,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendPoll/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendPoll",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendPoll/{{instance}}"
 					},
 					"response": []
 				},
@@ -801,17 +546,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendList/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendList",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendList/{{instance}}"
 					},
 					"response": []
 				},
@@ -829,17 +564,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/sendButtons/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"sendButtons",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/sendButtons/{{instance}}"
 					},
 					"response": []
 				}
@@ -862,17 +587,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/call/offer/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"call",
-								"offer",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/call/offer/{{instance}}"
 					},
 					"response": []
 				}
@@ -895,17 +610,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/whatsappNumbers/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"whatsappNumbers",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/whatsappNumbers/{{instance}}"
 					},
 					"response": []
 				},
@@ -923,17 +628,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/markMessageAsRead/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"markMessageAsRead",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/markMessageAsRead/{{instance}}"
 					},
 					"response": []
 				},
@@ -951,17 +646,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/archiveChat/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"archiveChat",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/archiveChat/{{instance}}"
 					},
 					"response": []
 				},
@@ -979,17 +664,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/markChatUnread/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"markChatUnread",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/markChatUnread/{{instance}}"
 					},
 					"response": []
 				},
@@ -1007,17 +682,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/deleteMessageForEveryone/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"deleteMessageForEveryone",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/deleteMessageForEveryone/{{instance}}"
 					},
 					"response": []
 				},
@@ -1035,17 +700,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/fetchProfilePictureUrl/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"fetchProfilePictureUrl",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/fetchProfilePictureUrl/{{instance}}"
 					},
 					"response": []
 				},
@@ -1063,17 +718,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/getBase64FromMediaMessage/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"getBase64FromMediaMessage",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/getBase64FromMediaMessage/{{instance}}"
 					},
 					"response": []
 				},
@@ -1091,17 +736,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/updateMessage/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"updateMessage",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/updateMessage/{{instance}}"
 					},
 					"response": []
 				},
@@ -1119,17 +754,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/sendPresence/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"sendPresence",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/sendPresence/{{instance}}"
 					},
 					"response": []
 				},
@@ -1147,17 +772,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/message/updateBlockStatus/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"message",
-								"updateBlockStatus",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/message/updateBlockStatus/{{instance}}"
 					},
 					"response": []
 				},
@@ -1175,17 +790,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/findContacts/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"findContacts",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/findContacts/{{instance}}"
 					},
 					"response": []
 				},
@@ -1203,17 +808,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/findMessages/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"findMessages",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/findMessages/{{instance}}"
 					},
 					"response": []
 				},
@@ -1231,17 +826,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/findStatusMessage/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"findStatusMessage",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/findStatusMessage/{{instance}}"
 					},
 					"response": []
 				},
@@ -1250,17 +835,7 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/chat/findChats/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"findChats",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/findChats/{{instance}}"
 					},
 					"response": []
 				}
@@ -1274,17 +849,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/label/findLabels/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"label",
-								"findLabels",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/label/findLabels/{{instance}}"
 					},
 					"response": []
 				},
@@ -1302,17 +867,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/label/handleLabel/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"label",
-								"handleLabel",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/label/handleLabel/{{instance}}"
 					},
 					"response": []
 				}
@@ -1335,17 +890,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/fetchBusinessProfile/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"fetchBusinessProfile",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/fetchBusinessProfile/{{instance}}"
 					},
 					"response": []
 				},
@@ -1363,17 +908,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/fetchProfile/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"fetchProfile",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/fetchProfile/{{instance}}"
 					},
 					"response": []
 				},
@@ -1391,17 +926,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/updateProfileName/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"updateProfileName",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/updateProfileName/{{instance}}"
 					},
 					"response": []
 				},
@@ -1419,17 +944,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/updateProfileStatus/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"updateProfileStatus",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/updateProfileStatus/{{instance}}"
 					},
 					"response": []
 				},
@@ -1447,17 +962,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/updateProfilePicture/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"updateProfilePicture",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/updateProfilePicture/{{instance}}"
 					},
 					"response": []
 				},
@@ -1466,17 +971,7 @@
 					"request": {
 						"method": "DELETE",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/chat/removeProfilePicture/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"removeProfilePicture",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/removeProfilePicture/{{instance}}"
 					},
 					"response": []
 				},
@@ -1485,17 +980,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/chat/fetchPrivacySettings/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"fetchPrivacySettings",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/fetchPrivacySettings/{{instance}}"
 					},
 					"response": []
 				},
@@ -1513,17 +998,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/chat/updatePrivacySettings/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"chat",
-								"updatePrivacySettings",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/chat/updatePrivacySettings/{{instance}}"
 					},
 					"response": []
 				}
@@ -1546,17 +1021,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/group/create/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"group",
-								"create",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/group/create/{{instance}}"
 					},
 					"response": []
 				},
@@ -1726,17 +1191,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/group/sendInvite/{{instance}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"group",
-								"sendInvite",
-								"{{instance}}"
-							]
-						}
+						"url": "{{baseUrl}}/group/sendInvite/{{instance}}"
 					},
 					"response": []
 				},
@@ -1992,17 +1447,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/websocket/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"websocket",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/websocket/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2011,17 +1456,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/websocket/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"websocket",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/websocket/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2044,17 +1479,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/rabbitmq/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"rabbitmq",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/rabbitmq/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2063,17 +1488,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/rabbitmq/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"rabbitmq",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/rabbitmq/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2096,17 +1511,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/sqs/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"sqs",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/sqs/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2115,17 +1520,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/sqs/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"sqs",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/sqs/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2148,17 +1543,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/nats/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"nats",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/nats/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2167,17 +1552,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/nats/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"nats",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/nats/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2200,17 +1575,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/pusher/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"pusher",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/pusher/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2219,17 +1584,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/pusher/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"pusher",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/pusher/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2252,17 +1607,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/webhook/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"webhook",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/webhook/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2271,17 +1616,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/webhook/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"webhook",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/webhook/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2309,17 +1644,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/chatwoot/set/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"chatwoot",
-												"set",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/chatwoot/set/{{instance}}"
 									},
 									"response": []
 								},
@@ -2328,17 +1653,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/chatwoot/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"chatwoot",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/chatwoot/find/{{instance}}"
 									},
 									"response": []
 								}
@@ -2364,17 +1679,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/typebot/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"typebot",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/typebot/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -2423,17 +1728,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/typebot/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"typebot",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/typebot/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -2442,17 +1737,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/typebot/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"typebot",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/typebot/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -2472,17 +1757,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/typebot/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"typebot",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/typebot/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -2491,17 +1766,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/typebot/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"typebot",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/typebot/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -2606,17 +1871,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/typebot/start/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"typebot",
-												"start",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/typebot/start/{{instance}}"
 									},
 									"response": []
 								}
@@ -2642,17 +1897,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/evolutionBot/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evolutionBot",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evolutionBot/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -2701,17 +1946,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/evolutionBot/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evolutionBot",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evolutionBot/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -2720,17 +1955,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/evolutionBot/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evolutionBot",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evolutionBot/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -2750,17 +1975,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/evolutionBot/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"evolutionBot",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/evolutionBot/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -2769,17 +1984,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/evolutionBot/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"evolutionBot",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/evolutionBot/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -2892,17 +2097,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/openai/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"openai",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/openai/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -2951,17 +2146,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/openai/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"openai",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/openai/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -2970,17 +2155,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/openai/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"openai",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/openai/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -3003,17 +2178,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/openai/creds/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"openai",
-														"creds",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/openai/creds/{{instance}}"
 											},
 											"response": []
 										},
@@ -3022,17 +2187,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/openai/creds/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"openai",
-														"creds",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/openai/creds/{{instance}}"
 											},
 											"response": []
 										},
@@ -3078,17 +2233,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/openai/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"openai",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/openai/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -3097,17 +2242,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/openai/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"openai",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/openai/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -3220,17 +2355,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/dify/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"dify",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/dify/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -3279,17 +2404,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/dify/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"dify",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/dify/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -3298,17 +2413,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/dify/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"dify",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/dify/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -3328,17 +2433,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/dify/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"dify",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/dify/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -3347,17 +2442,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/dify/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"dify",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/dify/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -3470,17 +2555,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/flowise/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"flowise",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/flowise/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -3529,17 +2604,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/flowise/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"flowise",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/flowise/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -3548,17 +2613,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/flowise/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"flowise",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/flowise/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -3578,17 +2633,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/flowise/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"flowise",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/flowise/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -3597,17 +2642,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/flowise/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"flowise",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/flowise/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -3720,17 +2755,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/n8n/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"n8n",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/n8n/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -3779,17 +2804,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/n8n/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"n8n",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/n8n/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -3798,17 +2813,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/n8n/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"n8n",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/n8n/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -3828,17 +2833,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/n8n/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"n8n",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/n8n/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -3847,17 +2842,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/n8n/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"n8n",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/n8n/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -3970,17 +2955,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/evoai/changeStatus/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evoai",
-														"changeStatus",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evoai/changeStatus/{{instance}}"
 											},
 											"response": []
 										},
@@ -4029,17 +3004,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/evoai/settings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evoai",
-														"settings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evoai/settings/{{instance}}"
 											},
 											"response": []
 										},
@@ -4048,17 +3013,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/evoai/fetchSettings/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"evoai",
-														"fetchSettings",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/evoai/fetchSettings/{{instance}}"
 											},
 											"response": []
 										}
@@ -4078,17 +3033,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/evoai/create/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"evoai",
-												"create",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/evoai/create/{{instance}}"
 									},
 									"response": []
 								},
@@ -4097,17 +3042,7 @@
 									"request": {
 										"method": "GET",
 										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/evoai/find/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"evoai",
-												"find",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/evoai/find/{{instance}}"
 									},
 									"response": []
 								},
@@ -4225,17 +3160,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/message/sendTemplate/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"message",
-														"sendTemplate",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/message/sendTemplate/{{instance}}"
 											},
 											"response": []
 										}
@@ -4258,17 +3183,7 @@
 														}
 													}
 												},
-												"url": {
-													"raw": "{{baseUrl}}/template/create/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"template",
-														"create",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/template/create/{{instance}}"
 											},
 											"response": []
 										},
@@ -4277,17 +3192,7 @@
 											"request": {
 												"method": "GET",
 												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/template/find/{{instance}}",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"template",
-														"find",
-														"{{instance}}"
-													]
-												}
+												"url": "{{baseUrl}}/template/find/{{instance}}"
 											},
 											"response": []
 										}
@@ -4312,16 +3217,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/webhook/evolution",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"webhook",
-												"evolution"
-											]
-										}
+										"url": "{{baseUrl}}/webhook/evolution"
 									},
 									"response": []
 								}
@@ -4349,17 +3245,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/s3/getMedia/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"s3",
-												"getMedia",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/s3/getMedia/{{instance}}"
 									},
 									"response": []
 								},
@@ -4377,17 +3263,7 @@
 												}
 											}
 										},
-										"url": {
-											"raw": "{{baseUrl}}/s3/getMediaUrl/{{instance}}",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"s3",
-												"getMediaUrl",
-												"{{instance}}"
-											]
-										}
+										"url": "{{baseUrl}}/s3/getMediaUrl/{{instance}}"
 									},
 									"response": []
 								}
@@ -4402,12 +3278,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}",
-					"host": [
-						"{{baseUrl}}"
-					]
-				}
+				"url": "{{baseUrl}}"
 			},
 			"response": []
 		},
@@ -4416,48 +3287,24 @@
 			"request": {
 				"auth": {
 					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "METRICS_USER",
-							"type": "string"
-						}
-					]
+					"basic": {
+						"password": "",
+						"username": "METRICS_USER"
+					}
 				},
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/metrics",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"metrics"
-					]
-				}
+				"url": "{{baseUrl}}/metrics"
 			},
 			"response": []
 		}
 	],
 	"auth": {
 		"type": "apikey",
-		"apikey": [
-			{
-				"key": "value",
-				"value": "{{globalApikey}}",
-				"type": "string"
-			},
-			{
-				"key": "key",
-				"value": "apikey",
-				"type": "string"
-			}
-		]
+		"apikey": {
+			"value": "{{globalApikey}}",
+			"key": "apikey"
+		}
 	},
 	"event": [
 		{
