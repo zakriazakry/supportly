@@ -74,7 +74,7 @@ class WhatsAppController extends Controller
             'instance_name' => $request->instance_name,
             'token' => $result['data']['hash'] ?? null,
             'qr_code' => $result['data']['qrcode']['base64'] ?? null,
-            'status' => 'qr_code',
+            'status' => 'pending',
             'integration_type' => $request->integration ?? 'WHATSAPP-BAILEYS',
         ]);
 
