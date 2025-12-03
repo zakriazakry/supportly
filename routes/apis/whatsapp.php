@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\WhatsAppController;
+use App\Http\Controllers\Evolution\WebhookController;
+use App\Http\Controllers\User\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/evolution/webhook', [WhatsAppController::class, 'webhook']);
+Route::post('/evolution/webhook', [WebhookController::class, 'handle']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('whatsapp')->group(function () {

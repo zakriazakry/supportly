@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\User;
 
 use App\Events\WhatsApp\InstanceConnected;
 use App\Events\WhatsApp\InstanceDisconnected;
@@ -11,12 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Example Controller for Evolution API Integration
- * 
- * This controller demonstrates how to use EvolutionService
- * for managing WhatsApp instances and sending messages
- */
 class WhatsAppController extends Controller
 {
     protected $evolutionService;
@@ -35,7 +29,8 @@ class WhatsAppController extends Controller
     public function createInstance(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'instance_name' => 'required|string|unique:whats_app_instances,instance_name',
+            'name' => 'required|string|unique:whats_app_instances,instance_name',
+            'phone_number' => 'required|string',
             'integration' => 'nullable|in:WHATSAPP-BAILEYS,WHATSAPP-BUSINESS',
         ]);
 
@@ -45,7 +40,7 @@ class WhatsAppController extends Controller
 
         // Create instance via Evolution API
         $result = $this->evolutionService->createInstance(
-            $request->instance_name,
+            $request->name,
             [
                 'qrcode' => true,
                 'integration' => $request->integration ?? 'WHATSAPP-BAILEYS',
@@ -73,7 +68,8 @@ class WhatsAppController extends Controller
         // Save instance to database
         $instance = WhatsAppInstance::create([
             'user_id' => $request->user()->id,
-            'instance_name' => $request->instance_name,
+            'instance_name' => $request->name,
+            'phone_number' => $request->phoneNumber,
             'token' => $result['data']['hash'] ?? null,
             'qr_code' => $result['data']['qrcode']['base64'] ?? null,
             'status' => 'pending',
