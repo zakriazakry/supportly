@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Evolution;
+namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Services\EvolutionService;
