@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\WhatsApp\InstanceConnected;
+use App\Events\WhatsApp\InstanceDisconnected;
 use App\Http\Controllers\Controller;
 use App\Services\EvolutionService;
 use App\Models\WhatsAppInstance;
@@ -576,14 +578,21 @@ class WhatsAppController extends Controller
                     $state = $data['data']['state'] ?? null;
 
                     if ($state === 'open') {
-                        $instance->update([
-                            'status' => 'connected',
-                            'phone_number' => $data['data']['instance']['profilePictureUrl'] ?? null,
-                        ]);
+                        $connectionData = [
+                            'phone_number' => $data['data']['instance']['wuid'] ?? null,
+                            'profile_name' => $data['data']['instance']['profileName'] ?? null,
+                            'profile_picture_url' => $data['data']['instance']['profilePictureUrl'] ?? null,
+                        ];
+
+                        $instance->updateConnectionStatus('connected', $connectionData);
+
+                        // إطلاق Event
+                        event(new InstanceConnected($instance, $connectionData));
                     } elseif ($state === 'close') {
-                        $instance->update([
-                            'status' => 'disconnected',
-                        ]);
+                        $instance->updateConnectionStatus('disconnected');
+
+                        // إطلاق Event
+                        event(new InstanceDisconnected($instance));
                     }
                     break;
 
@@ -594,6 +603,9 @@ class WhatsAppController extends Controller
                     foreach ($messages as $message) {
                         // Check if message is from user (not from bot)
                         if (!($message['key']['fromMe'] ?? false)) {
+                            // إطلاق Event
+                            event(new \App\Events\WhatsApp\MessageReceived($instance, $message));
+
                             // Process incoming message
                             $this->processIncomingMessage($instance, $message);
                         }
