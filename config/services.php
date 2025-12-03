@@ -13,7 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'evolution' => [
+        'api_key' => env('EVOLUTION_API_KEY'),
+        'base_url' => env('EVOLUTION_BASE_URL'),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
