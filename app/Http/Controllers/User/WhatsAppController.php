@@ -26,6 +26,17 @@ class WhatsAppController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+    /**
+     * Get all instances
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInstances(Request $request)
+    {
+        $instances = WhatsAppInstance::where('user_id', $request->user()->id)->get();
+        return responseFormat($instances);
+    }
+
     public function createInstance(Request $request)
     {
         $validator = Validator::make($request->all(), [
