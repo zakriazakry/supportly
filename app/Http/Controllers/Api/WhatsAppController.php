@@ -567,7 +567,7 @@ class WhatsAppController extends Controller
                     // Update QR code in database
                     $instance->update([
                         'qr_code' => $data['data']['qrcode']['base64'] ?? null,
-                        'status' => 'qr_code',
+                        'status' => 'pending',
                     ]);
                     break;
 
