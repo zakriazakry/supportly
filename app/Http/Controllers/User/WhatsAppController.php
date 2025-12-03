@@ -87,11 +87,7 @@ class WhatsAppController extends Controller
             'integration_type' => $request->integration ?? 'WHATSAPP-BAILEYS',
         ]);
 
-        return responseFormat([
-            'message' => 'تم إنشاء الـ instance بنجاح',
-            'instance' => $instance,
-            'qr_code' => $result['data']['qrcode']['base64'] ?? null,
-        ]);
+        return responseFormat($instance);
     }
 
     /**
