@@ -66,13 +66,19 @@ class EvolutionService
         }
     }
 
-    // ==================== INSTANCE MANAGEMENT ====================
+    // ==================== Instance Management ====================
 
     /**
      * Create a new WhatsApp instance
      */
-    public function createInstance($data)
+    public function createInstance($instanceName, $options = [])
     {
+        $data = array_merge([
+            'instanceName' => $instanceName,
+            'qrcode' => true,
+            'integration' => 'WHATSAPP-BAILEYS',
+        ], $options);
+
         return $this->makeRequest('post', '/instance/create', $data);
     }
 
@@ -85,7 +91,7 @@ class EvolutionService
         if ($instanceName) $query['instanceName'] = $instanceName;
         if ($instanceId) $query['instanceId'] = $instanceId;
 
-        $endpoint = '/instance/fetchInstances' . (count($query) > 0 ? '?' . http_build_query($query) : '');
+        $endpoint = '/instance/fetchInstances' . (count($query) ? '?' . http_build_query($query) : '');
         return $this->makeRequest('get', $endpoint);
     }
 
@@ -94,11 +100,8 @@ class EvolutionService
      */
     public function connectInstance($instanceName, $number = null)
     {
-        $endpoint = "/instance/connect/{$instanceName}";
-        if ($number) {
-            $endpoint .= "?number={$number}";
-        }
-        return $this->makeRequest('get', $endpoint);
+        $query = $number ? '?number=' . $number : '';
+        return $this->makeRequest('get', "/instance/connect/{$instanceName}{$query}");
     }
 
     /**
@@ -107,16 +110,6 @@ class EvolutionService
     public function restartInstance($instanceName)
     {
         return $this->makeRequest('post', "/instance/restart/{$instanceName}");
-    }
-
-    /**
-     * Set instance presence
-     */
-    public function setPresence($instanceName, $presence = 'available')
-    {
-        return $this->makeRequest('post', "/instance/setPresence/{$instanceName}", [
-            'presence' => $presence // available, unavailable
-        ]);
     }
 
     /**
@@ -143,32 +136,35 @@ class EvolutionService
         return $this->makeRequest('delete', "/instance/delete/{$instanceName}");
     }
 
-    // ==================== PROXY MANAGEMENT ====================
-
     /**
-     * Set proxy for instance
+     * Set instance presence (available/unavailable)
      */
-    public function setProxy($instanceName, $proxyData)
+    public function setPresence($instanceName, $presence = 'available')
     {
-        return $this->makeRequest('post', "/proxy/set/{$instanceName}", $proxyData);
+        return $this->makeRequest('post', "/instance/setPresence/{$instanceName}", [
+            'presence' => $presence
+        ]);
     }
 
-    /**
-     * Find proxy settings
-     */
-    public function findProxy($instanceName)
-    {
-        return $this->makeRequest('get', "/proxy/find/{$instanceName}");
-    }
-
-    // ==================== SETTINGS MANAGEMENT ====================
+    // ==================== Settings Management ====================
 
     /**
      * Set instance settings
      */
-    public function setSettings($instanceName, $settings)
+    public function setSettings($instanceName, $settings = [])
     {
-        return $this->makeRequest('post', "/settings/set/{$instanceName}", $settings);
+        $defaultSettings = [
+            'rejectCall' => false,
+            'msgCall' => '',
+            'groupsIgnore' => false,
+            'alwaysOnline' => false,
+            'readMessages' => false,
+            'syncFullHistory' => false,
+            'readStatus' => false,
+        ];
+
+        $data = array_merge($defaultSettings, $settings);
+        return $this->makeRequest('post', "/settings/set/{$instanceName}", $data);
     }
 
     /**
@@ -179,120 +175,168 @@ class EvolutionService
         return $this->makeRequest('get', "/settings/find/{$instanceName}");
     }
 
-    // ==================== SEND MESSAGES ====================
+    // ==================== Send Messages ====================
 
     /**
      * Send text message
      */
-    public function sendText($instanceName, $data)
+    public function sendText($instanceName, $number, $text, $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'text' => $text,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendText/{$instanceName}", $data);
     }
 
     /**
      * Send media (image, video, document)
      */
-    public function sendMedia($instanceName, $data)
+    public function sendMedia($instanceName, $number, $mediaUrl, $mediaType = 'image', $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'mediatype' => $mediaType,
+            'media' => $mediaUrl,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendMedia/{$instanceName}", $data);
     }
 
     /**
-     * Send PTV (Picture-in-Picture Video)
+     * Send audio message
      */
-    public function sendPtv($instanceName, $data)
+    public function sendAudio($instanceName, $number, $audioUrl, $options = [])
     {
-        return $this->makeRequest('post', "/message/sendPtv/{$instanceName}", $data);
-    }
+        $data = array_merge([
+            'number' => $number,
+            'audio' => $audioUrl,
+        ], $options);
 
-    /**
-     * Send WhatsApp Audio (narrated audio)
-     */
-    public function sendWhatsAppAudio($instanceName, $data)
-    {
         return $this->makeRequest('post', "/message/sendWhatsAppAudio/{$instanceName}", $data);
-    }
-
-    /**
-     * Send status/stories
-     */
-    public function sendStatus($instanceName, $data)
-    {
-        return $this->makeRequest('post', "/message/sendStatus/{$instanceName}", $data);
     }
 
     /**
      * Send sticker
      */
-    public function sendSticker($instanceName, $data)
+    public function sendSticker($instanceName, $number, $stickerUrl, $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'sticker' => $stickerUrl,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendSticker/{$instanceName}", $data);
     }
 
     /**
      * Send location
      */
-    public function sendLocation($instanceName, $data)
+    public function sendLocation($instanceName, $number, $latitude, $longitude, $name = '', $address = '', $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'name' => $name,
+            'address' => $address,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendLocation/{$instanceName}", $data);
     }
 
     /**
      * Send contact
      */
-    public function sendContact($instanceName, $data)
+    public function sendContact($instanceName, $number, $contacts = [], $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'contact' => $contacts,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendContact/{$instanceName}", $data);
     }
 
     /**
-     * Send reaction
+     * Send reaction to message
      */
-    public function sendReaction($instanceName, $data)
+    public function sendReaction($instanceName, $key, $reaction)
     {
+        $data = [
+            'key' => $key,
+            'reaction' => $reaction,
+        ];
+
         return $this->makeRequest('post', "/message/sendReaction/{$instanceName}", $data);
     }
 
     /**
      * Send poll
      */
-    public function sendPoll($instanceName, $data)
+    public function sendPoll($instanceName, $number, $name, $values, $selectableCount = 1, $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'name' => $name,
+            'selectableCount' => $selectableCount,
+            'values' => $values,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendPoll/{$instanceName}", $data);
     }
 
     /**
      * Send list message
      */
-    public function sendList($instanceName, $data)
+    public function sendList($instanceName, $number, $title, $description, $buttonText, $sections, $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'title' => $title,
+            'description' => $description,
+            'buttonText' => $buttonText,
+            'sections' => $sections,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendList/{$instanceName}", $data);
     }
 
     /**
-     * Send buttons
+     * Send buttons message
      */
-    public function sendButtons($instanceName, $data)
+    public function sendButtons($instanceName, $number, $title, $description, $buttons, $options = [])
     {
+        $data = array_merge([
+            'number' => $number,
+            'title' => $title,
+            'description' => $description,
+            'buttons' => $buttons,
+        ], $options);
+
         return $this->makeRequest('post', "/message/sendButtons/{$instanceName}", $data);
     }
 
-    // ==================== CALL ====================
-
     /**
-     * Make fake call
+     * Send status/stories
      */
-    public function fakeCall($instanceName, $data)
+    public function sendStatus($instanceName, $type, $content, $options = [])
     {
-        return $this->makeRequest('post', "/call/offer/{$instanceName}", $data);
+        $data = array_merge([
+            'type' => $type,
+            'content' => $content,
+        ], $options);
+
+        return $this->makeRequest('post', "/message/sendStatus/{$instanceName}", $data);
     }
 
-    // ==================== CHAT MANAGEMENT ====================
+    // ==================== Chat Management ====================
 
     /**
      * Check if numbers are WhatsApp numbers
      */
-    public function checkWhatsAppNumbers($instanceName, $numbers)
+    public function checkWhatsAppNumbers($instanceName, $numbers = [])
     {
         return $this->makeRequest('post', "/chat/whatsappNumbers/{$instanceName}", [
             'numbers' => $numbers
@@ -302,34 +346,51 @@ class EvolutionService
     /**
      * Mark messages as read
      */
-    public function markMessagesAsRead($instanceName, $readMessages)
+    public function markAsRead($instanceName, $messages = [])
     {
         return $this->makeRequest('post', "/chat/markMessageAsRead/{$instanceName}", [
-            'readMessages' => $readMessages
+            'readMessages' => $messages
         ]);
     }
 
     /**
      * Archive/Unarchive chat
      */
-    public function archiveChat($instanceName, $data)
+    public function archiveChat($instanceName, $chat, $lastMessage, $archive = true)
     {
-        return $this->makeRequest('post', "/chat/archiveChat/{$instanceName}", $data);
+        return $this->makeRequest('post', "/chat/archiveChat/{$instanceName}", [
+            'chat' => $chat,
+            'lastMessage' => $lastMessage,
+            'archive' => $archive,
+        ]);
     }
 
     /**
      * Mark chat as unread
      */
-    public function markChatUnread($instanceName, $data)
+    public function markChatUnread($instanceName, $chat, $lastMessage)
     {
-        return $this->makeRequest('post', "/chat/markChatUnread/{$instanceName}", $data);
+        return $this->makeRequest('post', "/chat/markChatUnread/{$instanceName}", [
+            'chat' => $chat,
+            'lastMessage' => $lastMessage,
+        ]);
     }
 
     /**
      * Delete message for everyone
      */
-    public function deleteMessage($instanceName, $data)
+    public function deleteMessage($instanceName, $messageId, $remoteJid, $fromMe = true, $participant = null)
     {
+        $data = [
+            'id' => $messageId,
+            'remoteJid' => $remoteJid,
+            'fromMe' => $fromMe,
+        ];
+
+        if ($participant) {
+            $data['participant'] = $participant;
+        }
+
         return $this->makeRequest('delete', "/chat/deleteMessageForEveryone/{$instanceName}", $data);
     }
 
@@ -346,38 +407,46 @@ class EvolutionService
     /**
      * Get base64 from media message
      */
-    public function getBase64FromMedia($instanceName, $message, $convertToMp4 = false)
+    public function getBase64FromMedia($instanceName, $messageKey, $convertToMp4 = false)
     {
         return $this->makeRequest('post', "/chat/getBase64FromMediaMessage/{$instanceName}", [
-            'message' => $message,
-            'convertToMp4' => $convertToMp4
+            'message' => ['key' => $messageKey],
+            'convertToMp4' => $convertToMp4,
         ]);
     }
 
     /**
      * Update message
      */
-    public function updateMessage($instanceName, $data)
+    public function updateMessage($instanceName, $number, $key, $text)
     {
-        return $this->makeRequest('post', "/chat/updateMessage/{$instanceName}", $data);
+        return $this->makeRequest('post', "/chat/updateMessage/{$instanceName}", [
+            'number' => $number,
+            'key' => $key,
+            'text' => $text,
+        ]);
     }
 
     /**
      * Send presence (typing, recording, etc.)
      */
-    public function sendPresence($instanceName, $data)
+    public function sendChatPresence($instanceName, $number, $presence = 'composing', $delay = 1200)
     {
-        return $this->makeRequest('post', "/chat/sendPresence/{$instanceName}", $data);
+        return $this->makeRequest('post', "/chat/sendPresence/{$instanceName}", [
+            'number' => $number,
+            'presence' => $presence,
+            'delay' => $delay,
+        ]);
     }
 
     /**
-     * Update block status
+     * Block/Unblock contact
      */
-    public function updateBlockStatus($instanceName, $number, $status)
+    public function updateBlockStatus($instanceName, $number, $status = 'block')
     {
         return $this->makeRequest('post', "/message/updateBlockStatus/{$instanceName}", [
             'number' => $number,
-            'status' => $status // block, unblock
+            'status' => $status,
         ]);
     }
 
@@ -394,169 +463,44 @@ class EvolutionService
     /**
      * Find messages
      */
-    public function findMessages($instanceName, $where = [], $page = 1, $offset = 10)
+    public function findMessages($instanceName, $where = [])
     {
         return $this->makeRequest('post', "/chat/findMessages/{$instanceName}", [
-            'where' => $where,
-            'page' => $page,
-            'offset' => $offset
-        ]);
-    }
-
-    /**
-     * Find status messages
-     */
-    public function findStatusMessages($instanceName, $where = [], $page = 1, $offset = 10)
-    {
-        return $this->makeRequest('post', "/chat/findStatusMessage/{$instanceName}", [
-            'where' => $where,
-            'page' => $page,
-            'offset' => $offset
+            'where' => $where
         ]);
     }
 
     /**
      * Find chats
      */
-    public function findChats($instanceName)
+    public function findChats($instanceName, $where = [])
     {
-        return $this->makeRequest('post', "/chat/findChats/{$instanceName}");
-    }
-
-    // ==================== LABEL MANAGEMENT ====================
-
-    /**
-     * Find labels
-     */
-    public function findLabels($instanceName)
-    {
-        return $this->makeRequest('get', "/label/findLabels/{$instanceName}");
-    }
-
-    /**
-     * Handle label (add/remove)
-     */
-    public function handleLabel($instanceName, $number, $labelId, $action)
-    {
-        return $this->makeRequest('post', "/label/handleLabel/{$instanceName}", [
-            'number' => $number,
-            'labelId' => $labelId,
-            'action' => $action // add, remove
+        return $this->makeRequest('post', "/chat/findChats/{$instanceName}", [
+            'where' => $where
         ]);
     }
 
-    // ==================== PROFILE SETTINGS ====================
-
-    /**
-     * Fetch business profile
-     */
-    public function fetchBusinessProfile($instanceName, $number)
-    {
-        return $this->makeRequest('post', "/chat/fetchBusinessProfile/{$instanceName}", [
-            'number' => $number
-        ]);
-    }
-
-    /**
-     * Fetch profile
-     */
-    public function fetchProfile($instanceName, $number)
-    {
-        return $this->makeRequest('post', "/chat/fetchProfile/{$instanceName}", [
-            'number' => $number
-        ]);
-    }
-
-    /**
-     * Update profile name
-     */
-    public function updateProfileName($instanceName, $name)
-    {
-        return $this->makeRequest('post', "/chat/updateProfileName/{$instanceName}", [
-            'name' => $name
-        ]);
-    }
-
-    /**
-     * Update profile status
-     */
-    public function updateProfileStatus($instanceName, $status)
-    {
-        return $this->makeRequest('post', "/chat/updateProfileStatus/{$instanceName}", [
-            'status' => $status
-        ]);
-    }
-
-    /**
-     * Update profile picture
-     */
-    public function updateProfilePicture($instanceName, $picture)
-    {
-        return $this->makeRequest('post', "/chat/updateProfilePicture/{$instanceName}", [
-            'picture' => $picture
-        ]);
-    }
-
-    /**
-     * Remove profile picture
-     */
-    public function removeProfilePicture($instanceName)
-    {
-        return $this->makeRequest('delete', "/chat/removeProfilePicture/{$instanceName}");
-    }
-
-    /**
-     * Fetch privacy settings
-     */
-    public function fetchPrivacySettings($instanceName)
-    {
-        return $this->makeRequest('get', "/chat/fetchPrivacySettings/{$instanceName}");
-    }
-
-    /**
-     * Update privacy settings
-     */
-    public function updatePrivacySettings($instanceName, $settings)
-    {
-        return $this->makeRequest('post', "/chat/updatePrivacySettings/{$instanceName}", $settings);
-    }
-
-    // ==================== GROUP MANAGEMENT ====================
+    // ==================== Group Management ====================
 
     /**
      * Create group
      */
-    public function createGroup($instanceName, $subject, $participants, $description = null)
+    public function createGroup($instanceName, $subject, $participants = [])
     {
-        $data = [
+        return $this->makeRequest('post', "/group/create/{$instanceName}", [
             'subject' => $subject,
-            'participants' => $participants
-        ];
-
-        if ($description) {
-            $data['description'] = $description;
-        }
-
-        return $this->makeRequest('post', "/group/create/{$instanceName}", $data);
-    }
-
-    /**
-     * Update group picture
-     */
-    public function updateGroupPicture($instanceName, $groupJid, $image)
-    {
-        return $this->makeRequest('post', "/group/updateGroupPicture/{$instanceName}?groupJid={$groupJid}", [
-            'image' => $image
+            'participants' => $participants,
         ]);
     }
 
     /**
-     * Update group subject
+     * Update group name
      */
-    public function updateGroupSubject($instanceName, $groupJid, $subject)
+    public function updateGroupName($instanceName, $groupJid, $subject)
     {
-        return $this->makeRequest('post', "/group/updateGroupSubject/{$instanceName}?groupJid={$groupJid}", [
-            'subject' => $subject
+        return $this->makeRequest('post', "/group/updateGroupSubject/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'subject' => $subject,
         ]);
     }
 
@@ -565,43 +509,68 @@ class EvolutionService
      */
     public function updateGroupDescription($instanceName, $groupJid, $description)
     {
-        return $this->makeRequest('post', "/group/updateGroupDescription/{$instanceName}?groupJid={$groupJid}", [
-            'description' => $description
+        return $this->makeRequest('post', "/group/updateGroupDescription/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'description' => $description,
         ]);
     }
 
     /**
-     * Find group
+     * Update group picture
      */
-    public function findGroup($instanceName, $groupJid)
+    public function updateGroupPicture($instanceName, $groupJid, $image)
     {
-        return $this->makeRequest('get', "/group/findGroupInfo/{$instanceName}?groupJid={$groupJid}");
+        return $this->makeRequest('post', "/group/updateGroupPicture/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'image' => $image,
+        ]);
     }
 
     /**
-     * Fetch all groups
+     * Add participants to group
      */
-    public function fetchAllGroups($instanceName, $getParticipants = false)
+    public function addGroupParticipants($instanceName, $groupJid, $participants = [])
     {
-        return $this->makeRequest('get', "/group/fetchAllGroups/{$instanceName}?getParticipants=" . ($getParticipants ? 'true' : 'false'));
+        return $this->makeRequest('post', "/group/updateParticipant/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'action' => 'add',
+            'participants' => $participants,
+        ]);
     }
 
     /**
-     * Find participants
+     * Remove participants from group
      */
-    public function findParticipants($instanceName, $groupJid)
+    public function removeGroupParticipants($instanceName, $groupJid, $participants = [])
     {
-        return $this->makeRequest('get', "/group/findParticipants/{$instanceName}?groupJid={$groupJid}");
+        return $this->makeRequest('post', "/group/updateParticipant/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'action' => 'remove',
+            'participants' => $participants,
+        ]);
     }
 
     /**
-     * Update participant (add/remove/promote/demote)
+     * Promote participants to admin
      */
-    public function updateParticipant($instanceName, $groupJid, $action, $participants)
+    public function promoteGroupParticipants($instanceName, $groupJid, $participants = [])
     {
-        return $this->makeRequest('post', "/group/updateParticipant/{$instanceName}?groupJid={$groupJid}", [
-            'action' => $action, // add, remove, promote, demote
-            'participants' => $participants
+        return $this->makeRequest('post', "/group/updateParticipant/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'action' => 'promote',
+            'participants' => $participants,
+        ]);
+    }
+
+    /**
+     * Demote participants from admin
+     */
+    public function demoteGroupParticipants($instanceName, $groupJid, $participants = [])
+    {
+        return $this->makeRequest('post', "/group/updateParticipant/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'action' => 'demote',
+            'participants' => $participants,
         ]);
     }
 
@@ -610,18 +579,9 @@ class EvolutionService
      */
     public function updateGroupSettings($instanceName, $groupJid, $action)
     {
-        return $this->makeRequest('post', "/group/updateSetting/{$instanceName}?groupJid={$groupJid}", [
-            'action' => $action // announcement, not_announcement, locked, unlocked
-        ]);
-    }
-
-    /**
-     * Toggle ephemeral (disappearing messages)
-     */
-    public function toggleEphemeral($instanceName, $groupJid, $expiration)
-    {
-        return $this->makeRequest('post', "/group/toggleEphemeral/{$instanceName}?groupJid={$groupJid}", [
-            'expiration' => $expiration // 0 (off), 86400 (1 day), 604800 (7 days), 7776000 (90 days)
+        return $this->makeRequest('post', "/group/updateSetting/{$instanceName}", [
+            'groupJid' => $groupJid,
+            'action' => $action,
         ]);
     }
 
@@ -630,60 +590,85 @@ class EvolutionService
      */
     public function leaveGroup($instanceName, $groupJid)
     {
-        return $this->makeRequest('delete', "/group/leaveGroup/{$instanceName}?groupJid={$groupJid}");
-    }
-
-    /**
-     * Join group with invite code
-     */
-    public function joinGroupWithCode($instanceName, $inviteCode)
-    {
-        return $this->makeRequest('post', "/group/joinGroupWithCode/{$instanceName}", [
-            'inviteCode' => $inviteCode
+        return $this->makeRequest('post', "/group/leaveGroup/{$instanceName}", [
+            'groupJid' => $groupJid,
         ]);
     }
 
     /**
-     * Get invite code
+     * Fetch all groups
      */
-    public function getInviteCode($instanceName, $groupJid)
+    public function fetchAllGroups($instanceName, $getParticipants = true)
     {
-        return $this->makeRequest('get', "/group/inviteCode/{$instanceName}?groupJid={$groupJid}");
+        $query = $getParticipants ? '?getParticipants=true' : '';
+        return $this->makeRequest('get', "/group/fetchAllGroups/{$instanceName}{$query}");
     }
 
     /**
-     * Revoke invite code
+     * Find group by JID
      */
-    public function revokeInviteCode($instanceName, $groupJid)
+    public function findGroup($instanceName, $groupJid)
     {
-        return $this->makeRequest('post', "/group/revokeInviteCode/{$instanceName}?groupJid={$groupJid}");
-    }
-
-    /**
-     * Send invite URL
-     */
-    public function sendInviteUrl($instanceName, $groupJid, $numbers, $description = null)
-    {
-        $data = [
+        return $this->makeRequest('post', "/group/findGroupInfos/{$instanceName}", [
             'groupJid' => $groupJid,
-            'numbers' => $numbers
-        ];
-
-        if ($description) {
-            $data['description'] = $description;
-        }
-
-        return $this->makeRequest('post', "/group/sendInviteUrl/{$instanceName}", $data);
+        ]);
     }
 
-    // ==================== WEBHOOK MANAGEMENT ====================
+    /**
+     * Fetch group participants
+     */
+    public function fetchGroupParticipants($instanceName, $groupJid)
+    {
+        return $this->makeRequest('post', "/group/participants/{$instanceName}", [
+            'groupJid' => $groupJid,
+        ]);
+    }
+
+    /**
+     * Get group invite code
+     */
+    public function getGroupInviteCode($instanceName, $groupJid)
+    {
+        return $this->makeRequest('post', "/group/inviteCode/{$instanceName}", [
+            'groupJid' => $groupJid,
+        ]);
+    }
+
+    /**
+     * Revoke group invite code
+     */
+    public function revokeGroupInviteCode($instanceName, $groupJid)
+    {
+        return $this->makeRequest('post', "/group/revokeInviteCode/{$instanceName}", [
+            'groupJid' => $groupJid,
+        ]);
+    }
+
+    /**
+     * Accept group invite
+     */
+    public function acceptGroupInvite($instanceName, $inviteCode)
+    {
+        return $this->makeRequest('post', "/group/acceptInviteCode/{$instanceName}", [
+            'inviteCode' => $inviteCode,
+        ]);
+    }
+
+    // ==================== Webhook Management ====================
 
     /**
      * Set webhook
      */
-    public function setWebhook($instanceName, $webhookData)
+    public function setWebhook($instanceName, $webhookUrl, $events = [], $options = [])
     {
-        return $this->makeRequest('post', "/webhook/set/{$instanceName}", $webhookData);
+        $data = array_merge([
+            'url' => $webhookUrl,
+            'events' => $events,
+        ], $options);
+
+        return $this->makeRequest('post', "/webhook/set/{$instanceName}", [
+            'webhook' => $data
+        ]);
     }
 
     /**
@@ -694,94 +679,97 @@ class EvolutionService
         return $this->makeRequest('get', "/webhook/find/{$instanceName}");
     }
 
-    // ==================== CHATWOOT INTEGRATION ====================
+    // ==================== Proxy Management ====================
 
     /**
-     * Set Chatwoot
+     * Set proxy
      */
-    public function setChatwoot($instanceName, $chatwootData)
+    public function setProxy($instanceName, $host, $port, $protocol = 'http', $username = null, $password = null)
     {
-        return $this->makeRequest('post', "/chatwoot/set/{$instanceName}", $chatwootData);
+        $data = [
+            'enabled' => true,
+            'host' => $host,
+            'port' => $port,
+            'protocol' => $protocol,
+        ];
+
+        if ($username) $data['username'] = $username;
+        if ($password) $data['password'] = $password;
+
+        return $this->makeRequest('post', "/proxy/set/{$instanceName}", $data);
     }
 
     /**
-     * Find Chatwoot
+     * Find proxy
      */
-    public function findChatwoot($instanceName)
+    public function findProxy($instanceName)
     {
-        return $this->makeRequest('get', "/chatwoot/find/{$instanceName}");
+        return $this->makeRequest('get', "/proxy/find/{$instanceName}");
     }
 
-    // ==================== RABBITMQ INTEGRATION ====================
+    // ==================== Helper Methods ====================
 
     /**
-     * Set RabbitMQ
+     * Format phone number to WhatsApp format
      */
-    public function setRabbitmq($instanceName, $rabbitmqData)
+    public function formatPhoneNumber($number)
     {
-        return $this->makeRequest('post', "/rabbitmq/set/{$instanceName}", $rabbitmqData);
-    }
+        // Remove all non-numeric characters
+        $number = preg_replace('/[^0-9]/', '', $number);
 
-    /**
-     * Find RabbitMQ
-     */
-    public function findRabbitmq($instanceName)
-    {
-        return $this->makeRequest('get', "/rabbitmq/find/{$instanceName}");
-    }
+        // Add @s.whatsapp.net if not already present
+        if (!str_contains($number, '@')) {
+            $number .= '@s.whatsapp.net';
+        }
 
-    // ==================== SQS INTEGRATION ====================
-
-    /**
-     * Set SQS
-     */
-    public function setSqs($instanceName, $sqsData)
-    {
-        return $this->makeRequest('post', "/sqs/set/{$instanceName}", $sqsData);
+        return $number;
     }
 
     /**
-     * Find SQS
+     * Format group JID
      */
-    public function findSqs($instanceName)
+    public function formatGroupJid($groupId)
     {
-        return $this->makeRequest('get', "/sqs/find/{$instanceName}");
-    }
+        // Add @g.us if not already present
+        if (!str_contains($groupId, '@')) {
+            $groupId .= '@g.us';
+        }
 
-    // ==================== TYPEBOT INTEGRATION ====================
-
-    /**
-     * Set Typebot
-     */
-    public function setTypebot($instanceName, $typebotData)
-    {
-        return $this->makeRequest('post', "/typebot/set/{$instanceName}", $typebotData);
+        return $groupId;
     }
 
     /**
-     * Find Typebot
+     * Send quick reply message (helper method)
      */
-    public function findTypebot($instanceName)
+    public function sendQuickReply($instanceName, $number, $text, $buttons = [])
     {
-        return $this->makeRequest('get', "/typebot/find/{$instanceName}");
+        $formattedButtons = [];
+        foreach ($buttons as $button) {
+            $formattedButtons[] = [
+                'type' => 'reply',
+                'displayText' => $button['text'] ?? $button,
+                'id' => $button['id'] ?? uniqid(),
+            ];
+        }
+
+        return $this->sendButtons($instanceName, $number, '', $text, $formattedButtons);
     }
 
     /**
-     * Start Typebot
+     * Send template message with image (helper method)
      */
-    public function startTypebot($instanceName, $data)
+    public function sendTemplateWithImage($instanceName, $number, $imageUrl, $caption, $buttons = [])
     {
-        return $this->makeRequest('post', "/typebot/start/{$instanceName}", $data);
-    }
-
-    /**
-     * Change Typebot status
-     */
-    public function changeTypebotStatus($instanceName, $remoteJid, $status)
-    {
-        return $this->makeRequest('post', "/typebot/changeStatus/{$instanceName}", [
-            'remoteJid' => $remoteJid,
-            'status' => $status // opened, closed, paused
+        // First send the image
+        $mediaResult = $this->sendMedia($instanceName, $number, $imageUrl, 'image', [
+            'caption' => $caption
         ]);
+
+        // Then send buttons if provided
+        if (!empty($buttons) && $mediaResult['success']) {
+            return $this->sendQuickReply($instanceName, $number, '', $buttons);
+        }
+
+        return $mediaResult;
     }
 }
