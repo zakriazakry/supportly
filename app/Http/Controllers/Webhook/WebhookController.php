@@ -268,7 +268,19 @@ class WebhookController extends Controller
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    AutoReplyController::whenReceiveTextMessage($message);
+                    AutoReplyController::whenReceiveTextMessage([
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'message' => $messageContent,
+                        'pushName' => $pushName,
+                        'messageTimestamp' => $messageTimestamp,
+                        'messageId' => $messageId,
+                        'fromMe' => $fromMe,
+                        'remoteJid' => $remoteJid,
+                        'key' => $key,
+                        'messageInfo' => $messageInfo,
+                        'instanceName' => $instanceName,
+                    ]);
                     break;
 
                 case 'image':
