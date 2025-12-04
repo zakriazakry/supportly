@@ -52,7 +52,7 @@ class AutoReplyController extends Controller
         // Safe to use $autoReply now (no more undefined errors)
         // Default echo-back message
         $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
-        $this->evolutionService->sendText($instanceName, $fromNumber, $message);
+        $this->evolutionService->sendText($instanceName, $fromNumber, "مرحبا بك ي غالي \n كيف يمكنني مساعدتك؟");
 
         // Auto reply conditions
         if (!empty($autoReply->welcome)) {
@@ -70,7 +70,7 @@ class AutoReplyController extends Controller
 
     private function welcomeReply($instanceName, $number, $msg)
     {
-        $this->evolutionService->sendText($instanceName, $number, "Welcome!");
+        $this->evolutionService->sendText($instanceName, $number, "مرحبا بك ي غالي \n كيف يمكنني مساعدتك؟");
     }
 
     private function aiReply($instanceName, $number, $msg)
