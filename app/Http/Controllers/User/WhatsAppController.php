@@ -819,18 +819,19 @@ class WhatsAppController extends Controller
         if (!$instance) {
             return responseFormat('Instance not found', 404);
         }
+        $providerData = $this->evolutionService->getConnectionStatus($instanceName);
 
         // Get basic stats from database and Evolution API
         $stats = [
             'instance_name' => $instance->instance_name,
-            'status' => $instance->status,
+            'status' => $providerData['data']['state'],
             'phone_number' => $instance->phone_number,
             'profile_name' => $instance->profile_name,
             'created_at' => $instance->created_at,
         ];
 
         // If open, get additional stats
-        if ($instance->status === 'open') {
+        if ($providerData['data']['state'] === 'open') {
             $contactsResult = $this->evolutionService->findContacts($instanceName);
             $chatsResult = $this->evolutionService->findChats($instanceName);
             $groupsResult = $this->evolutionService->fetchAllGroups($instanceName, false);
