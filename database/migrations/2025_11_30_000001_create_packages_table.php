@@ -33,7 +33,14 @@ return new class extends Migration
             $table->integer('limit_facebook_pages')->nullable(); // عدد صفحات فيسبوك المسموحة (null = غير محدود)
             $table->integer('limit_auto_replies_per_month')->nullable(); // عدد الردود التلقائية شهرياً (null = غير محدود)
             $table->integer('limit_templates')->nullable(); // عدد القوالب المسموحة (null = غير محدود)
-
+            // whatsapp
+            $table->boolean('feature_whatsapp')->default(false); // دعم واتساب
+            $table->boolean('feature_whatsapp_unlimited_replies')->default(false); // ردود تلقائية غير محدودة
+            $table->boolean('feature_whatsapp_multiple_accounts')->default(false); // ربط حسابات متعددة
+            $table->boolean('feature_whatsapp_priority_processing')->default(false); // أولوية في المعالجة
+            $table->integer('limit_whatsapp_accounts')->nullable(); // عدد حسابات فيسبوك المسموحة (null = غير محدود)
+            $table->integer('limit_whatsapp_auto_replies_per_month')->nullable(); // عدد الردود التلقائية شهرياً (null = غير محدود)
+            // ----------
             $table->boolean('is_active')->default(true); // هل الباقة نشطة
             $table->integer('sort_order')->default(0); // ترتيب العرض
             $table->timestamps();
