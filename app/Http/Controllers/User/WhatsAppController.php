@@ -248,6 +248,10 @@ class WhatsAppController extends Controller
             return responseFormat($result['error'], 500);
         }
 
+        $instance->update([
+            'status' => $result['data']['status'] ?? 'connected',
+        ]);
+
         return responseFormat($result['data']);
     }
 
