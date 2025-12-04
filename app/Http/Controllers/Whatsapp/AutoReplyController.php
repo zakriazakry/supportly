@@ -58,10 +58,10 @@ class AutoReplyController extends Controller
         }
 
         // Show typing indicator
-        $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
+        // $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
 
         // Default echo-back message
-        $this->evolutionService->sendButtons(
+        Log::info($this->evolutionService->sendButtons(
             $instanceName,
             $fromNumber,
             "الدعم الفني",
@@ -73,7 +73,7 @@ class AutoReplyController extends Controller
                     "id" => "123"
                 ],
             ]
-        );
+        ));
 
         // Auto reply conditions
         if (!empty($autoReply->welcome)) {
