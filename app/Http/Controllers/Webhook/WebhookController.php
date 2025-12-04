@@ -295,6 +295,7 @@ class WebhookController extends Controller
                         'from' => $sender,
                         'to' => $receiver,
                         'caption' => $messageInfo['content'],
+                        'video' => $messageInfo['media_info']['url'] ?? null,
                         'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
                         'duration' => $messageInfo['media_info']['seconds'] ?? null,
                         'file_size' => $messageInfo['media_info']['fileLength'] ?? null,
@@ -306,6 +307,7 @@ class WebhookController extends Controller
                         'from' => $sender,
                         'to' => $receiver,
                         'duration' => $messageInfo['media_info']['seconds'] ?? null,
+                        'audio' => $messageInfo['media_info']['url'] ?? null,
                         'is_ptt' => $messageInfo['media_info']['ptt'] ?? false,
                         'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
                     ]);
@@ -327,6 +329,8 @@ class WebhookController extends Controller
                         'from' => $sender,
                         'to' => $receiver,
                         'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                        'sticker' => $messageInfo['media_info']['url'] ?? null,
+                        'caption' => $messageInfo['content'],
                     ]);
                     break;
 
