@@ -10,7 +10,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(WhatsAppController::class)->prefix('whatsapp')->group(function () {
         // Instance Management
         Route::get('/instances', 'getInstances');
-        Route::get('/instances/{instanceName}', 'getInstance');
+        Route::get('/instances-by-id/{instanceId}', 'getInstance');
         Route::post('/instances', 'createInstance');
         Route::delete('/instances/{instanceName}', 'deleteInstance');
         Route::post('/instances/{instanceName}/logout', 'logoutInstance');

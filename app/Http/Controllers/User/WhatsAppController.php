@@ -94,9 +94,9 @@ class WhatsAppController extends Controller
      * @param string $instanceName
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getInstance(Request $request, $instanceName)
+    public function getInstance(Request $request, $id)
     {
-        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+        $instance = WhatsAppInstance::where('id', $id)
             ->where('user_id', $request->user()->id)
             ->first();
 
