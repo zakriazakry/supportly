@@ -73,7 +73,7 @@ class WebhookController extends Controller
     {
         // Convert event name to method name
         // e.g., MESSAGES_UPSERT -> handleMessagesUpsert
-        $parts = explode('_', strtolower($event));
+        $parts = explode('.', strtolower($event));
         $method = 'handle';
 
         foreach ($parts as $part) {
