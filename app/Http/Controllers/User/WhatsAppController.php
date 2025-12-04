@@ -37,6 +37,32 @@ class WhatsAppController extends Controller
         return responseFormat($instances);
     }
 
+    /**
+     * Get a specific instance
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInstance(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        return responseFormat($instance);
+    }
+
+    /**
+     * Create a new WhatsApp instance
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function createInstance(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -88,6 +114,83 @@ class WhatsAppController extends Controller
         ]);
 
         return responseFormat($instance);
+    }
+
+    /**
+     * Generate QR code for instance connection
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function generateQRCode(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $result = $this->evolutionService->connectInstance($instanceName);
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        // Update QR code in database
+        $instance->update([
+            'qr_code' => $result['data']['base64'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        return responseFormat([
+            'qr_code' => $result['data']['base64'] ?? null,
+            'pairingCode' => $result['data']['pairingCode'] ?? null,
+        ]);
+    }
+
+    /**
+     * Refresh QR code (called every 20 seconds)
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refreshQRCode(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        // Check if already connected
+        if ($instance->status === 'connected') {
+            return responseFormat([
+                'status' => 'connected',
+                'message' => 'Instance already connected'
+            ]);
+        }
+
+        $result = $this->evolutionService->connectInstance($instanceName);
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        // Update QR code in database
+        $instance->update([
+            'qr_code' => $result['data']['base64'] ?? null,
+        ]);
+
+        return responseFormat([
+            'qr_code' => $result['data']['base64'] ?? null,
+            'pairingCode' => $result['data']['pairingCode'] ?? null,
+        ]);
     }
 
     /**
@@ -170,7 +273,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->sendText(
             $instanceName,
@@ -212,7 +319,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->sendMedia(
             $instanceName,
@@ -258,7 +369,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->createGroup(
             $instanceName,
@@ -287,7 +402,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->fetchAllGroups($instanceName, true);
 
@@ -309,7 +428,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->findContacts($instanceName);
 
@@ -342,7 +465,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->findMessages(
             $instanceName,
@@ -381,7 +508,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->sendQuickReply(
             $instanceName,
@@ -424,7 +555,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->sendList(
             $instanceName,
@@ -468,7 +603,11 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
             ->where('status', 'connected')
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
 
         $result = $this->evolutionService->markAsRead(
             $instanceName,
@@ -495,7 +634,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
 
         $result = $this->evolutionService->deleteInstance($instanceName);
 
@@ -519,7 +662,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
 
         $result = $this->evolutionService->logoutInstance($instanceName);
 
@@ -534,6 +681,327 @@ class WhatsAppController extends Controller
         ]);
 
         return responseFormat('تم تسجيل الخروج بنجاح');
+    }
+
+    /**
+     * Disconnect instance
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function disconnectInstance(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $result = $this->evolutionService->logoutInstance($instanceName);
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        // Update status in database
+        $instance->update([
+            'status' => 'disconnected',
+            'qr_code' => null,
+        ]);
+
+        return responseFormat('تم قطع الاتصال بنجاح');
+    }
+
+    /**
+     * Get chat messages for a specific contact
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @param string $contactId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatMessages(Request $request, $instanceName, $contactId)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'connected')
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
+
+        $result = $this->evolutionService->findMessages(
+            $instanceName,
+            ['key' => ['remoteJid' => $contactId]]
+        );
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        return responseFormat($result['data']);
+    }
+
+    /**
+     * Get active chats
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getActiveChats(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'connected')
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found or not connected', 404);
+        }
+
+        $result = $this->evolutionService->findChats($instanceName);
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        return responseFormat($result['data']);
+    }
+
+    /**
+     * Get instance statistics
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInstanceStats(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        // Get basic stats from database and Evolution API
+        $stats = [
+            'instance_name' => $instance->instance_name,
+            'status' => $instance->status,
+            'phone_number' => $instance->phone_number,
+            'profile_name' => $instance->profile_name,
+            'created_at' => $instance->created_at,
+        ];
+
+        // If connected, get additional stats
+        if ($instance->status === 'connected') {
+            $contactsResult = $this->evolutionService->findContacts($instanceName);
+            $chatsResult = $this->evolutionService->findChats($instanceName);
+            $groupsResult = $this->evolutionService->fetchAllGroups($instanceName, false);
+
+            $stats['total_contacts'] = $contactsResult['success'] ? count($contactsResult['data'] ?? []) : 0;
+            $stats['total_chats'] = $chatsResult['success'] ? count($chatsResult['data'] ?? []) : 0;
+            $stats['total_groups'] = $groupsResult['success'] ? count($groupsResult['data'] ?? []) : 0;
+        }
+
+        return responseFormat($stats);
+    }
+
+    /**
+     * Get auto-reply rules
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAutoReplyRules(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $rules = $instance->autoReplyRules ?? [];
+
+        return responseFormat($rules);
+    }
+
+    /**
+     * Create auto-reply rule
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createAutoReplyRule(Request $request, $instanceName)
+    {
+        $validator = Validator::make($request->all(), [
+            'trigger' => 'required|string',
+            'response' => 'required|string',
+            'type' => 'nullable|in:exact,contains,starts_with,ends_with',
+            'enabled' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $rules = $instance->auto_reply_rules ?? [];
+
+        $newRule = [
+            'id' => uniqid('rule_'),
+            'trigger' => $request->trigger,
+            'response' => $request->response,
+            'type' => $request->type ?? 'contains',
+            'enabled' => $request->enabled ?? true,
+            'created_at' => now()->toISOString(),
+        ];
+
+        $rules[] = $newRule;
+
+        $instance->update(['auto_reply_rules' => $rules]);
+
+        return responseFormat($newRule);
+    }
+
+    /**
+     * Update auto-reply rule
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @param string $ruleId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateAutoReplyRule(Request $request, $instanceName, $ruleId)
+    {
+        $validator = Validator::make($request->all(), [
+            'trigger' => 'nullable|string',
+            'response' => 'nullable|string',
+            'type' => 'nullable|in:exact,contains,starts_with,ends_with',
+            'enabled' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $rules = $instance->auto_reply_rules ?? [];
+        $ruleIndex = array_search($ruleId, array_column($rules, 'id'));
+
+        if ($ruleIndex === false) {
+            return responseFormat('Rule not found', 404);
+        }
+
+        // Update rule
+        if ($request->has('trigger')) {
+            $rules[$ruleIndex]['trigger'] = $request->trigger;
+        }
+        if ($request->has('response')) {
+            $rules[$ruleIndex]['response'] = $request->response;
+        }
+        if ($request->has('type')) {
+            $rules[$ruleIndex]['type'] = $request->type;
+        }
+        if ($request->has('enabled')) {
+            $rules[$ruleIndex]['enabled'] = $request->enabled;
+        }
+
+        $rules[$ruleIndex]['updated_at'] = now()->toISOString();
+
+        $instance->update(['auto_reply_rules' => $rules]);
+
+        return responseFormat($rules[$ruleIndex]);
+    }
+
+    /**
+     * Delete auto-reply rule
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @param string $ruleId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteAutoReplyRule(Request $request, $instanceName, $ruleId)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $rules = $instance->auto_reply_rules ?? [];
+        $ruleIndex = array_search($ruleId, array_column($rules, 'id'));
+
+        if ($ruleIndex === false) {
+            return responseFormat('Rule not found', 404);
+        }
+
+        // Remove rule
+        array_splice($rules, $ruleIndex, 1);
+
+        $instance->update(['auto_reply_rules' => $rules]);
+
+        return responseFormat('تم حذف القاعدة بنجاح');
+    }
+
+    /**
+     * Toggle auto-reply on/off
+     * 
+     * @param Request $request
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggleAutoReply(Request $request, $instanceName)
+    {
+        $validator = Validator::make($request->all(), [
+            'enabled' => 'required|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+
+        $instance->update(['auto_reply_enabled' => $request->enabled]);
+
+        return responseFormat([
+            'enabled' => $request->enabled,
+            'message' => $request->enabled ? 'تم تفعيل الرد التلقائي' : 'تم تعطيل الرد التلقائي'
+        ]);
     }
 
     /**

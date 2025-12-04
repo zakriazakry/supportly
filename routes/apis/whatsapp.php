@@ -7,25 +7,47 @@ use Illuminate\Support\Facades\Route;
 Route::post('/evolution/webhook', [WebhookController::class, 'handle']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::prefix('whatsapp')->group(function () {
-        Route::get('/instances', [WhatsAppController::class, 'getInstances']);
-        Route::post('/instances', [WhatsAppController::class, 'createInstance']);
-        Route::get('/instances/{instanceName}/qrcode', [WhatsAppController::class, 'getQRCode']);
-        Route::get('/instances/{instanceName}/status', [WhatsAppController::class, 'getConnectionStatus']);
-        Route::post('/instances/{instanceName}/logout', [WhatsAppController::class, 'logoutInstance']);
-        Route::delete('/instances/{instanceName}', [WhatsAppController::class, 'deleteInstance']);
-        Route::prefix('instances/{instanceName}')->group(function () {
-            Route::post('/messages/text', [WhatsAppController::class, 'sendMessage']);
-            Route::post('/messages/media', [WhatsAppController::class, 'sendMedia']);
-            Route::post('/messages/buttons', [WhatsAppController::class, 'sendButtons']);
-            Route::post('/messages/list', [WhatsAppController::class, 'sendList']);
-            Route::post('/messages/mark-read', [WhatsAppController::class, 'markAsRead']);
-            Route::get('/messages', [WhatsAppController::class, 'getMessages']);
-            Route::prefix('groups')->group(function () {
-                Route::post('/', [WhatsAppController::class, 'createGroup']);
-                Route::get('/', [WhatsAppController::class, 'getGroups']);
-            });
-            Route::get('/contacts', [WhatsAppController::class, 'getContacts']);
-        });
+    Route::controller(WhatsAppController::class)->prefix('whatsapp')->group(function () {
+        // Instance Management
+        Route::get('/instances', 'getInstances');
+        Route::get('/instances/{instanceName}', 'getInstance');
+        Route::post('/instances', 'createInstance');
+        Route::delete('/instances/{instanceName}', 'deleteInstance');
+        Route::post('/instances/{instanceName}/logout', 'logoutInstance');
+        Route::post('/instances/{instanceName}/disconnect', 'disconnectInstance');
+
+        // Connection & QR Code
+        Route::post('/instances/{instanceName}/qr', 'generateQRCode');
+        Route::post('/instances/{instanceName}/qr/refresh', 'refreshQRCode');
+        Route::get('/instances/{instanceName}/qr-code', 'getQRCode');
+        Route::get('/instances/{instanceName}/status', 'getConnectionStatus');
+
+        // Messages
+        Route::get('/instances/{instanceName}/messages', 'getMessages');
+        Route::post('/instances/{instanceName}/messages', 'sendMessage');
+        Route::get('/instances/{instanceName}/chats/{contactId}/messages', 'getChatMessages');
+        Route::post('/instances/{instanceName}/send-message', 'sendMessage');
+        Route::post('/instances/{instanceName}/send-media', 'sendMedia');
+        Route::post('/instances/{instanceName}/send-buttons', 'sendButtons');
+        Route::post('/instances/{instanceName}/send-list', 'sendList');
+        Route::post('/instances/{instanceName}/mark-as-read', 'markAsRead');
+
+        // Groups
+        Route::post('/instances/{instanceName}/groups', 'createGroup');
+        Route::get('/instances/{instanceName}/groups', 'getGroups');
+
+        // Contacts & Chats
+        Route::get('/instances/{instanceName}/contacts', 'getContacts');
+        Route::get('/instances/{instanceName}/chats', 'getActiveChats');
+
+        // Statistics
+        Route::get('/instances/{instanceName}/stats', 'getInstanceStats');
+
+        // Auto Reply Rules
+        Route::get('/instances/{instanceName}/auto-reply/rules', 'getAutoReplyRules');
+        Route::post('/instances/{instanceName}/auto-reply/rules', 'createAutoReplyRule');
+        Route::post('/instances/{instanceName}/auto-reply/rules/{ruleId}', 'updateAutoReplyRule');
+        Route::delete('/instances/{instanceName}/auto-reply/rules/{ruleId}', 'deleteAutoReplyRule');
+        Route::post('/instances/{instanceName}/auto-reply/toggle', 'toggleAutoReply');
     });
 });
