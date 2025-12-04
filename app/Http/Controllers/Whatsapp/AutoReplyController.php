@@ -58,23 +58,26 @@ class AutoReplyController extends Controller
         }
 
         // Show typing indicator
-        // $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
+        $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
 
         // Default echo-back message
-        Log::info($this->evolutionService->sendButtons(
+        // $this->evolutionService->sendText(
+        //     $instanceName,
+        //     $fromNumber,
+        //     "أهلاً وسهلاً بك في خدمتنا! 🌟\n\n" .
+        //         "يسعدنا تواصلك معنا.\n" .
+        //         "يرجى إخبارنا بما تحتاجه أو اختيار أحد الخيارات التالية:\n" .
+        //         "1️⃣ الدعم الفني\n" .
+        //         "2️⃣ الاستفسارات العامة\n" .
+        //         "3️⃣ متابعة الطلبات\n\n" .
+        //         "سنسعد بخدمتك بأسرع وقت ممكن!"
+        // );
+
+        $this->evolutionService->sendAudio(
             $instanceName,
             $fromNumber,
-            "الدعم الفني",
-            "تفاصيل للدعم الفني",
-            [
-                [
-                    "type" => "reply",
-                    "displayText" => "Resposta",
-                    "id" => "123"
-                ],
-            ]
-        ));
-
+            "https://g.top4top.io/m_3625to0bh1.mp3"
+        );
         // Auto reply conditions
         if (!empty($autoReply->welcome)) {
             $this->welcomeReply($instanceName, $fromNumber, $message);
