@@ -251,6 +251,30 @@ class WhatsAppController extends Controller
         return responseFormat($result['data']);
     }
 
+    /**
+     * Get instance settings
+     * 
+     * @param string $instanceName
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInstanceSettings(Request $request, $instanceName)
+    {
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            return responseFormat('Instance not found', 404);
+        }
+        // TODO
+        $result = $this->evolutionService->setSettings($instanceName, $request->all());
+
+        if (!$result['success']) {
+            return responseFormat($result['error'], 500);
+        }
+
+        return responseFormat($result['data']);
+    }
 
     /**
      * Send text message
