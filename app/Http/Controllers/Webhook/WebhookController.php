@@ -233,7 +233,6 @@ class WebhookController extends Controller
         $messages = $data['data']['messages'] ?? [$data['data']];
 
         foreach ($messages as $message) {
-            // Extract message details
             $key = $message['key'] ?? null;
             $messageContent = $message['message'] ?? null;
             $pushName = $message['pushName'] ?? 'Unknown';
@@ -248,14 +247,11 @@ class WebhookController extends Controller
             $fromMe = $key['fromMe'] ?? false;
             $messageId = $key['id'] ?? null;
 
-            // Determine sender and receiver
             $sender = $fromMe ? 'Me (Bot)' : $remoteJid;
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
-            // Extract message type and content
             $messageInfo = $this->extractMessageInfo($messageContent);
 
-            // Comprehensive logging
             Log::info('💬 Message Details', [
                 'instance' => $instanceName,
                 'message_id' => $messageId,
@@ -269,7 +265,6 @@ class WebhookController extends Controller
                 'media_info' => $messageInfo['media_info'] ?? null,
             ]);
 
-            // Log specific message type details
             switch ($messageInfo['type']) {
                 case 'text':
                     Log::info('📝 Text Message', [
