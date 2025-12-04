@@ -300,9 +300,9 @@ class WhatsAppController extends Controller
         Log::info("===============");
         Log::info($result['data']['instance']);
         Log::info("===============");
-        // $instance->update([
+        $instance->update([
             'status' => $result['data']['instance']['state'],
-        // ]);
+        ]);
 
         return responseFormat($result['data']);
     }
