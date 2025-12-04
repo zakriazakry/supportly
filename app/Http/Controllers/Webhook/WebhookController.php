@@ -180,12 +180,7 @@ class WebhookController extends Controller
      */
     protected function handleMessagesUpsert($data)
     {
-        Log::info('📨 New Message Event', [
-            'instance' => $data['instance'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
 
-        // Process new message
         $this->processMessages($data);
     }
 
@@ -253,18 +248,7 @@ class WebhookController extends Controller
 
             $messageInfo = $this->extractMessageInfo($messageContent);
 
-            Log::info('💬 Message Details', [
-                'instance' => $instanceName,
-                'message_id' => $messageId,
-                'sender' => $sender,
-                'receiver' => $receiver,
-                'sender_name' => $pushName,
-                'from_me' => $fromMe,
-                'message_type' => $messageInfo['type'],
-                'timestamp' => $messageTimestamp ? date('Y-m-d H:i:s', $messageTimestamp) : 'unknown',
-                'content' => $messageInfo['content'],
-                'media_info' => $messageInfo['media_info'] ?? null,
-            ]);
+
 
             switch ($messageInfo['type']) {
                 case 'text':
@@ -286,7 +270,7 @@ class WebhookController extends Controller
                 case 'image':
                     Log::info('🖼️ Image Message', [
                         'from' => $sender,
-                        'form_number' =>  explode('@', $sender)[0],
+                        'form_number' => explode('@', $sender)[0],
                         'to' => $receiver,
                         'image' => $data['message']['image'] ?? null,
                         'caption' => $messageInfo['content'],
