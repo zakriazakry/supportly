@@ -65,7 +65,7 @@ class WebhookController extends Controller
     protected function getHandlerMethod($event)
     {
         // Convert event name to method name
-        // e.g., MESSAGES_UPSERT -> handleMessagesUpsert
+        // e.g., MESSAGES.UPSERT -> handleMessagesUpsert
         $parts = explode('.', strtolower($event));
         $method = 'handle';
 
