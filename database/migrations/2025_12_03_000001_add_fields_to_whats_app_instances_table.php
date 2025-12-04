@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::table('whats_app_instances', function (Blueprint $table) {
             $table->string('phone_number')->nullable()->after('status');
-            $table->string('integration_type')->default('WHATSAPP-BAILEYS')->after('phone_number');
+            $table->string('instance_id')->nullable()->after('phone_number');
+            $table->string('integration_type')->default('WHATSAPP-BAILEYS')->after('instance_id');
             $table->string('profile_name')->nullable()->after('integration_type');
             $table->string('profile_picture_url')->nullable()->after('profile_name');
             $table->timestamp('last_connected_at')->nullable()->after('profile_picture_url');
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->dropColumn([
                 'phone_number',
                 'integration_type',
+                'instance_id',
                 'profile_name',
                 'profile_picture_url',
                 'last_connected_at',
