@@ -832,7 +832,7 @@ class WhatsAppController extends Controller
             'created_at' => $instance->created_at,
         ];
         // If open, get additional stats
-        if ($providerData['data']['state'] === 'open') {
+        if ($providerData['data']['instance']['state'] === 'open') {
             $contactsResult = $this->evolutionService->findContacts($instanceName);
             $chatsResult = $this->evolutionService->findChats($instanceName);
             $groupsResult = $this->evolutionService->fetchAllGroups($instanceName, false);
