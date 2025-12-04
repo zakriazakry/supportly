@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Events\WhatsApp\InstanceConnected;
+use App\Events\WhatsApp\InstanceDisconnected;
 use App\Events\WhatsApp\Instanceopen;
 use App\Events\WhatsApp\InstanceDisopen;
 use App\Http\Controllers\Controller;
@@ -1086,12 +1088,12 @@ class WhatsAppController extends Controller
                         $instance->updateConnectionStatus('open', $connectionData);
 
                         // إطلاق Event
-                        event(new Instanceopen($instance, $connectionData));
+                        event(new InstanceConnected($instance, $connectionData));
                     } elseif ($state === 'close') {
-                        $instance->updateConnectionStatus('disopen');
+                        $instance->updateConnectionStatus('disInstanceConnected');
 
                         // إطلاق Event
-                        event(new InstanceDisopen($instance));
+                        event(new InstanceDisconnected($instance));
                     }
                     break;
 
