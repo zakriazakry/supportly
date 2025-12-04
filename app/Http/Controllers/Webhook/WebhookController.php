@@ -25,16 +25,19 @@ class WebhookController extends Controller
         try {
             $data = $request->all();
 
-            Log::info('Evolution Webhook Received', [
+            // Log raw webhook data
+            Log::info('=== Evolution Webhook Received ===', [
+                'timestamp' => now()->toDateTimeString(),
                 'event' => $data['event'] ?? 'unknown',
                 'instance' => $data['instance'] ?? 'unknown',
-                'data' => $data
+                'full_data' => $data
             ]);
 
             // Get event type
             $event = $data['event'] ?? null;
 
             if (!$event) {
+                Log::warning('Webhook received without event type', ['data' => $data]);
                 return responseFormat('No event type provided', 400);
             }
 
@@ -44,13 +47,18 @@ class WebhookController extends Controller
             if (method_exists($this, $method)) {
                 $this->$method($data);
             } else {
-                Log::warning('No handler for event type', ['event' => $event]);
+                Log::warning('No handler for event type', [
+                    'event' => $event,
+                    'method_attempted' => $method
+                ]);
             }
 
             return responseFormat('ok');
         } catch (\Exception $e) {
             Log::error('Webhook handling error', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -82,8 +90,9 @@ class WebhookController extends Controller
      */
     protected function handleApplicationStartup($data)
     {
-        Log::info('Application started', [
-            'instance' => $data['instance'] ?? null
+        Log::info('📱 Application Started', [
+            'instance' => $data['instance'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -97,6 +106,12 @@ class WebhookController extends Controller
         $instanceName = $data['instance'] ?? null;
         $qrcode = $data['data']['qrcode'] ?? null;
 
+        Log::info('🔲 QR Code Updated', [
+            'instance' => $instanceName,
+            'has_qrcode' => !empty($qrcode),
+            'timestamp' => now()->toDateTimeString()
+        ]);
+
         if ($instanceName && $qrcode) {
             // Update instance with QR code
             WhatsAppInstance::where('instance_name', $instanceName)
@@ -105,7 +120,7 @@ class WebhookController extends Controller
                     'status' => 'qr_code',
                 ]);
 
-            Log::info('QR Code updated', ['instance' => $instanceName]);
+            Log::info('✅ QR Code saved to database', ['instance' => $instanceName]);
         }
     }
 
@@ -119,23 +134,30 @@ class WebhookController extends Controller
         $instanceName = $data['instance'] ?? null;
         $state = $data['data']['state'] ?? null;
 
-        if ($instanceName) {
-            $status = match ($state) {
-                'open' => 'connected',
-                'close' => 'disconnected',
-                'connecting' => 'connecting',
-                default => 'unknown'
-            };
+        $status = match ($state) {
+            'open' => 'connected',
+            'close' => 'disconnected',
+            'connecting' => 'connecting',
+            default => 'unknown'
+        };
 
+        Log::info('🔌 Connection State Changed', [
+            'instance' => $instanceName,
+            'state' => $state,
+            'status' => $status,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+
+        if ($instanceName) {
             WhatsAppInstance::where('instance_name', $instanceName)
                 ->update([
                     'status' => $status,
                     'connection_state' => $state,
                 ]);
 
-            Log::info('Connection state updated', [
+            Log::info('✅ Connection status updated in database', [
                 'instance' => $instanceName,
-                'state' => $state
+                'status' => $status
             ]);
         }
     }
@@ -147,9 +169,12 @@ class WebhookController extends Controller
      */
     protected function handleMessagesSet($data)
     {
-        Log::info('Messages set received', [
+        $messageCount = count($data['data']['messages'] ?? []);
+
+        Log::info('📦 Messages Set Received', [
             'instance' => $data['instance'] ?? null,
-            'count' => count($data['data']['messages'] ?? [])
+            'message_count' => $messageCount,
+            'timestamp' => now()->toDateTimeString()
         ]);
 
         // Process initial messages if needed
@@ -161,9 +186,9 @@ class WebhookController extends Controller
      */
     protected function handleMessagesUpsert($data)
     {
-        Log::info('New message received', [
+        Log::info('📨 New Message Event', [
             'instance' => $data['instance'] ?? null,
-            'message' => $data['data'] ?? null
+            'timestamp' => now()->toDateTimeString()
         ]);
 
         // Process new message
@@ -175,9 +200,10 @@ class WebhookController extends Controller
      */
     protected function handleMessagesUpdate($data)
     {
-        Log::info('Message updated', [
+        Log::info('🔄 Message Updated', [
             'instance' => $data['instance'] ?? null,
-            'message' => $data['data'] ?? null
+            'update_data' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -186,9 +212,10 @@ class WebhookController extends Controller
      */
     protected function handleMessagesDelete($data)
     {
-        Log::info('Message deleted', [
+        Log::info('🗑️ Message Deleted', [
             'instance' => $data['instance'] ?? null,
-            'message' => $data['data'] ?? null
+            'delete_data' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -197,9 +224,10 @@ class WebhookController extends Controller
      */
     protected function handleSendMessage($data)
     {
-        Log::info('Message sent', [
+        Log::info('📤 Message Sent', [
             'instance' => $data['instance'] ?? null,
-            'message' => $data['data'] ?? null
+            'message_data' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -215,24 +243,126 @@ class WebhookController extends Controller
             // Extract message details
             $key = $message['key'] ?? null;
             $messageContent = $message['message'] ?? null;
+            $pushName = $message['pushName'] ?? 'Unknown';
+            $messageTimestamp = $message['messageTimestamp'] ?? null;
 
-            if (!$key) continue;
+            if (!$key) {
+                Log::warning('⚠️ Message without key received', ['message' => $message]);
+                continue;
+            }
 
             $remoteJid = $key['remoteJid'] ?? null;
             $fromMe = $key['fromMe'] ?? false;
             $messageId = $key['id'] ?? null;
 
-            // Get message text
-            $text = $this->extractMessageText($messageContent);
+            // Determine sender and receiver
+            $sender = $fromMe ? 'Me (Bot)' : $remoteJid;
+            $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
-            // Store or process message as needed
-            Log::info('Processing message', [
+            // Extract message type and content
+            $messageInfo = $this->extractMessageInfo($messageContent);
+
+            // Comprehensive logging
+            Log::info('💬 Message Details', [
                 'instance' => $instanceName,
-                'from' => $remoteJid,
-                'fromMe' => $fromMe,
-                'messageId' => $messageId,
-                'text' => $text
+                'message_id' => $messageId,
+                'sender' => $sender,
+                'receiver' => $receiver,
+                'sender_name' => $pushName,
+                'from_me' => $fromMe,
+                'message_type' => $messageInfo['type'],
+                'timestamp' => $messageTimestamp ? date('Y-m-d H:i:s', $messageTimestamp) : 'unknown',
+                'content' => $messageInfo['content'],
+                'media_info' => $messageInfo['media_info'] ?? null,
             ]);
+
+            // Log specific message type details
+            switch ($messageInfo['type']) {
+                case 'text':
+                    Log::info('📝 Text Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'text' => $messageInfo['content']
+                    ]);
+                    break;
+
+                case 'image':
+                    Log::info('🖼️ Image Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'caption' => $messageInfo['content'],
+                        'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                        'file_size' => $messageInfo['media_info']['fileLength'] ?? null,
+                    ]);
+                    break;
+
+                case 'video':
+                    Log::info('🎥 Video Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'caption' => $messageInfo['content'],
+                        'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                        'duration' => $messageInfo['media_info']['seconds'] ?? null,
+                        'file_size' => $messageInfo['media_info']['fileLength'] ?? null,
+                    ]);
+                    break;
+
+                case 'audio':
+                    Log::info('🎵 Audio Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'duration' => $messageInfo['media_info']['seconds'] ?? null,
+                        'is_ptt' => $messageInfo['media_info']['ptt'] ?? false,
+                        'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                    ]);
+                    break;
+
+                case 'document':
+                    Log::info('📄 Document Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'filename' => $messageInfo['media_info']['fileName'] ?? null,
+                        'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                        'file_size' => $messageInfo['media_info']['fileLength'] ?? null,
+                        'caption' => $messageInfo['content'],
+                    ]);
+                    break;
+
+                case 'sticker':
+                    Log::info('🎭 Sticker Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
+                    ]);
+                    break;
+
+                case 'location':
+                    Log::info('📍 Location Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'latitude' => $messageInfo['media_info']['latitude'] ?? null,
+                        'longitude' => $messageInfo['media_info']['longitude'] ?? null,
+                        'address' => $messageInfo['content'],
+                    ]);
+                    break;
+
+                case 'contact':
+                    Log::info('👤 Contact Message', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'contact_info' => $messageInfo['content'],
+                    ]);
+                    break;
+
+                default:
+                    Log::info('❓ Unknown Message Type', [
+                        'from' => $sender,
+                        'to' => $receiver,
+                        'type' => $messageInfo['type'],
+                        'raw_content' => $messageContent,
+                    ]);
+                    break;
+            }
 
             // TODO: Add your custom message processing logic here
             // For example: save to database, trigger bot responses, etc.
@@ -240,30 +370,183 @@ class WebhookController extends Controller
     }
 
     /**
-     * Extract text from message content
+     * Extract message information including type and content
+     */
+    protected function extractMessageInfo($messageContent)
+    {
+        if (!$messageContent) {
+            return [
+                'type' => 'unknown',
+                'content' => null,
+            ];
+        }
+
+        // Text messages
+        if (isset($messageContent['conversation'])) {
+            return [
+                'type' => 'text',
+                'content' => $messageContent['conversation'],
+            ];
+        }
+
+        // Extended text message (with mentions, links, etc.)
+        if (isset($messageContent['extendedTextMessage'])) {
+            return [
+                'type' => 'text',
+                'content' => $messageContent['extendedTextMessage']['text'] ?? null,
+                'context_info' => $messageContent['extendedTextMessage']['contextInfo'] ?? null,
+            ];
+        }
+
+        // Image message
+        if (isset($messageContent['imageMessage'])) {
+            return [
+                'type' => 'image',
+                'content' => $messageContent['imageMessage']['caption'] ?? null,
+                'media_info' => [
+                    'mimetype' => $messageContent['imageMessage']['mimetype'] ?? null,
+                    'fileLength' => $messageContent['imageMessage']['fileLength'] ?? null,
+                    'height' => $messageContent['imageMessage']['height'] ?? null,
+                    'width' => $messageContent['imageMessage']['width'] ?? null,
+                ],
+            ];
+        }
+
+        // Video message
+        if (isset($messageContent['videoMessage'])) {
+            return [
+                'type' => 'video',
+                'content' => $messageContent['videoMessage']['caption'] ?? null,
+                'media_info' => [
+                    'mimetype' => $messageContent['videoMessage']['mimetype'] ?? null,
+                    'fileLength' => $messageContent['videoMessage']['fileLength'] ?? null,
+                    'seconds' => $messageContent['videoMessage']['seconds'] ?? null,
+                    'height' => $messageContent['videoMessage']['height'] ?? null,
+                    'width' => $messageContent['videoMessage']['width'] ?? null,
+                ],
+            ];
+        }
+
+        // Audio message (including voice notes)
+        if (isset($messageContent['audioMessage'])) {
+            return [
+                'type' => 'audio',
+                'content' => null,
+                'media_info' => [
+                    'mimetype' => $messageContent['audioMessage']['mimetype'] ?? null,
+                    'fileLength' => $messageContent['audioMessage']['fileLength'] ?? null,
+                    'seconds' => $messageContent['audioMessage']['seconds'] ?? null,
+                    'ptt' => $messageContent['audioMessage']['ptt'] ?? false, // Push to talk (voice note)
+                ],
+            ];
+        }
+
+        // Document message
+        if (isset($messageContent['documentMessage'])) {
+            return [
+                'type' => 'document',
+                'content' => $messageContent['documentMessage']['caption'] ?? null,
+                'media_info' => [
+                    'fileName' => $messageContent['documentMessage']['fileName'] ?? null,
+                    'mimetype' => $messageContent['documentMessage']['mimetype'] ?? null,
+                    'fileLength' => $messageContent['documentMessage']['fileLength'] ?? null,
+                ],
+            ];
+        }
+
+        // Sticker message
+        if (isset($messageContent['stickerMessage'])) {
+            return [
+                'type' => 'sticker',
+                'content' => null,
+                'media_info' => [
+                    'mimetype' => $messageContent['stickerMessage']['mimetype'] ?? null,
+                    'fileLength' => $messageContent['stickerMessage']['fileLength'] ?? null,
+                ],
+            ];
+        }
+
+        // Location message
+        if (isset($messageContent['locationMessage'])) {
+            return [
+                'type' => 'location',
+                'content' => $messageContent['locationMessage']['address'] ?? null,
+                'media_info' => [
+                    'latitude' => $messageContent['locationMessage']['degreesLatitude'] ?? null,
+                    'longitude' => $messageContent['locationMessage']['degreesLongitude'] ?? null,
+                ],
+            ];
+        }
+
+        // Contact message
+        if (isset($messageContent['contactMessage'])) {
+            return [
+                'type' => 'contact',
+                'content' => $messageContent['contactMessage']['displayName'] ?? null,
+                'media_info' => [
+                    'vcard' => $messageContent['contactMessage']['vcard'] ?? null,
+                ],
+            ];
+        }
+
+        // Contact array message
+        if (isset($messageContent['contactsArrayMessage'])) {
+            return [
+                'type' => 'contacts',
+                'content' => 'Multiple contacts',
+                'media_info' => [
+                    'contacts' => $messageContent['contactsArrayMessage']['contacts'] ?? [],
+                ],
+            ];
+        }
+
+        // Live location message
+        if (isset($messageContent['liveLocationMessage'])) {
+            return [
+                'type' => 'live_location',
+                'content' => $messageContent['liveLocationMessage']['caption'] ?? null,
+                'media_info' => [
+                    'latitude' => $messageContent['liveLocationMessage']['degreesLatitude'] ?? null,
+                    'longitude' => $messageContent['liveLocationMessage']['degreesLongitude'] ?? null,
+                ],
+            ];
+        }
+
+        // Reaction message
+        if (isset($messageContent['reactionMessage'])) {
+            return [
+                'type' => 'reaction',
+                'content' => $messageContent['reactionMessage']['text'] ?? null,
+                'media_info' => [
+                    'key' => $messageContent['reactionMessage']['key'] ?? null,
+                ],
+            ];
+        }
+
+        // Poll message
+        if (isset($messageContent['pollCreationMessage'])) {
+            return [
+                'type' => 'poll',
+                'content' => $messageContent['pollCreationMessage']['name'] ?? null,
+                'media_info' => [
+                    'options' => $messageContent['pollCreationMessage']['options'] ?? [],
+                ],
+            ];
+        }
+
+        return [
+            'type' => 'unknown',
+            'content' => json_encode($messageContent),
+        ];
+    }
+
+    /**
+     * Extract text from message content (legacy method for backward compatibility)
      */
     protected function extractMessageText($messageContent)
     {
-        if (!$messageContent) return null;
-
-        // Check different message types
-        if (isset($messageContent['conversation'])) {
-            return $messageContent['conversation'];
-        }
-
-        if (isset($messageContent['extendedTextMessage']['text'])) {
-            return $messageContent['extendedTextMessage']['text'];
-        }
-
-        if (isset($messageContent['imageMessage']['caption'])) {
-            return $messageContent['imageMessage']['caption'];
-        }
-
-        if (isset($messageContent['videoMessage']['caption'])) {
-            return $messageContent['videoMessage']['caption'];
-        }
-
-        return null;
+        $info = $this->extractMessageInfo($messageContent);
+        return $info['content'];
     }
 
     // ==================== CONTACT EVENTS ====================
@@ -273,9 +556,12 @@ class WebhookController extends Controller
      */
     protected function handleContactsSet($data)
     {
-        Log::info('Contacts set received', [
+        $contactCount = count($data['data']['contacts'] ?? []);
+
+        Log::info('👥 Contacts Set Received', [
             'instance' => $data['instance'] ?? null,
-            'count' => count($data['data']['contacts'] ?? [])
+            'contact_count' => $contactCount,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -284,9 +570,10 @@ class WebhookController extends Controller
      */
     protected function handleContactsUpsert($data)
     {
-        Log::info('Contact upserted', [
+        Log::info('👤 Contact Upserted', [
             'instance' => $data['instance'] ?? null,
-            'contact' => $data['data'] ?? null
+            'contact' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -295,9 +582,10 @@ class WebhookController extends Controller
      */
     protected function handleContactsUpdate($data)
     {
-        Log::info('Contact updated', [
+        Log::info('👤 Contact Updated', [
             'instance' => $data['instance'] ?? null,
-            'contact' => $data['data'] ?? null
+            'contact' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -308,9 +596,10 @@ class WebhookController extends Controller
      */
     protected function handlePresenceUpdate($data)
     {
-        Log::info('Presence updated', [
+        Log::info('👁️ Presence Updated', [
             'instance' => $data['instance'] ?? null,
-            'presence' => $data['data'] ?? null
+            'presence' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -321,9 +610,12 @@ class WebhookController extends Controller
      */
     protected function handleChatsSet($data)
     {
-        Log::info('Chats set received', [
+        $chatCount = count($data['data']['chats'] ?? []);
+
+        Log::info('💬 Chats Set Received', [
             'instance' => $data['instance'] ?? null,
-            'count' => count($data['data']['chats'] ?? [])
+            'chat_count' => $chatCount,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -332,9 +624,10 @@ class WebhookController extends Controller
      */
     protected function handleChatsUpsert($data)
     {
-        Log::info('Chat upserted', [
+        Log::info('💬 Chat Upserted', [
             'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null
+            'chat' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -343,9 +636,10 @@ class WebhookController extends Controller
      */
     protected function handleChatsUpdate($data)
     {
-        Log::info('Chat updated', [
+        Log::info('💬 Chat Updated', [
             'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null
+            'chat' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -354,9 +648,10 @@ class WebhookController extends Controller
      */
     protected function handleChatsDelete($data)
     {
-        Log::info('Chat deleted', [
+        Log::info('🗑️ Chat Deleted', [
             'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null
+            'chat' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -367,9 +662,10 @@ class WebhookController extends Controller
      */
     protected function handleGroupsUpsert($data)
     {
-        Log::info('Group upserted', [
+        Log::info('👥 Group Upserted', [
             'instance' => $data['instance'] ?? null,
-            'group' => $data['data'] ?? null
+            'group' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -378,9 +674,10 @@ class WebhookController extends Controller
      */
     protected function handleGroupUpdate($data)
     {
-        Log::info('Group updated', [
+        Log::info('👥 Group Updated', [
             'instance' => $data['instance'] ?? null,
-            'group' => $data['data'] ?? null
+            'group' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -389,9 +686,10 @@ class WebhookController extends Controller
      */
     protected function handleGroupParticipantsUpdate($data)
     {
-        Log::info('Group participants updated', [
+        Log::info('👥 Group Participants Updated', [
             'instance' => $data['instance'] ?? null,
-            'update' => $data['data'] ?? null
+            'update' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -402,9 +700,10 @@ class WebhookController extends Controller
      */
     protected function handleLabelsEdit($data)
     {
-        Log::info('Labels edited', [
+        Log::info('🏷️ Labels Edited', [
             'instance' => $data['instance'] ?? null,
-            'labels' => $data['data'] ?? null
+            'labels' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -413,9 +712,10 @@ class WebhookController extends Controller
      */
     protected function handleLabelsAssociation($data)
     {
-        Log::info('Labels associated', [
+        Log::info('🏷️ Labels Associated', [
             'instance' => $data['instance'] ?? null,
-            'association' => $data['data'] ?? null
+            'association' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -426,9 +726,10 @@ class WebhookController extends Controller
      */
     protected function handleCall($data)
     {
-        Log::info('Call received', [
+        Log::info('📞 Call Received', [
             'instance' => $data['instance'] ?? null,
-            'call' => $data['data'] ?? null
+            'call' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
 
         // TODO: Handle incoming calls (e.g., auto-reject, notify user, etc.)
@@ -441,9 +742,10 @@ class WebhookController extends Controller
      */
     protected function handleTypebotStart($data)
     {
-        Log::info('Typebot started', [
+        Log::info('🤖 Typebot Started', [
             'instance' => $data['instance'] ?? null,
-            'typebot' => $data['data'] ?? null
+            'typebot' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 
@@ -452,9 +754,10 @@ class WebhookController extends Controller
      */
     protected function handleTypebotChangeStatus($data)
     {
-        Log::info('Typebot status changed', [
+        Log::info('🤖 Typebot Status Changed', [
             'instance' => $data['instance'] ?? null,
-            'status' => $data['data'] ?? null
+            'status' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
         ]);
     }
 }
