@@ -829,7 +829,8 @@ class WhatsAppController extends Controller
             'profile_name' => $instance->profile_name,
             'created_at' => $instance->created_at,
         ];
-
+        Log::info('providerData');
+        Log::info($providerData);
         // If open, get additional stats
         if ($providerData['data']['state'] === 'open') {
             $contactsResult = $this->evolutionService->findContacts($instanceName);
