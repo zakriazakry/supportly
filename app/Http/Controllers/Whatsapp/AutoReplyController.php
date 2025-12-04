@@ -57,11 +57,11 @@ class AutoReplyController extends Controller
             return;
         }
 
-        $autoReply = $user->whasAppReply;
-        if (!$autoReply) {
-            Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
-            return;
-        }
+        // $autoReply = $user->whasAppReply;
+        // if (!$autoReply) {
+        //     Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
+        //     return;
+        // }
 
         // Basic echo-back or default processing
         $this->evolutionService->sendText($instanceName, $fromNumber, $message);
