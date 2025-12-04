@@ -25,13 +25,6 @@ class WebhookController extends Controller
         try {
             $data = $request->all();
 
-            // Log raw webhook data
-            Log::info('=== Evolution Webhook Received ===', [
-                'timestamp' => now()->toDateTimeString(),
-                'event' => $data['event'] ?? 'unknown',
-                'instance' => $data['instance'] ?? 'unknown',
-                'full_data' => $data
-            ]);
 
             // Get event type
             $event = $data['event'] ?? null;
