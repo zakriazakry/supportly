@@ -250,11 +250,12 @@ class WebhookController extends Controller
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    new AutoReplyController(new EvolutionService())->whenReceiveTextMessage([
+                    $autoReplyController = new AutoReplyController(new EvolutionService());
+                    $autoReplyController->whenReceiveTextMessage([
                         'from' => $sender,
                         'form_number' => explode('@', $sender)[0],
                         'to' => $receiver,
-                        'message' => $messageContent['conversation'], 
+                        'message' => $messageContent['conversation'],
                         'pushName' => $pushName,
                         'messageTimestamp' => $messageTimestamp,
                         'messageId' => $messageId,
