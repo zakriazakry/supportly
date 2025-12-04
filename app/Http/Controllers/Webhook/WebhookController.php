@@ -264,7 +264,7 @@ class WebhookController extends Controller
                         'remoteJid' => $remoteJid,
                         'key' => $key,
                         'messageInfo' => $messageInfo,
-                        'instanceName' => $instanceName,
+                        'instance' => $instanceName,
                     ]);
                     break;
 
