@@ -21,7 +21,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/instances/{instanceName}/qr/refresh', 'refreshQRCode');
         Route::get('/instances/{instanceName}/qr-code', 'getQRCode');
         Route::get('/instances/{instanceName}/status', 'getConnectionStatus');
-        Route::get('/instances/{instanceName}/settings', 'getInstanceSettings');
         Route::post('/instances/{instanceName}/settings', 'updateInstanceSettings');
 
         // Messages
