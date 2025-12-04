@@ -66,18 +66,18 @@ class AutoReplyController extends Controller
         // Basic echo-back or default processing
         $this->evolutionService->sendText($instanceName, $fromNumber, $message);
 
-        // Auto-reply features
-        if ($autoReply->welcome) {
-            $this->welcomeReply($instanceName, $fromNumber, $message);
-        }
+        // // Auto-reply features
+        // if ($autoReply->welcome) {
+        //     $this->welcomeReply($instanceName, $fromNumber, $message);
+        // }
 
-        if ($autoReply->ai) {
-            $this->aiReply($instanceName, $fromNumber, $message);
-        }
+        // if ($autoReply->ai) {
+        //     $this->aiReply($instanceName, $fromNumber, $message);
+        // }
 
-        if ($autoReply->number) {
-            $this->normalReply($instanceName, $fromNumber, $message);
-        }
+        // if ($autoReply->number) {
+        //     $this->normalReply($instanceName, $fromNumber, $message);
+        // }
     }
 
     private function welcomeReply($instanceName, $number, $msg)
