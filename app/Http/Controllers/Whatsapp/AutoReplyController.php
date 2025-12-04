@@ -11,47 +11,75 @@ use Illuminate\Support\Facades\Log;
 
 class AutoReplyController extends Controller
 {
-    protected $evolutionService;
+    protected EvolutionService $evolutionService;
 
     public function __construct(EvolutionService $service)
     {
         $this->evolutionService = $service;
     }
 
-    static public function whenReceiveTextMessage($data)
+    public function whenReceiveTextMessage(array $data)
     {
-        $instance_name = $data['instance'] ?? null;
-        $instance = WhatsAppInstance::where('instance_name', $instance_name)->first();
+        $instanceName = $data['instance'] ?? null;
+        $message      = $data['message'] ?? null;
+        $fromNumber   = $data['fromNumber'] ?? null;
+
+        if (!$instanceName || !$fromNumber || !$message) {
+            Log::warning('Missing required fields in WhatsApp webhook', $data);
+            return;
+        }
+
+        $instance = WhatsAppInstance::where('instance_name', $instanceName)->first();
         if (!$instance) {
-            Log::error('Instance not found', ['instance_name' => $instance_name]);
+            Log::error('WhatsApp instance not found', ['instance_name' => $instanceName]);
             return;
         }
-        $user = User::where('id', $instance->user_id)->first();
+
+        $user = User::find($instance->user_id);
         if (!$user) {
-            Log::error('User not found', ['user_id' => $instance->user_id]);
+            Log::error('User not found for instance', ['user_id' => $instance->user_id]);
             return;
         }
+
         $autoReply = $user->whasAppReply;
         if (!$autoReply) {
-            Log::error('user is Expider', ['user_id' => $user->id]);
+            Log::error('User auto-reply settings not found or expired', ['user_id' => $user->id]);
             return;
         }
-        $message = $data['message'] ?? null;
-        // process message
-        // send message to user
-        $autoReply = $user->whasAppReply;
-        self::$evolutionService->sendText($instance_name, $data['formNumber'], $message);
+
+        // Always send back the received message (if intended)
+        $this->evolutionService->sendText($instanceName, $fromNumber, $message);
+
+        // Conditional automatic replies
         if ($autoReply->welcome) {
-            self::welcomeReply($message);
+            $this->welcomeReply($instanceName, $fromNumber, $message);
         }
+
         if ($autoReply->ai) {
-            self::aiReply($message);
+            $this->aiReply($instanceName, $fromNumber, $message);
         }
+
         if ($autoReply->number) {
-            self::normalReply($message);
+            $this->normalReply($instanceName, $fromNumber, $message);
         }
     }
-    private function welcomeReply($msg) {}
-    private function aiReply($msg) {}
-    private function normalReply($msg) {}
+
+    private function welcomeReply($instanceName, $number, $msg)
+    {
+        // Example:
+        $this->evolutionService->sendText($instanceName, $number, "Welcome!");
+    }
+
+    private function aiReply($instanceName, $number, $msg)
+    {
+        // Example:
+        // $reply = $this->generateAIResponse($msg);
+        // $this->evolutionService->sendText($instanceName, $number, $reply);
+    }
+
+    private function normalReply($instanceName, $number, $msg)
+    {
+        // Example:
+        // $this->evolutionService->sendText($instanceName, $number, "Thanks for your message!");
+    }
 }
