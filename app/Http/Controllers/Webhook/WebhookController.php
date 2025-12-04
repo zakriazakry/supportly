@@ -252,7 +252,7 @@ class WebhookController extends Controller
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    AutoReplyController::whenReceiveTextMessage([
+                    new AutoReplyController(new EvolutionService())->whenReceiveTextMessage([
                         'from' => $sender,
                         'form_number' => explode('@', $sender)[0],
                         'to' => $receiver,
@@ -264,7 +264,7 @@ class WebhookController extends Controller
                         'remoteJid' => $remoteJid,
                         'key' => $key,
                         'messageInfo' => $messageInfo,
-                        'instance' => $instanceName,
+                        'instanceName' => $instanceName,
                     ]);
                     break;
 
