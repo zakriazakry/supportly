@@ -51,7 +51,7 @@ class AutoReplyController extends Controller
 
         // Safe to use $autoReply now (no more undefined errors)
         // Default echo-back message
-        $this->evolutionService->sendChatPresence($instanceName, $fromNumber);
+        $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
         $this->evolutionService->sendText($instanceName, $fromNumber, $message);
 
         // Auto reply conditions
