@@ -840,9 +840,9 @@ class WhatsAppController extends Controller
             $chatsResult = $this->evolutionService->findChats($instanceName);
             $groupsResult = $this->evolutionService->fetchAllGroups($instanceName, false);
 
-            $stats['total_contacts'] = $contactsResult['success'] ? count($contactsResult['data'] ?? []) : 0;
-            $stats['total_chats'] = $chatsResult['success'] ? count($chatsResult['data'] ?? []) : 0;
-            $stats['total_groups'] = $groupsResult['success'] ? count($groupsResult['data'] ?? []) : 0;
+            $stats['total_contacts'] = $contactsResult;
+            $stats['total_chats'] = $chatsResult;
+            $stats['total_groups'] = $groupsResult;
         }
 
         return responseFormat($stats);
