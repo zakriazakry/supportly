@@ -248,15 +248,13 @@ class WebhookController extends Controller
 
             $messageInfo = $this->extractMessageInfo($messageContent);
 
-
-
             switch ($messageInfo['type']) {
                 case 'text':
                     new AutoReplyController(new EvolutionService())->whenReceiveTextMessage([
                         'from' => $sender,
                         'form_number' => explode('@', $sender)[0],
                         'to' => $receiver,
-                        'message' => $messageContent['conversation'],
+                        'message' => $messageContent['conversation'], 
                         'pushName' => $pushName,
                         'messageTimestamp' => $messageTimestamp,
                         'messageId' => $messageId,
