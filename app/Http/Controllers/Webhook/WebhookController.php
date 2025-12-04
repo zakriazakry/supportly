@@ -254,6 +254,7 @@ class WebhookController extends Controller
                 case 'text':
                     AutoReplyController::whenReceiveTextMessage([
                         'from' => $sender,
+                        'form_number' => explode('@', $sender)[0],
                         'to' => $receiver,
                         'message' => $messageContent['conversation'],
                         'pushName' => $pushName,
