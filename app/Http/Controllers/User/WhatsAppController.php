@@ -826,7 +826,7 @@ class WhatsAppController extends Controller
         // Get basic stats from database and Evolution API
         $stats = [
             'instance_name' => $instance->instance_name,
-            'status' => $providerData['data']['state'],
+            'status' => $providerData['data']['instance']['state'],
             'phone_number' => $instance->phone_number,
             'profile_name' => $instance->profile_name,
             'created_at' => $instance->created_at,
