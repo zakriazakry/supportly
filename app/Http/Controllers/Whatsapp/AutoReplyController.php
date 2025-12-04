@@ -17,28 +17,12 @@ class AutoReplyController extends Controller
         $this->evolutionService = $service;
     }
 
-    /**
-     * Handle incoming text message from webhook
-     *
-     * Example $data structure:
-     *  'from' => $sender,
-     *  'form_number' => explode('@', $sender)[0],
-     *  'to' => $receiver,
-     *  'message' => $messageContent['conversation'],
-     *  'pushName' => $pushName,
-     *  'messageTimestamp' => $messageTimestamp,
-     *  'messageId' => $messageId,
-     *  'fromMe' => $fromMe,
-     *  'remoteJid' => $remoteJid,
-     *  'key' => $key,
-     *  'messageInfo' => $messageInfo,
-     *  'instanceName' => $instanceName,
-     */
     public function whenReceiveTextMessage(array $data)
     {
-        $instanceName = $data['instanceName'] ?? null;   // FIXED
+        // FIXED: using correct webhook keys
+        $instanceName = $data['instanceName'] ?? null;
         $message      = $data['message'] ?? null;
-        $fromNumber   = $data['form_number'] ?? null;    // FIXED
+        $fromNumber   = $data['form_number'] ?? null;
 
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
@@ -57,27 +41,31 @@ class AutoReplyController extends Controller
             return;
         }
 
-        // $autoReply = $user->whasAppReply;
-        // if (!$autoReply) {
-        //     Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
-        //     return;
-        // }
+        // Auto-reply settings
+        $autoReply = $user->whasAppReply;
 
-        // Basic echo-back or default processing
+        if (!$autoReply) {
+            Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
+            return;
+        }
+
+        // Safe to use $autoReply now (no more undefined errors)
+
+        // Default echo-back message
         $this->evolutionService->sendText($instanceName, $fromNumber, $message);
 
-        // // Auto-reply features
-        // if ($autoReply->welcome) {
-        //     $this->welcomeReply($instanceName, $fromNumber, $message);
-        // }
+        // Auto reply conditions
+        if (!empty($autoReply->welcome)) {
+            $this->welcomeReply($instanceName, $fromNumber, $message);
+        }
 
-        // if ($autoReply->ai) {
-        //     $this->aiReply($instanceName, $fromNumber, $message);
-        // }
+        if (!empty($autoReply->ai)) {
+            $this->aiReply($instanceName, $fromNumber, $message);
+        }
 
-        // if ($autoReply->number) {
-        //     $this->normalReply($instanceName, $fromNumber, $message);
-        // }
+        if (!empty($autoReply->number)) {
+            $this->normalReply($instanceName, $fromNumber, $message);
+        }
     }
 
     private function welcomeReply($instanceName, $number, $msg)
@@ -87,14 +75,11 @@ class AutoReplyController extends Controller
 
     private function aiReply($instanceName, $number, $msg)
     {
-        // Example AI logic:
-        // $response = $this->aiService->reply($msg);
-        // $this->evolutionService->sendText($instanceName, $number, $response);
+        // your AI logic here
     }
 
     private function normalReply($instanceName, $number, $msg)
     {
-        // Example basic reply:
-        // $this->evolutionService->sendText($instanceName, $number, "Thanks for your message!");
+        // normal reply logic
     }
 }
