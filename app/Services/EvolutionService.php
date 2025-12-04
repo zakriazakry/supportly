@@ -75,7 +75,7 @@ class EvolutionService
     {
         $data = array_merge([
             'instanceName' => $instanceName,
-            'qrcode' => true,
+            'qrcode' => false,
             'integration' => 'WHATSAPP-BAILEYS',
         ], $options);
 
