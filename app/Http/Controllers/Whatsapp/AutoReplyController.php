@@ -50,7 +50,6 @@ class AutoReplyController extends Controller
         // }
 
         // Safe to use $autoReply now (no more undefined errors)
-
         // Default echo-back message
         $this->evolutionService->sendChatPresence($instanceName, $fromNumber);
         $this->evolutionService->sendText($instanceName, $fromNumber, $message);
