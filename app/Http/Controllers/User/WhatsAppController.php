@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Events\WhatsApp\InstanceConnected;
-use App\Events\WhatsApp\InstanceDisconnected;
+use App\Events\WhatsApp\Instanceopen;
+use App\Events\WhatsApp\InstanceDisopen;
 use App\Http\Controllers\Controller;
 use App\Services\EvolutionService;
 use App\Models\WhatsAppInstance;
@@ -168,11 +168,11 @@ class WhatsAppController extends Controller
             return responseFormat('Instance not found', 404);
         }
 
-        // Check if already connected
-        if ($instance->status === 'connected') {
+        // Check if already open
+        if ($instance->status === 'open') {
             return responseFormat([
-                'status' => 'connected',
-                'message' => 'Instance already connected'
+                'status' => 'open',
+                'message' => 'Instance already open'
             ]);
         }
 
@@ -300,11 +300,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->sendText(
@@ -346,11 +346,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->sendMedia(
@@ -396,11 +396,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->createGroup(
@@ -429,11 +429,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->fetchAllGroups($instanceName, true);
@@ -455,11 +455,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->findContacts($instanceName);
@@ -492,11 +492,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->findMessages(
@@ -535,11 +535,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->sendQuickReply(
@@ -582,11 +582,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->sendList(
@@ -630,11 +630,11 @@ class WhatsAppController extends Controller
 
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->markAsRead(
@@ -704,7 +704,7 @@ class WhatsAppController extends Controller
 
         // Update status in database
         $instance->update([
-            'status' => 'disconnected',
+            'status' => 'disopen',
             'qr_code' => null,
         ]);
 
@@ -736,7 +736,7 @@ class WhatsAppController extends Controller
 
         // Update status in database
         $instance->update([
-            'status' => 'disconnected',
+            'status' => 'disopen',
             'qr_code' => null,
         ]);
 
@@ -755,11 +755,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->findMessages(
@@ -785,11 +785,11 @@ class WhatsAppController extends Controller
     {
         $instance = WhatsAppInstance::where('instance_name', $instanceName)
             ->where('user_id', $request->user()->id)
-            ->where('status', 'connected')
+            ->where('status', 'open')
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found or not connected', 404);
+            return responseFormat('Instance not found or not open', 404);
         }
 
         $result = $this->evolutionService->findChats($instanceName);
@@ -827,8 +827,8 @@ class WhatsAppController extends Controller
             'created_at' => $instance->created_at,
         ];
 
-        // If connected, get additional stats
-        if ($instance->status === 'connected') {
+        // If open, get additional stats
+        if ($instance->status === 'open') {
             $contactsResult = $this->evolutionService->findContacts($instanceName);
             $chatsResult = $this->evolutionService->findChats($instanceName);
             $groupsResult = $this->evolutionService->fetchAllGroups($instanceName, false);
@@ -1083,15 +1083,15 @@ class WhatsAppController extends Controller
                             'profile_picture_url' => $data['data']['instance']['profilePictureUrl'] ?? null,
                         ];
 
-                        $instance->updateConnectionStatus('connected', $connectionData);
+                        $instance->updateConnectionStatus('open', $connectionData);
 
                         // إطلاق Event
-                        event(new InstanceConnected($instance, $connectionData));
+                        event(new Instanceopen($instance, $connectionData));
                     } elseif ($state === 'close') {
-                        $instance->updateConnectionStatus('disconnected');
+                        $instance->updateConnectionStatus('disopen');
 
                         // إطلاق Event
-                        event(new InstanceDisconnected($instance));
+                        event(new InstanceDisopen($instance));
                     }
                     break;
 
