@@ -108,7 +108,7 @@ class WhatsAppController extends Controller
         $instance = WhatsAppInstance::create([
             'user_id' => $request->user()->id,
             'instance_name' => $request->name,
-            'phone_number' => $request->phoneNumber,
+            'phone_number' => $request->phone_number,
             'token' => $result['data']['hash'] ?? null,
             'qr_code' => $result['data']['qrcode']['base64'] ?? null,
             'status' => 'pending',
