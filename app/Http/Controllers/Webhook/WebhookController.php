@@ -283,7 +283,7 @@ class WebhookController extends Controller
                     Log::info('🖼️ Image Message', [
                         'from' => $sender,
                         'to' => $receiver,
-                        'image' => $messageInfo ?? null,
+                        'image' => $data ?? null,
                         'caption' => $messageInfo['content'],
                         'mimetype' => $messageInfo['media_info']['mimetype'] ?? null,
                         'file_size' => $messageInfo['media_info']['fileLength'] ?? null,
