@@ -72,16 +72,6 @@ class AutoReplyController extends Controller
                     "displayText" => "Resposta",
                     "id" => "123"
                 ],
-                [
-                    "type" => "reply",
-                    "displayText" => "Resposta",
-                    "id" => "123"
-                ],
-                [
-                    "type" => "reply",
-                    "displayText" => "Resposta",
-                    "id" => "123"
-                ],
             ]
         );
 
