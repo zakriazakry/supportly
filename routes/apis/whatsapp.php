@@ -12,9 +12,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/instances', 'getInstances');
         Route::get('/instances-by-id/{instanceId}', 'getInstance');
         Route::post('/instances', 'createInstance');
-        Route::delete('/instances/{instanceName}', 'deleteInstance');
         Route::post('/instances/{instanceName}/logout', 'logoutInstance');
         Route::post('/instances/{instanceName}/disconnect', 'disconnectInstance');
+        Route::delete('/instances/{instanceName}', 'deleteInstance');
 
         // Connection & QR Code
         Route::post('/instances/{instanceName}/qr', 'generateQRCode');
