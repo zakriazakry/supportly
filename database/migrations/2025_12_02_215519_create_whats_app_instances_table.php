@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('instance_name')->unique();
             $table->string('token')->nullable();
-            $table->enum('status', ['pending', 'open', 'close', 'qr_ready'])->default('pending');
+            $table->enum('status', ['pending', 'open', 'close', 'connecting', 'qr_ready'])->default('pending');
             $table->text('qr_code')->nullable(); // Base64 QR Code
             $table->timestamps();
         });
