@@ -50,8 +50,17 @@ class AutoReplyController extends Controller
         // }
 
         // Safe to use $autoReply now (no more undefined errors)
-        // Default echo-back message
+
+        // Mark message as read (seen)
+        $messageKey = $data['key'] ?? null;
+        if ($messageKey) {
+            $this->evolutionService->markAsRead($instanceName, [$messageKey]);
+        }
+
+        // Show typing indicator
         $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
+
+        // Default echo-back message
         $this->evolutionService->sendText($instanceName, $fromNumber, "مرحبا بك ي غالي \n كيف يمكنني مساعدتك؟");
 
         // Auto reply conditions
