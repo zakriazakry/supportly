@@ -61,16 +61,25 @@ class AutoReplyController extends Controller
         $this->evolutionService->sendChatPresence($instanceName, $fromNumber, 'composing', 5000);
 
         // Default echo-back message
-        $this->evolutionService->sendText(
+        $this->evolutionService->sendButtons(
             $instanceName,
             $fromNumber,
-            "أهلاً وسهلاً بك في خدمتنا! 🌟\n\n" .
-                "يسعدنا تواصلك معنا.\n" .
-                "يرجى إخبارنا بما تحتاجه أو اختيار أحد الخيارات التالية:\n" .
-                "1️⃣ الدعم الفني\n" .
-                "2️⃣ الاستفسارات العامة\n" .
-                "3️⃣ متابعة الطلبات\n\n" .
-                "سنسعد بخدمتك بأسرع وقت ممكن!"
+            "الدعم الفني",
+            "تفاصيل للدعم الفني",
+            [
+                [
+                    'title' => 'الدعم الفني',
+                    'url' => 'https://example.com/support',
+                ],
+                [
+                    'title' => 'الاستفسارات العامة',
+                    'url' => 'https://example.com/general',
+                ],
+                [
+                    'title' => 'متابعة الطلبات',
+                    'url' => 'https://example.com/orders',
+                ],
+            ]
         );
 
         // Auto reply conditions
