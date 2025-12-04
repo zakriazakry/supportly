@@ -299,7 +299,7 @@ class WhatsAppController extends Controller
         }
         Log::info($result);
         $instance->update([
-            'status' => $result['data']['status'],
+            'status' => $result['data']['instance']['status'],
         ]);
 
         return responseFormat($result['data']);
