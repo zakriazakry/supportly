@@ -73,11 +73,11 @@ class AutoReplyController extends Controller
         //         "سنسعد بخدمتك بأسرع وقت ممكن!"
         // );
 
-        $this->evolutionService->sendAudio(
-            $instanceName,
-            $fromNumber,
-            "https://g.top4top.io/m_3625to0bh1.mp3"
-        );
+        // $this->evolutionService->sendAudio(
+        //     $instanceName,
+        //     $fromNumber,
+        //     "https://g.top4top.io/m_3625to0bh1.mp3"
+        // );
         // Auto reply conditions
         if (!empty($autoReply->welcome)) {
             $this->welcomeReply($instanceName, $fromNumber, $message);
