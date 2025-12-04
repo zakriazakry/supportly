@@ -42,12 +42,12 @@ class AutoReplyController extends Controller
         }
 
         // Auto-reply settings
-        $autoReply = $user->whasAppReply;
+        $autoReply = $user->whasAppReply ?? null;
 
-        if (!$autoReply) {
-            Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
-            return;
-        }
+        // if (!$autoReply) {
+        //     Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
+        //     return;
+        // }
 
         // Safe to use $autoReply now (no more undefined errors)
 
