@@ -68,16 +68,19 @@ class AutoReplyController extends Controller
             "تفاصيل للدعم الفني",
             [
                 [
-                    'title' => 'الدعم الفني',
-                    'url' => 'https://example.com/support',
+                    "type" => "reply",
+                    "displayText" => "Resposta",
+                    "id" => "123"
                 ],
                 [
-                    'title' => 'الاستفسارات العامة',
-                    'url' => 'https://example.com/general',
+                    "type" => "reply",
+                    "displayText" => "Resposta",
+                    "id" => "123"
                 ],
                 [
-                    'title' => 'متابعة الطلبات',
-                    'url' => 'https://example.com/orders',
+                    "type" => "reply",
+                    "displayText" => "Resposta",
+                    "id" => "123"
                 ],
             ]
         );

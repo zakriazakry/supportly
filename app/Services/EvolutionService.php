@@ -306,12 +306,16 @@ class EvolutionService
     /**
      * Send buttons message
      */
+    // "type": "reply",
+    // "displayText": "Resposta",
+    // "id": "123"
     public function sendButtons($instanceName, $number, $title, $description, $buttons, $options = [])
     {
         $data = array_merge([
             'number' => $number,
             'title' => $title,
             'description' => $description,
+            'footer' => 'Footer Button',
             'buttons' => $buttons,
         ], $options);
 
