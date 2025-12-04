@@ -135,13 +135,7 @@ class WebhookController extends Controller
             default => 'unknown'
         };
 
-        Log::info('🔌 Connection State Changed', [
-            'instance' => $instanceName,
-            'state' => $state,
-            'status' => $status,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-
+       
         if ($instanceName) {
             WhatsAppInstance::where('instance_name', $instanceName)
                 ->update([
