@@ -271,7 +271,7 @@ class WebhookController extends Controller
                     AutoReplyController::whenReceiveTextMessage([
                         'from' => $sender,
                         'to' => $receiver,
-                        'message' => $messageContent,
+                        'message' => $messageContent['conversation'],
                         'pushName' => $pushName,
                         'messageTimestamp' => $messageTimestamp,
                         'messageId' => $messageId,
@@ -286,6 +286,7 @@ class WebhookController extends Controller
                 case 'image':
                     Log::info('🖼️ Image Message', [
                         'from' => $sender,
+                        'form_number' =>  explode('@', $sender)[0],
                         'to' => $receiver,
                         'image' => $data['message']['image'] ?? null,
                         'caption' => $messageInfo['content'],
