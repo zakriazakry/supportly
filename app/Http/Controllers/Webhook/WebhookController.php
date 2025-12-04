@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Services\EvolutionService;
 use App\Models\WhatsAppInstance;
 use Illuminate\Http\Request;
@@ -267,11 +268,7 @@ class WebhookController extends Controller
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    Log::info('📝 Text Message', [
-                        'from' => $sender,
-                        'to' => $receiver,
-                        'text' => $messageInfo['content']
-                    ]);
+                    AutoReplyController::whenReceiveTextMessage($messageInfo);
                     break;
 
                 case 'image':
