@@ -101,7 +101,7 @@ class WhatsAppController extends Controller
             ->first();
 
         if (!$instance) {
-            return responseFormat('Instance not found', 404);
+            return responseFormat('Instance not found or you do not have access to it', 403);
         }
 
         return responseFormat($instance);
