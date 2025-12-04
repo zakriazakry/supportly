@@ -297,9 +297,7 @@ class WhatsAppController extends Controller
         if (!$result['success']) {
             return responseFormat($result['error'], 500);
         }
-        Log::info("===============");
-        Log::info($result['data']['instance']);
-        Log::info("===============");
+
         $instance->update([
             'status' => $result['data']['instance']['state'],
         ]);
