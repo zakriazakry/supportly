@@ -104,6 +104,8 @@ class WhatsAppController extends Controller
             return responseFormat('Instance not found or you do not have access to it', 403);
         }
 
+        $providerData = $this->evolutionService->fetchInstances($instance->name);
+        $instance->evo = $providerData;
         return responseFormat($instance);
     }
 
