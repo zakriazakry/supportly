@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Services\EvolutionService;
 use App\Models\WhatsAppInstance;
+use App\Services\OllamaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -135,7 +136,7 @@ class WebhookController extends Controller
             default => 'unknown'
         };
 
-       
+
         if ($instanceName) {
             WhatsAppInstance::where('instance_name', $instanceName)
                 ->update([
@@ -244,7 +245,7 @@ class WebhookController extends Controller
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    $autoReplyController = new AutoReplyController(new EvolutionService());
+                    $autoReplyController = new AutoReplyController(new EvolutionService(), new OllamaService());
                     $autoReplyController->whenReceiveTextMessage([
                         'from' => $sender,
                         'form_number' => explode('@', $sender)[0],
