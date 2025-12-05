@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\WhatsAppInstance;
 use App\Services\AiManagerService;
 use App\Services\EvolutionService;
-use App\Services\OllamaService;
 use Illuminate\Support\Facades\Log;
 
 class AutoReplyController extends Controller
