@@ -108,21 +108,9 @@ class AutoReplyController extends Controller
         try {
             $start = microtime(true);
 
-            // نرسل حالة الكتابة بشكل متكرر كل ثانية حتى يتم الرد
-            $aiResponse = '';
-            while (empty($aiResponse)) {
-                // مؤشر "الكتابة" كل ثانية
-                $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 1000);
 
-                // نحاول توليد الرد
-                $aiResponse = $this->ai->generate($msg, $system_prompt, 'openai');
-
-                // إذا استغرق وقت طويل جدًا، نكسر الحلقة لتجنب تعليق التطبيق
-                if ((microtime(true) - $start) > 30) { // 30 ثانية كحد أقصى
-                    $aiResponse = "آسف، الرد استغرق وقت طويل، حاول مرة أخرى لاحقاً. 😅";
-                    break;
-                }
-            }
+            $aiResponse = $this->ai->generate($msg, $system_prompt, 'openai');
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 2000);
 
             // إرسال الرد النهائي
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
