@@ -2171,7 +2171,7 @@
 												"header": [],
 												"body": {
 													"mode": "raw",
-													"raw": "{\r\n    \"name\": \"apikey\",\r\n    \"apiKey\": \"REMOVEDproj-...\"\r\n}",
+													"raw": "{\r\n    \"name\": \"apikey\",\r\n    \"apiKey\": \"sk-proj-...\"\r\n}",
 													"options": {
 														"raw": {
 															"language": "json"
