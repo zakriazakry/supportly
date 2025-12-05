@@ -14,10 +14,10 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key') ?? '';
-        $this->baseUrl = config('services.openai.base_url') ?? 'https://api.openai.com/v1';
-        $this->model = config('services.openai.model') ?? 'gpt-4o-mini';
-        $this->timeout = config('services.openai.timeout') ?? 60;
+        $this->apiKey = config('services.openai.api_key');
+        $this->baseUrl = config('services.openai.base_url');
+        $this->model = config('services.openai.model');
+        $this->timeout = config('services.openai.timeout');
     }
 
     /**
