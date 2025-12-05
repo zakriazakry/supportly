@@ -11,6 +11,8 @@ use App\Services\OllamaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+use function Laravel\Prompts\info;
+
 class WebhookController extends Controller
 {
     protected $evolutionService;
@@ -242,7 +244,7 @@ class WebhookController extends Controller
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
             $messageInfo = $this->extractMessageInfo($messageContent);
-
+            info('data', $data);
             switch ($messageInfo['type']) {
                 case 'text':
                     $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
