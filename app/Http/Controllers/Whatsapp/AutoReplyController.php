@@ -106,24 +106,25 @@ class AutoReplyController extends Controller
     private function aiReply($instanceName, $number, $msg, $system_prompt)
     {
         try {
-            // Indicate that the bot is "typing" or "composing"
-            // The duration is an estimation; actual AI processing time may vary.
-            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 5000); // Increased duration slightly
+            $start = microtime(true);
 
-            // Generate AI response
-            $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
+            // نرسل حالة الكتابة بشكل متكرر كل ثانية حتى يتم الرد
+            $aiResponse = '';
+            while (empty($aiResponse)) {
+                // مؤشر "الكتابة" كل ثانية
+                $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 1000);
 
-            // Ensure the AI response is not empty before sending
-            if (empty(trim($aiResponse))) {
-                $aiResponse = "آسف، لم أتمكن من توليد رد في الوقت الحالي. 😅";
-                Log::warning('AI generated an empty response', [
-                    'instance' => $instanceName,
-                    'to' => $number,
-                    'user_message' => $msg
-                ]);
+                // نحاول توليد الرد
+                $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
+
+                // إذا استغرق وقت طويل جدًا، نكسر الحلقة لتجنب تعليق التطبيق
+                if ((microtime(true) - $start) > 30) { // 30 ثانية كحد أقصى
+                    $aiResponse = "آسف، الرد استغرق وقت طويل، حاول مرة أخرى لاحقاً. 😅";
+                    break;
+                }
             }
 
-            // Send the AI response
+            // إرسال الرد النهائي
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
 
             Log::info('AI Reply sent successfully', [
@@ -137,10 +138,9 @@ class AutoReplyController extends Controller
                 'error' => $e->getMessage(),
                 'instance' => $instanceName,
                 'to' => $number,
-                'user_message' => $msg // Include user message for better debugging
+                'user_message' => $msg
             ]);
 
-            // Send fallback message on error
             $this->evolutionService->sendText(
                 $instanceName,
                 $number,
@@ -148,6 +148,7 @@ class AutoReplyController extends Controller
             );
         }
     }
+
 
     private function normalReply($instanceName, $number, $msg)
     {
