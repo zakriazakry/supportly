@@ -34,7 +34,13 @@ class OllamaService
                 'prompt' => $prompt,
                 'stream' => false,
             ];
-
+            Log::info('Ollama API Request', [
+                'url' => $this->baseUrl . '/api/generate',
+                'model' => $payload['model'],
+                'prompt_length' => strlen($prompt),
+                'system_prompt' => $systemPrompt,
+                'options' => $options
+            ]);
             // Add system prompt if provided
             if ($systemPrompt) {
                 $payload['system'] = $systemPrompt;
