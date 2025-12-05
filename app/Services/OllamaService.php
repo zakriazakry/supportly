@@ -14,7 +14,7 @@ class OllamaService
     public function __construct()
     {
         $this->baseUrl = config('services.ollama.url', 'http://31.97.154.208:11434');
-        $this->model = config('services.ollama.model', 'llama3.2');
+        $this->model = config('services.ollama.model', 'llama3.2:1b');
         $this->timeout = config('services.ollama.timeout', 120);
     }
 
