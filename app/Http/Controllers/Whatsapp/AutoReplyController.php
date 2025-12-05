@@ -115,7 +115,7 @@ class AutoReplyController extends Controller
                 $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 1000);
 
                 // نحاول توليد الرد
-                $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
+                $aiResponse = $this->ai->generate($msg, $system_prompt, 'openai');
 
                 // إذا استغرق وقت طويل جدًا، نكسر الحلقة لتجنب تعليق التطبيق
                 if ((microtime(true) - $start) > 30) { // 30 ثانية كحد أقصى
