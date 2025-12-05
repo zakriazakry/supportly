@@ -244,8 +244,7 @@ class WebhookController extends Controller
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
             $messageInfo = $this->extractMessageInfo($messageContent);
-            info('data', $data);
-            return ;
+
             switch ($messageInfo['type']) {
                 case 'text':
                     $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
