@@ -45,13 +45,13 @@ class AutoReplyController extends Controller
             return;
         }
         $autoReply = $user->whasAppReply ?? null;
+        $this->aiReply($instanceName, $fromNumber, $message, "اسمك نوح بوت رد الي");
 
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
             $this->evolutionService->markAsRead($instanceName, [$messageKey]);
         }
 
-        $this->aiReply($instanceName, $fromNumber, $message, "اسمك نوح بوت رد الي");
 
         // Auto reply conditions
         // if (!empty($autoReply->welcome)) {
