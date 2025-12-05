@@ -106,11 +106,22 @@ class AutoReplyController extends Controller
     private function aiReply($instanceName, $number, $msg, $system_prompt)
     {
         try {
+            // Indicate that the bot is "typing" or "composing"
+            // The duration is an estimation; actual AI processing time may vary.
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 5000); // Increased duration slightly
 
             // Generate AI response
             $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
-            // Show typing indicator while AI is processing
-            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 4000);
+
+            // Ensure the AI response is not empty before sending
+            if (empty(trim($aiResponse))) {
+                $aiResponse = "آسف، لم أتمكن من توليد رد في الوقت الحالي. 😅";
+                Log::warning('AI generated an empty response', [
+                    'instance' => $instanceName,
+                    'to' => $number,
+                    'user_message' => $msg
+                ]);
+            }
 
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
@@ -125,7 +136,8 @@ class AutoReplyController extends Controller
             Log::error('AI Reply failed', [
                 'error' => $e->getMessage(),
                 'instance' => $instanceName,
-                'to' => $number
+                'to' => $number,
+                'user_message' => $msg // Include user message for better debugging
             ]);
 
             // Send fallback message on error
