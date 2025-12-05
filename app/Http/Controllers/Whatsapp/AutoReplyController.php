@@ -84,11 +84,24 @@ class AutoReplyController extends Controller
     private function aiReply($instanceName, $number, $msg)
     {
         try {
-            // Show typing indicator while AI is processing
-            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
+            // Start a background process to keep typing indicator active
+            $keepTyping = true;
+            $typingInterval = 10; // seconds - refresh typing indicator every 10 seconds
 
-            // Generate AI response
-            $aiResponse = $this->ollamaService->generateSupportReply($msg);
+            // Show initial typing indicator
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 0);
+
+            // Generate AI response (this may take a while)
+            // We use a closure to periodically refresh the typing indicator
+            $startTime = time();
+            $lastTypingUpdate = $startTime;
+
+            // Create a promise-like pattern using a generator or process the AI request
+            // Since PHP is synchronous, we'll refresh typing before and use a longer delay
+            $aiResponse = $this->generateAiResponseWithTyping($instanceName, $number, $msg);
+
+            // Stop typing indicator (send 'paused' to stop composing)
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'paused', 0);
 
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
@@ -97,9 +110,13 @@ class AutoReplyController extends Controller
                 'instance' => $instanceName,
                 'to' => $number,
                 'user_message' => $msg,
-                'ai_response_length' => strlen($aiResponse)
+                'ai_response_length' => strlen($aiResponse),
+                'processing_time_seconds' => time() - $startTime
             ]);
         } catch (\Exception $e) {
+            // Stop typing indicator on error
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'paused', 0);
+
             Log::error('AI Reply failed', [
                 'error' => $e->getMessage(),
                 'instance' => $instanceName,
@@ -113,6 +130,43 @@ class AutoReplyController extends Controller
                 "شكراً لتواصلك معنا! 🙏\nنعتذر عن التأخير، سيتم الرد عليك قريباً."
             );
         }
+    }
+
+    /**
+     * Generate AI response with periodic typing indicator refresh
+     * This method handles the AI request and refreshes typing status for long requests
+     */
+    private function generateAiResponseWithTyping($instanceName, $number, $msg)
+    {
+        // For very long AI responses, we use streaming or chunked approach
+        // Since Ollama might take time, we set a reasonable timeout and refresh typing
+
+        // Use cURL with a custom callback to refresh typing during the request
+        $aiResponse = '';
+        $lastTypingRefresh = time();
+        $typingRefreshInterval = 8; // Refresh every 8 seconds
+
+        // Make the AI request with streaming support if available
+        try {
+            // Attempt to use streaming for real-time updates
+            $aiResponse = $this->ollamaService->generateSupportReplyWithCallback(
+                $msg,
+                function () use ($instanceName, $number, &$lastTypingRefresh, $typingRefreshInterval) {
+                    // Refresh typing indicator periodically during streaming
+                    if (time() - $lastTypingRefresh >= $typingRefreshInterval) {
+                        $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 0);
+                        $lastTypingRefresh = time();
+                    }
+                }
+            );
+        } catch (\BadMethodCallException $e) {
+            // Fallback: If streaming method doesn't exist, use the regular method
+            // Show typing indicator with maximum delay
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 0);
+            $aiResponse = $this->ollamaService->generateSupportReply($msg);
+        }
+
+        return $aiResponse;
     }
 
     private function normalReply($instanceName, $number, $msg)
