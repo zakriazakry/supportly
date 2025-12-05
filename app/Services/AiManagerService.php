@@ -6,7 +6,6 @@ class AiManagerService
 {
     protected $openai;
     protected $ollama;
-
     public function __construct()
     {
         $this->openai = new OpenAIService();
@@ -22,23 +21,19 @@ class AiManagerService
      * @param array $options خيارات إضافية
      * @return string The generated response text
      */
-    public function generate(string $prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): string
+    public function generate(string $prompt, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): string
     {
         $result = null;
 
-        if ($provider === 'ollama') {
-            $result = $this->ollama->generate($prompt, $model, $options);
+        if ($provider === 'openai') {
+            $result = $this->openai->generate($prompt, $system_prompt, $options);
         } else {
-            // افتراضي OpenAI
-            $result = $this->openai->generate($prompt, $model, $options);
+            $result = $this->ollama->generate($prompt, $system_prompt, $options);
         }
 
-        // Extract the response string from the result array
         if (is_array($result) && !empty($result['success']) && !empty($result['response'])) {
             return $result['response'];
         }
-
-        // Fallback message if AI fails
         return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
     }
 
@@ -51,14 +46,14 @@ class AiManagerService
      * @param array $options
      * @return string The generated response text
      */
-    public function chat(array $messages, ?string $provider = 'openai', ?string $model = null, array $options = []): string
+    public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', array $options = []): string
     {
         $result = null;
 
-        if ($provider === 'ollama') {
-            $result = $this->ollama->chat($messages, $model, $options);
+        if ($provider === 'openai') {
+            $result = $this->openai->chat($messages, $system_prompt, $options);
         } else {
-            $result = $this->openai->chat($messages, $model, $options);
+            $result = $this->ollama->chat($messages, $system_prompt, $options);
         }
 
         // Extract the response string from the result array
@@ -74,10 +69,10 @@ class AiManagerService
 
     public function models(?string $provider = 'openai')
     {
-        if ($provider === 'ollama') {
-            return $this->ollama->getAvailableModels();
+        if ($provider === 'openai') {
+            return $this->openai->getAvailableModels();
         }
 
-        return $this->openai->getAvailableModels();
+        return $this->ollama->getAvailableModels();
     }
 }

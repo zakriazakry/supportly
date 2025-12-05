@@ -14,6 +14,7 @@ class AutoReplyController extends Controller
     protected EvolutionService $evolutionService;
     protected AiManagerService $ai;
 
+
     public function __construct(EvolutionService $evolutionService, AiManagerService $ai)
     {
         $this->evolutionService = $evolutionService;
@@ -43,24 +44,14 @@ class AutoReplyController extends Controller
             Log::error('User not found for instance', ['user_id' => $instance->user_id]);
             return;
         }
-
-        // Auto-reply 
         $autoReply = $user->whasAppReply ?? null;
 
-        // if (!$autoReply) {
-        //     Log::error('User auto-reply settings missing or expired', ['user_id' => $user->id]);
-        //     return;
-        // }
-
-        // Safe to use $autoReply now (no more undefined errors)
-
-        // Mark message as read (seen)
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
             $this->evolutionService->markAsRead($instanceName, [$messageKey]);
         }
 
-        $this->aiReply($instanceName, $fromNumber, $message);
+        $this->aiReply($instanceName, $fromNumber, $message, "اسمك نوح بوت رد الي");
 
         // Auto reply conditions
         // if (!empty($autoReply->welcome)) {
@@ -81,14 +72,14 @@ class AutoReplyController extends Controller
         $this->evolutionService->sendText($instanceName, $number, "مرحبا بك ي غالي \n كيف يمكنني مساعدتك؟");
     }
 
-    private function aiReply($instanceName, $number, $msg)
+    private function aiReply($instanceName, $number, $msg, $system_prompt)
     {
         try {
             // Show typing indicator while AI is processing
             $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
 
             // Generate AI response
-            $aiResponse = $this->ai->generate($msg, 'ollama');
+            $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
 
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
