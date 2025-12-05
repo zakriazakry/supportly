@@ -74,13 +74,13 @@ class AutoReplyController extends Controller
 التعليمات النهائية:
 - اجعل كل ردودك مرتبطة فقط بشركة سبارك نت وخدماتها.
 - استخدم اللهجة الليبية دائمًا، واجعل الردود مفيدة وودية للمستخدم.";
-        $this->aiReply($instanceName, $fromNumber, $message, $botPrompt);
 
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
             $this->evolutionService->markAsRead($instanceName, [$messageKey]);
         }
 
+        $this->aiReply($instanceName, $fromNumber, $message, $botPrompt);
 
         // Auto reply conditions
         // if (!empty($autoReply->welcome)) {
@@ -104,11 +104,11 @@ class AutoReplyController extends Controller
     private function aiReply($instanceName, $number, $msg, $system_prompt)
     {
         try {
-            // Show typing indicator while AI is processing
-            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
 
             // Generate AI response
             $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
+            // Show typing indicator while AI is processing
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
 
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
