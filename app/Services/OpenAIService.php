@@ -32,7 +32,13 @@ class OpenAIService
     {
         try {
             $messages = [];
-
+            Log::info('OpenAI API Request', [
+                'url' => $this->baseUrl . '/chat/completions',
+                'model' => $options['model'] ?? $this->model,
+                'prompt_length' => strlen($prompt),
+                'system_prompt' => $systemPrompt,
+                'options' => $options
+            ]);
             // Add system prompt if provided
             if ($systemPrompt) {
                 $messages[] = [
