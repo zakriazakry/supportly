@@ -14,7 +14,7 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key') ?? 'REMOVEDproj-TUvqNJFEiCSysMqk7jK-Jls9qgV3qhGn8_FypKq_I2IMA5kLDW3G1UU41NoQdjafzb3ZbcynKGT3BlbkFJNHfC42-ZwIcfH152_-KStyxxAyctuPatiXu496bt4xohdPOeYdsrnJuYOolKIUihdzADGEGZAA';
+        $this->apiKey = config('services.openai.api_key') ?? '';
         $this->baseUrl = config('services.openai.base_url') ?? 'https://api.openai.com/v1';
         $this->model = config('services.openai.model') ?? 'gpt-4o-mini';
         $this->timeout = config('services.openai.timeout') ?? 60;
