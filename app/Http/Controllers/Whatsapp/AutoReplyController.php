@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Whatsapp;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\WhatsAppInstance;
+use App\Services\AiManagerService;
 use App\Services\EvolutionService;
 use App\Services\OllamaService;
 use Illuminate\Support\Facades\Log;
@@ -12,12 +13,12 @@ use Illuminate\Support\Facades\Log;
 class AutoReplyController extends Controller
 {
     protected EvolutionService $evolutionService;
-    protected OllamaService $ollamaService;
+    protected AiManagerService $ai;
 
-    public function __construct(EvolutionService $evolutionService, OllamaService $ollamaService)
+    public function __construct(EvolutionService $evolutionService, AiManagerService $ai)
     {
         $this->evolutionService = $evolutionService;
-        $this->ollamaService = $ollamaService;
+        $this->ai = $ai;
     }
 
     public function whenReceiveTextMessage(array $data)
@@ -88,7 +89,7 @@ class AutoReplyController extends Controller
             $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
 
             // Generate AI response
-            $aiResponse = $this->ollamaService->generateSupportReply($msg);
+            $aiResponse = $this->ai->generate($msg, 'ollama');
 
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
