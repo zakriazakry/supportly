@@ -192,6 +192,118 @@ class OllamaService
     }
 
     /**
+     * Generate AI response for WhatsApp customer support with streaming callback
+     * This allows refreshing the typing indicator while waiting for AI response
+     *
+     * @param string $customerMessage The customer's message
+     * @param callable $onProgress Callback function called periodically during streaming
+     * @param string|null $context Additional context about the business/service
+     * @return string The AI response or fallback message
+     */
+    public function generateSupportReplyWithCallback(string $customerMessage, callable $onProgress, ?string $context = null): string
+    {
+        $systemPrompt = "أنت مساعد دعم عملاء محترف وودود. تتحدث العربية بطلاقة.
+قواعد مهمة:
+- كن مهذباً ومحترفاً دائماً
+- أجب بشكل مختصر ومفيد
+- تجيب باللغة العربية
+- استخدم الرموز التعبيرية بشكل معتدل
+- إذا لم تعرف الإجابة، قل أنك ستحول الاستفسار للفريق المختص
+- لا تقدم معلومات خاطئة أو وعود لا يمكن الوفاء بها";
+
+        if ($context) {
+            $systemPrompt .= "\n\nمعلومات إضافية عن الخدمة:\n" . $context;
+        }
+
+        try {
+            $payload = [
+                'model' => $this->model,
+                'prompt' => $customerMessage,
+                'system' => $systemPrompt,
+                'stream' => true, // Enable streaming
+                'options' => [
+                    'temperature' => 0.7,
+                    'num_predict' => 500
+                ]
+            ];
+
+            Log::info('Ollama Streaming Request Started', [
+                'prompt_length' => strlen($customerMessage)
+            ]);
+
+            // Use cURL for streaming support with progress callback
+            $ch = curl_init();
+            $fullResponse = '';
+            $lastCallbackTime = time();
+            $callbackInterval = 8; // Call progress callback every 8 seconds
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $this->baseUrl . '/api/generate',
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => $this->timeout,
+                CURLOPT_WRITEFUNCTION => function ($ch, $data) use (&$fullResponse, &$lastCallbackTime, $onProgress, $callbackInterval) {
+                    // Parse streaming JSON responses (each line is a JSON object)
+                    $lines = explode("\n", $data);
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+                        if (empty($line)) continue;
+
+                        $json = json_decode($line, true);
+                        if ($json && isset($json['response'])) {
+                            $fullResponse .= $json['response'];
+                        }
+                    }
+
+                    // Call progress callback periodically
+                    $currentTime = time();
+                    if ($currentTime - $lastCallbackTime >= $callbackInterval) {
+                        $onProgress();
+                        $lastCallbackTime = $currentTime;
+                    }
+
+                    return strlen($data);
+                }
+            ]);
+
+            $result = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
+
+            if ($error) {
+                Log::error('Ollama Streaming Error', ['error' => $error]);
+                throw new \Exception("cURL error: $error");
+            }
+
+            if ($httpCode !== 200) {
+                Log::error('Ollama Streaming HTTP Error', ['code' => $httpCode]);
+                throw new \Exception("HTTP error: $httpCode");
+            }
+
+            Log::info('Ollama Streaming Response Complete', [
+                'response_length' => strlen($fullResponse)
+            ]);
+
+            if (!empty($fullResponse)) {
+                return $fullResponse;
+            }
+
+            // Fallback
+            return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
+        } catch (\Exception $e) {
+            Log::error('Ollama Streaming Exception', [
+                'message' => $e->getMessage()
+            ]);
+
+            // Re-throw to let caller handle fallback
+            throw $e;
+        }
+    }
+
+    /**
      * Check if Ollama service is available
      *
      * @return bool
