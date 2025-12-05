@@ -17,6 +17,12 @@ return [
         'api_key' => env('EVOLUTION_API_KEY'),
         'base_url' => env('EVOLUTION_BASE_URL'),
     ],
+
+    'ollama' => [
+        'url' => env('OLLAMA_URL', 'http://31.97.154.208:11434'),
+        'model' => env('OLLAMA_MODEL', 'llama3.2'),
+        'timeout' => env('OLLAMA_TIMEOUT', 120),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

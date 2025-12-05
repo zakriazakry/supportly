@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\WhatsAppInstance;
 use App\Services\EvolutionService;
+use App\Services\OllamaService;
 use Illuminate\Support\Facades\Log;
 
 class AutoReplyController extends Controller
 {
     protected EvolutionService $evolutionService;
+    protected OllamaService $ollamaService;
 
-    public function __construct(EvolutionService $service)
+    public function __construct(EvolutionService $evolutionService, OllamaService $ollamaService)
     {
-        $this->evolutionService = $service;
+        $this->evolutionService = $evolutionService;
+        $this->ollamaService = $ollamaService;
     }
 
     public function whenReceiveTextMessage(array $data)
@@ -99,11 +102,45 @@ class AutoReplyController extends Controller
 
     private function aiReply($instanceName, $number, $msg)
     {
-        // your AI logic here
+        try {
+            // Show typing indicator while AI is processing
+            $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 8000);
+
+            // Generate AI response
+            $aiResponse = $this->ollamaService->generateSupportReply($msg);
+
+            // Send the AI response
+            $this->evolutionService->sendText($instanceName, $number, $aiResponse);
+
+            Log::info('AI Reply sent successfully', [
+                'instance' => $instanceName,
+                'to' => $number,
+                'user_message' => $msg,
+                'ai_response_length' => strlen($aiResponse)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('AI Reply failed', [
+                'error' => $e->getMessage(),
+                'instance' => $instanceName,
+                'to' => $number
+            ]);
+
+            // Send fallback message on error
+            $this->evolutionService->sendText(
+                $instanceName,
+                $number,
+                "شكراً لتواصلك معنا! 🙏\nنعتذر عن التأخير، سيتم الرد عليك قريباً."
+            );
+        }
     }
 
     private function normalReply($instanceName, $number, $msg)
     {
-        // normal reply logic
+        // normal reply logic - echo back the message
+        $this->evolutionService->sendText(
+            $instanceName,
+            $number,
+            "تم استلام رسالتك: " . $msg
+        );
     }
 }
