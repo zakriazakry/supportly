@@ -38,7 +38,6 @@ class OllamaService
                 'url' => $this->baseUrl . '/api/generate',
                 'model' => $payload['model'],
                 'prompt_length' => strlen($prompt),
-                'system_prompt' => $systemPrompt,
                 'options' => $options
             ]);
             // Add system prompt if provided
