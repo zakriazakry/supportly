@@ -14,7 +14,7 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key');
+        $this->apiKey = getenv('OPENAI_API_KEY');
         $this->baseUrl = config('services.openai.base_url');
         $this->model = config('services.openai.model');
         $this->timeout = config('services.openai.timeout');
