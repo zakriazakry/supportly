@@ -89,7 +89,7 @@ class AutoReplyController extends Controller
 
             // Generate AI response
             $aiResponse = $this->ai->generate($msg, 'ollama');
-
+            return $aiResponse;
             // Send the AI response
             $this->evolutionService->sendText($instanceName, $number, $aiResponse);
 

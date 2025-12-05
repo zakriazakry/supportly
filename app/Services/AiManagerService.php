@@ -24,6 +24,7 @@ class AiManagerService
      */
     public function generate(string $prompt, ?string $provider = 'openai', ?string $model = null, array $options = [])
     {
+        return $provider;
         if ($provider === 'ollama') {
             return $this->ollama->generate($prompt, $model, $options);
         }
