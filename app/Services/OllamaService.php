@@ -55,11 +55,6 @@ class OllamaService
                 $payload['options']['num_predict'] = $options['max_tokens'];
             }
 
-            Log::info('Ollama API Request', [
-                'url' => $this->baseUrl . '/api/generate',
-                'model' => $payload['model'],
-                'prompt_length' => strlen($prompt)
-            ]);
 
             $response = Http::timeout($this->timeout)
                 ->post($this->baseUrl . '/api/generate', $payload);
