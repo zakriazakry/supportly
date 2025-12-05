@@ -108,7 +108,7 @@ class AutoReplyController extends Controller
         try {
 
             // Generate AI response
-            $aiResponse = $this->ai->chat([$msg], $system_prompt, 'ollama');
+            $aiResponse = $this->ai->generate($msg, $system_prompt, 'ollama');
             // Show typing indicator while AI is processing
             $this->evolutionService->sendChatPresence($instanceName, $number, 'composing', 4000);
 
