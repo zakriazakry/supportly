@@ -142,7 +142,6 @@ class WebhookController extends Controller
             WhatsAppInstance::where('instance_name', $instanceName)
                 ->update([
                     'status' => $status,
-                    'connection_state' => $state,
                 ]);
 
             Log::info('✅ Connection status updated in database', [
