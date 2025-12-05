@@ -20,16 +20,26 @@ class AiManagerService
      * @param string|null $provider "openai" أو "ollama"
      * @param string|null $model اسم النموذج
      * @param array $options خيارات إضافية
-     * @return mixed
+     * @return string The generated response text
      */
-    public function generate(string $prompt, ?string $provider = 'openai', ?string $model = null, array $options = [])
+    public function generate(string $prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): string
     {
+        $result = null;
+
         if ($provider === 'ollama') {
-            return $this->ollama->generate($prompt, $model, $options);
+            $result = $this->ollama->generate($prompt, $model, $options);
+        } else {
+            // افتراضي OpenAI
+            $result = $this->openai->generate($prompt, $model, $options);
         }
 
-        // افتراضي OpenAI
-        return $this->openai->generate($prompt, $model, $options);
+        // Extract the response string from the result array
+        if (is_array($result) && !empty($result['success']) && !empty($result['response'])) {
+            return $result['response'];
+        }
+
+        // Fallback message if AI fails
+        return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
     }
 
     /**
@@ -39,15 +49,25 @@ class AiManagerService
      * @param string|null $provider
      * @param string|null $model
      * @param array $options
-     * @return mixed
+     * @return string The generated response text
      */
-    public function chat(array $messages, ?string $provider = 'openai', ?string $model = null, array $options = [])
+    public function chat(array $messages, ?string $provider = 'openai', ?string $model = null, array $options = []): string
     {
+        $result = null;
+
         if ($provider === 'ollama') {
-            return $this->ollama->chat($messages, $model, $options);
+            $result = $this->ollama->chat($messages, $model, $options);
+        } else {
+            $result = $this->openai->chat($messages, $model, $options);
         }
 
-        return $this->openai->chat($messages, $model, $options);
+        // Extract the response string from the result array
+        if (is_array($result) && !empty($result['success']) && !empty($result['response'])) {
+            return $result['response'];
+        }
+
+        // Fallback message if AI fails
+        return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
     }
 
 
