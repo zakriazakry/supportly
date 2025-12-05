@@ -39,7 +39,7 @@ class OpenAIService
                 'system_prompt' => $systemPrompt,
                 'options' => $options
             ]);
-            // Add system prompt if provided
+            // Add system prompt if provided 
             if ($systemPrompt) {
                 $messages[] = [
                     'role' => 'system',
