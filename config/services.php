@@ -20,7 +20,7 @@ return [
 
     'ollama' => [
         'url' => env('OLLAMA_URL', 'http://31.97.154.208:11434'),
-        'model' => env('OLLAMA_MODEL', 'llama3.2'),
+        'model' => env('OLLAMA_MODEL', 'llama3.2:1b'),
         'timeout' => env('OLLAMA_TIMEOUT', 120),
     ],
     'postmark' => [
