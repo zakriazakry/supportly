@@ -245,7 +245,7 @@ class WebhookController extends Controller
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
             $messageInfo = $this->extractMessageInfo($messageContent);
-            $phone = extractPhone($remoteJid, $remoteJidAlt);
+            $phone = $this->extractPhone($remoteJid, $remoteJidAlt);
             if (!$phone) {
                 Log::warning('⚠️ Message without phone number received', ['message' => $message]);
                 return;
@@ -748,5 +748,17 @@ class WebhookController extends Controller
             'status' => $data['data'] ?? null,
             'timestamp' => now()->toDateTimeString()
         ]);
+    }
+    // ------------------Helper Functions------------------
+    protected  function extractPhone($remoteJid, $remoteJidAlt)
+    {
+        $jidList = [$remoteJid, $remoteJidAlt];
+        foreach ($jidList as $jid) {
+            if (!$jid) continue;
+            if (preg_match('/^(\d+)@s\.whatsapp\.net$/', $jid, $matches)) {
+                return $matches[1];
+            }
+        }
+        return null;
     }
 }

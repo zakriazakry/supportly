@@ -10,14 +10,3 @@ function responseFormat($data, int $code = 200)
         $code
     );
 }
-function extractPhone($remoteJid, $remoteJidAlt)
-{
-    $jidList = [$remoteJid, $remoteJidAlt];
-    foreach ($jidList as $jid) {
-        if (!$jid) continue;
-        if (preg_match('/^(\d+)@s\.whatsapp\.net$/', $jid, $matches)) {
-            return $matches[1];
-        }
-    }
-    return null;
-}
