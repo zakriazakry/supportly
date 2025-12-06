@@ -238,6 +238,7 @@ class WebhookController extends Controller
             }
 
             $remoteJid = $key['remoteJidAlt'] ?? null;
+            $remoteJidAlt = $key['remoteJidAlt'] ?? null;
             $fromMe = $key['fromMe'] ?? false;
             $messageId = $key['id'] ?? null;
 
@@ -245,13 +246,13 @@ class WebhookController extends Controller
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
             $messageInfo = $this->extractMessageInfo($messageContent);
-
+            $phone = extractPhone($remoteJid, $remoteJidAlt);
             switch ($messageInfo['type']) {
                 case 'text':
                     $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
                     $autoReplyController->whenReceiveTextMessage([
                         'from' => $sender,
-                        'form_number' => explode('@', $sender)[0],
+                        'form_number' => $phone,
                         'to' => $receiver,
                         'message' => $messageContent['conversation'],
                         'pushName' => $pushName,
