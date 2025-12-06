@@ -243,11 +243,12 @@ class WebhookController extends Controller
 
             $sender = $fromMe ? 'Me (Bot)' : $remoteJid;
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
-
+            if ($fromMe == true) {
+                return;
+            }
             $messageInfo = $this->extractMessageInfo($messageContent);
             $phone = $this->extractPhone($remoteJid, $remoteJidAlt);
             if (!$phone) {
-                Log::warning('⚠️ Message without phone number received', ['message' => $message]);
                 return;
             }
             switch ($messageInfo['type']) {
