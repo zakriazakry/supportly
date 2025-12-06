@@ -722,9 +722,6 @@ class WhatsAppController extends Controller
 
         $result = $this->evolutionService->deleteInstance($instanceName);
 
-        if (!$result['success']) {
-            return responseFormat($result['error'], 500);
-        }
 
         // Delete from database
         $instance->delete();
