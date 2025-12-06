@@ -52,7 +52,6 @@ class AutoReplyController extends Controller
         if ($messageKey) {
             Log::info('Marking message as read', ['message_key' => $messageKey]);
             $messageMarked = $this->evolutionService->markAsRead($instanceName, [$messageKey]);
-            Log::info('Message marked as read', ['message_key' => $messageKey]);
         } else {
             Log::warning('Missing message key in WhatsApp webhook', $data);
         }
