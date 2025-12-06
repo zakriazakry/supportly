@@ -36,7 +36,6 @@ class OpenAIService
                 'url' => $this->baseUrl . '/chat/completions',
                 'model' => $options['model'] ?? $this->model,
                 'prompt_length' => strlen($prompt),
-                'system_prompt' => $systemPrompt,
                 'options' => $options
             ]);
             // Add system prompt if provided 
