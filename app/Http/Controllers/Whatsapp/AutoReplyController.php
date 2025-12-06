@@ -50,6 +50,8 @@ class AutoReplyController extends Controller
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
             $this->evolutionService->markAsRead($instanceName, [$messageKey]);
+        } else {
+            Log::warning('Missing message key in WhatsApp webhook', $data);
         }
 
         $this->aiReply($instanceName, $fromNumber, $message, $botPrompt);
