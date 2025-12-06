@@ -295,7 +295,7 @@ class WhatsAppController extends Controller
         }
 
         $result = $this->evolutionService->getConnectionStatus($instanceName);
-
+        Log::info('Connection status', ['data' => $result]);
         if (!$result['success']) {
             return responseFormat($result['error'], 500);
         }
