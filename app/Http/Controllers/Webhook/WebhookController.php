@@ -129,28 +129,28 @@ class WebhookController extends Controller
      */
     protected function handleConnectionUpdate($data)
     {
-        $instanceName = $data['instance'] ?? null;
-        $state = $data['data']['state'] ?? null;
+        // $instanceName = $data['instance'] ?? null;
+        // $state = $data['data']['state'] ?? null;
 
-        $status = match ($state) {
-            'open' => 'connected',
-            'close' => 'disconnected',
-            'connecting' => 'connecting',
-            default => 'unknown'
-        };
+        // $status = match ($state) {
+        //     'open' => 'connected',
+        //     'close' => 'disconnected',
+        //     'connecting' => 'connecting',
+        //     default => 'unknown'
+        // };
 
 
-        if ($instanceName) {
-            WhatsAppInstance::where('instance_name', $instanceName)
-                ->update([
-                    'status' => $status,
-                ]);
+        // if ($instanceName) {
+        //     WhatsAppInstance::where('instance_name', $instanceName)
+        //         ->update([
+        //             'status' => $status,
+        //         ]);
 
-            Log::info('✅ Connection status updated in database', [
-                'instance' => $instanceName,
-                'status' => $status
-            ]);
-        }
+        //     Log::info('✅ Connection status updated in database', [
+        //         'instance' => $instanceName,
+        //         'status' => $status
+        //     ]);
+        // }
     }
 
     // ==================== MESSAGE EVENTS ====================
