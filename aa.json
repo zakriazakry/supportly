@@ -1,0 +1,22 @@
+[
+    {
+        "message_key": {
+            "remoteJid": "218942667816@s.whatsapp.net",
+            "remoteJidAlt": "178563466690801@lid",
+            "fromMe": false,
+            "id": "3F75AAB5AABD14E93F4A",
+            "participant": null,
+            "addressingMode": "pn"
+        }
+    },
+    {
+        "message_key": {
+            "remoteJid": "179057622782098@lid",
+            "remoteJidAlt": "218919061949@s.whatsapp.net",
+            "fromMe": false,
+            "id": "3EB09A5A81FABFB26665E8",
+            "participant": null,
+            "addressingMode": "lid"
+        }
+    }
+]

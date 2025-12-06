@@ -50,6 +50,7 @@ class AutoReplyController extends Controller
 
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
+            $messageKey['remoteJid'] = $this->extractJid($messageKey['remoteJid'], $messageKey['remoteJidAlt']);
             Log::info('Marking message as read', ['message_key' => $messageKey]);
             $messageMarked = $this->evolutionService->markAsRead($instanceName, [$messageKey]);
         } else {
@@ -120,5 +121,25 @@ class AutoReplyController extends Controller
             $number,
             "تم استلام رسالتك: " . $msg
         );
+    }
+    protected function handleTypebotChangeStatus($data)
+    {
+        Log::info('🤖 Typebot Status Changed', [
+            'instance' => $data['instance'] ?? null,
+            'status' => $data['data'] ?? null,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    }
+    // ------------------Helper Functions------------------
+    protected  function extractJid($remoteJid, $remoteJidAlt)
+    {
+        $jidList = [$remoteJid, $remoteJidAlt];
+        foreach ($jidList as $jid) {
+            if (!$jid) continue;
+            if (preg_match('/^(\d+)@s\.whatsapp\.net$/', $jid, $matches)) {
+                return $jid;
+            }
+        }
+        return null;
     }
 }
