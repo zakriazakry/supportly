@@ -27,6 +27,7 @@ class AutoReplyController extends Controller
         $instanceName = $data['instanceName'] ?? null;
         $message      = $data['message'] ?? null;
         $fromNumber   = $data['form_number'] ?? null;
+        $remoteJid = $data['remote_jid'] ?? null;
 
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
@@ -49,9 +50,11 @@ class AutoReplyController extends Controller
 
         $messageKey = $data['key'] ?? null;
         if ($messageKey) {
+            Log::info('Marking message as read', ['message_key' => $messageKey]);
             $messageMarked = $this->evolutionService->markAsRead($instanceName, [$messageKey]);
             Log::info('Message marked as read', ['message_key' => $messageKey]);
         } else {
+            Log::warning('Missing message key in WhatsApp webhook', $data);
         }
 
         $this->aiReply($instanceName, $fromNumber, $message, $botPrompt);
