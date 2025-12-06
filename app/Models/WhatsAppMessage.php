@@ -9,19 +9,7 @@ class WhatsAppMessage extends Model
 {
     protected $table = 'whatsapp_messages';
 
-    protected $fillable = [
-        'instance_id',
-        'message_id',
-        'remote_jid',
-        'from_me',
-        'message_type',
-        'message_content',
-        'message_data',
-        'status',
-        'sent_at',
-        'delivered_at',
-        'read_at',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'message_data' => 'array',

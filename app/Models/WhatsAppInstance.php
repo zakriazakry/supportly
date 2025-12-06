@@ -57,21 +57,6 @@ class WhatsAppInstance extends Model
         return $this->hasMany(WhatsAppMessage::class, 'instance_id');
     }
 
-    /**
-     * العلاقة مع جهات الاتصال
-     */
-    public function contacts(): HasMany
-    {
-        return $this->hasMany(WhatsAppContact::class, 'instance_id');
-    }
-
-    /**
-     * العلاقة مع المحادثات
-     */
-    public function chats(): HasMany
-    {
-        return $this->hasMany(WhatsAppChat::class, 'instance_id');
-    }
 
     /**
      * التحقق من حالة الاتصال

@@ -30,8 +30,6 @@ class WebhookController extends Controller
         try {
             $data = $request->all();
 
-            Log::info('Webhook received', ['data' => $data]);
-            // Get event type
             $event = $data['event'] ?? null;
 
             if (!$event) {
@@ -216,7 +214,7 @@ class WebhookController extends Controller
             'timestamp' => now()->toDateTimeString()
         ]);
     }
-
+// =======================================================================================================
     /**
      * Process messages (common logic for message events)
      */

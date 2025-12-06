@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('from_me')->default(false);
             $table->enum('message_type', ['text', 'image', 'video', 'audio', 'document', 'sticker', 'location', 'contact', 'buttons', 'list', 'poll'])->default('text');
             $table->text('message_content')->nullable();
+            $table->text('message_context')->nullable();
             $table->json('message_data')->nullable(); // بيانات إضافية (media url, buttons, etc.)
             $table->enum('status', ['pending', 'sent', 'delivered', 'read', 'failed'])->default('pending');
             $table->timestamp('sent_at')->nullable();
