@@ -247,6 +247,10 @@ class WebhookController extends Controller
 
             $messageInfo = $this->extractMessageInfo($messageContent);
             $phone = extractPhone($remoteJid, $remoteJidAlt);
+            if (!$phone) {
+                Log::warning('⚠️ Message without phone number received', ['message' => $message]);
+                return;
+            }
             switch ($messageInfo['type']) {
                 case 'text':
                     $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
