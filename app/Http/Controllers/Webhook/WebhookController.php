@@ -237,7 +237,7 @@ class WebhookController extends Controller
                 continue;
             }
 
-            $remoteJid = $key['remoteJidAlt'] ?? null;
+            $remoteJid = $key['remoteJid'] ?? null;
             $remoteJidAlt = $key['remoteJidAlt'] ?? null;
             $fromMe = $key['fromMe'] ?? false;
             $messageId = $key['id'] ?? null;
