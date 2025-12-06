@@ -30,7 +30,7 @@ class WebhookController extends Controller
         try {
             $data = $request->all();
 
-
+            Log::info('Webhook received', ['data' => $data]);
             // Get event type
             $event = $data['event'] ?? null;
 
