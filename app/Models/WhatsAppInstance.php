@@ -57,6 +57,69 @@ class WhatsAppInstance extends Model
         return $this->hasMany(WhatsAppMessage::class, 'instance_id');
     }
 
+    /**
+     * العلاقة مع إعدادات الرد التلقائي
+     */
+    public function autoReply()
+    {
+        return $this->hasOne(WhatsAppAutoReply::class, 'whats_app_instance_id');
+    }
+
+    /**
+     * العلاقة مع إعدادات الذكاء الاصطناعي
+     */
+    public function aiReply()
+    {
+        return $this->hasOne(WhatsAppAiReply::class, 'whats_app_instance_id');
+    }
+
+    /**
+     * الحصول أو إنشاء إعدادات الرد التلقائي
+     */
+    public function getOrCreateAutoReply(): WhatsAppAutoReply
+    {
+        return $this->autoReply()->firstOrCreate(
+            ['whats_app_instance_id' => $this->id],
+            [
+                'is_active' => false,
+                'stop_on_owner_message' => true,
+                'stop_on_keyword' => false,
+                'stop_duration' => 30,
+                'custom_stop_duration' => 60,
+                'ignore_groups' => true,
+                'show_typing' => true,
+                'reply_once' => false,
+                'reply_delay' => 2,
+            ]
+        );
+    }
+
+    /**
+     * الحصول أو إنشاء إعدادات الذكاء الاصطناعي
+     */
+    public function getOrCreateAiReply(): WhatsAppAiReply
+    {
+        return $this->aiReply()->firstOrCreate(
+            ['whats_app_instance_id' => $this->id],
+            [
+                'is_active' => false,
+                'provider' => 'openai',
+                'model' => 'gpt-3.5-turbo',
+                'temperature' => 0.70,
+                'max_tokens' => 1000,
+                'response_delay' => 2,
+                'stop_on_owner_message' => true,
+                'stop_on_keyword' => false,
+                'stop_duration' => 30,
+                'include_context' => true,
+                'context_messages_count' => 5,
+                'show_typing' => true,
+                'ignore_groups' => true,
+                'only_first_message' => false,
+            ]
+        );
+    }
+
 
     /**
      * التحقق من حالة الاتصال

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\User\WhatsAppController;
+use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Http\Controllers\Webhook\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,12 +44,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Statistics
         Route::get('/instances/{instanceName}/stats', 'getInstanceStats');
+    });
 
-        // Auto Reply Rules
-        Route::get('/instances/{instanceName}/auto-reply/rules', 'getAutoReplyRules');
-        Route::post('/instances/{instanceName}/auto-reply/rules', 'createAutoReplyRule');
-        Route::post('/instances/{instanceName}/auto-reply/rules/{ruleId}', 'updateAutoReplyRule');
-        Route::delete('/instances/{instanceName}/auto-reply/rules/{ruleId}', 'deleteAutoReplyRule');
-        Route::post('/instances/{instanceName}/auto-reply/toggle', 'toggleAutoReply');
+    // ==========================================
+    //      Auto Reply & AI Settings Routes
+    // ==========================================
+    Route::controller(AutoReplyController::class)->prefix('whatsapp/instances/{instanceId}')->group(function () {
+        // إعدادات الرد التلقائي العامة
+        Route::get('/auto-reply/settings', 'getAutoReplySettings');
+        Route::put('/auto-reply/settings', 'updateAutoReplySettings');
+        Route::post('/auto-reply/toggle', 'toggleAutoReply');
+
+        // قواعد الرد التلقائي
+        Route::get('/auto-reply/rules', 'getRules');
+        Route::get('/auto-reply/rules/{ruleId}', 'getRule');
+        Route::post('/auto-reply/rules', 'createRule');
+        Route::put('/auto-reply/rules/{ruleId}', 'updateRule');
+        Route::delete('/auto-reply/rules/{ruleId}', 'deleteRule');
+        Route::post('/auto-reply/rules/{ruleId}/toggle', 'toggleRule');
+        Route::post('/auto-reply/rules/reorder', 'reorderRules');
+
+        // إعدادات الذكاء الاصطناعي
+        Route::get('/ai-reply/settings', 'getAiSettings');
+        Route::put('/ai-reply/settings', 'updateAiSettings');
+        Route::post('/ai-reply/toggle', 'toggleAi');
+        Route::post('/ai-reply/test', 'testAi');
+        Route::get('/ai-reply/stats', 'getAiStats');
     });
 });
