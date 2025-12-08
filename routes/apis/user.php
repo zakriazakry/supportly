@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('update-settings', 'updateSettings');
     });
 
+
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'index');
 
