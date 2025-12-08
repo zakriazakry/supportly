@@ -12,15 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('whats_app_auto_reply_roles', function (Blueprint $table) {
-            $table->id();
-            // ربط بجدول الإعدادات العامة
-            $table->foreignId('whats_app_auto_replies_id')->constrained('whats_app_auto_replies')->onDelete('cascade');
-            // معلومات القاعدة الأساسية
+            $table->id(); // المفتاح الأساسي
+            $table->foreignId('whats_app_instance_id')
+                ->constrained('whats_app_instances')
+                ->onDelete('cascade');
             $table->string('name')->comment('اسم القاعدة');
             $table->boolean('is_active')->default(true)->comment('حالة القاعدة');
             $table->unsignedInteger('priority')->default(0)->comment('ترتيب الأولوية');
-
-            // إعدادات المشغّل (Trigger)
             $table->enum('trigger_type', ['keyword', 'regex', 'all', 'contains'])->default('keyword')->comment('نوع المشغّل');
             $table->text('trigger_value')->nullable()->comment('قيمة المشغّل - نمط regex أو كلمات مفتاحية مفصولة بفاصلة');
             $table->json('trigger_keywords')->nullable()->comment('الكلمات المفتاحية - JSON array');
