@@ -619,7 +619,7 @@ class AutoReplyController extends Controller
      */
     public function whenReceiveTextMessage(array $data): void
     {
-        Log::info($data);
+        Log::info($data['pushName']);
         return;
         $instanceName = $data['instanceName'] ?? null;
         $message = $data['message'] ?? null;
