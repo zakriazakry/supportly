@@ -56,7 +56,7 @@ class WhatsAppAutoReply extends Model
      */
     public function rules(): HasMany
     {
-        return $this->hasMany(WhatsAppAutoReplyRoles::class, 'whats_app_auto_replies_id', 'whats_app_instance_id');
+        return $this->hasMany(WhatsAppAutoReplyRoles::class, 'whats_app_instance_id', 'whats_app_instance_id');
     }
 
     /**

@@ -235,7 +235,7 @@ class AutoReplyController extends Controller
             $data['priority'] = $autoReply->rules()->max('priority') + 1 ?? 0;
         }
 
-        $data['whats_app_auto_replies_id'] = $autoReply->whats_app_instance_id;
+        $data['whats_app_instance_id'] = $autoReply->whats_app_instance_id;
 
         $rule = WhatsAppAutoReplyRoles::create($data);
 

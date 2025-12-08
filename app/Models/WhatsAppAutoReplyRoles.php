@@ -10,7 +10,7 @@ class WhatsAppAutoReplyRoles extends Model
     protected $table = 'whats_app_auto_reply_roles';
 
     protected $fillable = [
-        'whats_app_auto_replies_id',
+        'whats_app_instance_id',
         'name',
         'is_active',
         'priority',
@@ -57,7 +57,7 @@ class WhatsAppAutoReplyRoles extends Model
      */
     public function autoReply(): BelongsTo
     {
-        return $this->belongsTo(WhatsAppAutoReply::class, 'whats_app_auto_replies_id', 'whats_app_instance_id');
+        return $this->belongsTo(WhatsAppAutoReply::class, 'whats_app_instance_id', 'whats_app_instance_id');
     }
 
     /**

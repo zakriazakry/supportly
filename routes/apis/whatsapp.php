@@ -52,21 +52,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(AutoReplyController::class)->prefix('whatsapp/instances/{instanceId}')->group(function () {
         // إعدادات الرد التلقائي العامة
         Route::get('/auto-reply/settings', 'getAutoReplySettings');
-        Route::put('/auto-reply/settings', 'updateAutoReplySettings');
+        Route::post('/auto-reply/settings', 'updateAutoReplySettings');
         Route::post('/auto-reply/toggle', 'toggleAutoReply');
 
         // قواعد الرد التلقائي
         Route::get('/auto-reply/rules', 'getRules');
         Route::get('/auto-reply/rules/{ruleId}', 'getRule');
         Route::post('/auto-reply/rules', 'createRule');
-        Route::put('/auto-reply/rules/{ruleId}', 'updateRule');
+        Route::post('/auto-reply/rules/{ruleId}', 'updateRule');
         Route::delete('/auto-reply/rules/{ruleId}', 'deleteRule');
         Route::post('/auto-reply/rules/{ruleId}/toggle', 'toggleRule');
         Route::post('/auto-reply/rules/reorder', 'reorderRules');
 
         // إعدادات الذكاء الاصطناعي
         Route::get('/ai-reply/settings', 'getAiSettings');
-        Route::put('/ai-reply/settings', 'updateAiSettings');
+        Route::post('/ai-reply/settings', 'updateAiSettings');
         Route::post('/ai-reply/toggle', 'toggleAi');
         Route::post('/ai-reply/test', 'testAi');
         Route::get('/ai-reply/stats', 'getAiStats');
