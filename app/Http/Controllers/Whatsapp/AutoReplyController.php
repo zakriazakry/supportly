@@ -743,10 +743,6 @@ class AutoReplyController extends Controller
         }
 
         try {
-            // إظهار "جاري الكتابة"
-            if ($aiReply->show_typing) {
-                $this->evolutionService->sendChatPresence($instance->instance_name, $number, 'composing', $aiReply->response_delay * 1000);
-            }
 
             // توليد الرد
             $aiResponse = $this->ai->generate(
@@ -754,6 +750,11 @@ class AutoReplyController extends Controller
                 $aiReply->system_prompt ?? '',
                 $aiReply->provider
             );
+
+            // إظهار "جاري الكتابة"
+            if ($aiReply->show_typing) {
+                $this->evolutionService->sendChatPresence($instance->instance_name, $number, 'composing', $aiReply->response_delay * 1000);
+            }
 
             // إرسال الرد
             $this->evolutionService->sendText($instance->instance_name, $number, $aiResponse);
