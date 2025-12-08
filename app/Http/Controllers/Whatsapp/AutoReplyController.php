@@ -619,13 +619,14 @@ class AutoReplyController extends Controller
      */
     public function whenReceiveTextMessage(array $data): void
     {
+        Log::info($data);
+        return;
         $instanceName = $data['instanceName'] ?? null;
         $message = $data['message'] ?? null;
         $fromNumber = $data['form_number'] ?? null;
         $remoteJid = $data['remote_jid'] ?? null;
         $pushName = $data['push_name'] ?? null;
         $isGroup = str_contains($remoteJid ?? '', '@g.us');
-        Log::info($pushName);
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
             return;
