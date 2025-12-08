@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class AutoReplyController extends Controller
 {
@@ -622,8 +623,9 @@ class AutoReplyController extends Controller
         $message = $data['message'] ?? null;
         $fromNumber = $data['form_number'] ?? null;
         $remoteJid = $data['remote_jid'] ?? null;
+        $pushName = $data['push_name'] ?? null;
         $isGroup = str_contains($remoteJid ?? '', '@g.us');
-
+        Log::info($pushName);
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
             return;
@@ -643,7 +645,9 @@ class AutoReplyController extends Controller
         }
 
         // معالجة الرد التلقائي (قواعد)
-        $this->processAutoReply($instance, $fromNumber, $message, $isGroup);
+        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName)) {
+            return;
+        }
 
         // معالجة الذكاء الاصطناعي
         $this->processAiReply($instance, $fromNumber, $message, $isGroup);
@@ -652,17 +656,17 @@ class AutoReplyController extends Controller
     /**
      * معالجة الرد التلقائي باستخدام القواعد
      */
-    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup): void
+    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName): bool
     {
         $autoReply = $instance->autoReply;
 
         if (!$autoReply || !$autoReply->is_active) {
-            return;
+            return false;
         }
 
         // تجاهل المجموعات إذا كان الإعداد مفعلاً
         if ($isGroup && $autoReply->ignore_groups) {
-            return;
+            return false;
         }
 
         // البحث عن قاعدة مطابقة
@@ -671,7 +675,7 @@ class AutoReplyController extends Controller
             ->first(fn($rule) => $rule->matchesMessage($message));
 
         if (!$matchedRule) {
-            return;
+            return false;
         }
 
         // إظهار "جاري الكتابة" إذا كان مفعلاً
@@ -683,16 +687,16 @@ class AutoReplyController extends Controller
         try {
             switch ($matchedRule->response_type) {
                 case 'text':
-                    $responseText = $this->processVariables($matchedRule->getResponse(), $number);
+                    $responseText = $this->processVariables($matchedRule->getResponse(), $number, $pushName);
                     $this->evolutionService->sendText($instance->instance_name, $number, $responseText);
                     break;
 
                 case 'media':
-                    $this->sendMediaResponse($instance, $number, $matchedRule);
+                    $this->sendMediaResponse($instance, $number, $matchedRule, $pushName);
                     break;
 
                 case 'buttons':
-                    $this->sendButtonsResponse($instance, $number, $matchedRule);
+                    $this->sendButtonsResponse($instance, $number, $matchedRule, $pushName);
                     break;
             }
 
@@ -703,13 +707,18 @@ class AutoReplyController extends Controller
                 'rule' => $matchedRule->name,
                 'to' => $number,
             ]);
+
+            return true;
         } catch (\Exception $e) {
             Log::error('Auto Reply failed', [
                 'error' => $e->getMessage(),
                 'instance' => $instance->instance_name,
                 'rule' => $matchedRule->name,
             ]);
+
+            return false;
         }
+        return false;
     }
 
     /**
@@ -779,11 +788,11 @@ class AutoReplyController extends Controller
     /**
      * استبدال المتغيرات في النص
      */
-    protected function processVariables(string $text, string $number): string
+    protected function processVariables(string $text, string $number, string $pushName): string
     {
         $replacements = [
             '<phone>' => preg_replace('/[^0-9]/', '', $number),
-            '<name>' => 'العميل', // يمكن استبدالها بالاسم الفعلي إذا كان متاحاً
+            '<name>' => $pushName, // يمكن استبدالها بالاسم الفعلي إذا كان متاحاً
             '<date>' => now()->format('Y-m-d'),
             '<time>' => now()->format('H:i'),
         ];
@@ -794,9 +803,9 @@ class AutoReplyController extends Controller
     /**
      * إرسال رد وسائط
      */
-    protected function sendMediaResponse(WhatsAppInstance $instance, string $number, WhatsAppAutoReplyRoles $rule): void
+    protected function sendMediaResponse(WhatsAppInstance $instance, string $number, WhatsAppAutoReplyRoles $rule, string $pushName): void
     {
-        $caption = $rule->media_caption ? $this->processVariables($rule->media_caption, $number) : null;
+        $caption = $rule->media_caption ? $this->processVariables($rule->media_caption, $number, $pushName) : null;
 
         match ($rule->media_type) {
             // 'image' => $this->evolutionService->sendImage($instance->instance_name, $number, $rule->media_url, $caption),
@@ -810,10 +819,10 @@ class AutoReplyController extends Controller
     /**
      * إرسال رد أزرار
      */
-    protected function sendButtonsResponse(WhatsAppInstance $instance, string $number, WhatsAppAutoReplyRoles $rule): void
+    protected function sendButtonsResponse(WhatsAppInstance $instance, string $number, WhatsAppAutoReplyRoles $rule, string $pushName): void
     {
         // يمكن تخصيص هذه الدالة حسب API المستخدم
-        $text = $this->processVariables($rule->buttons_text ?? '', $number);
+        $text = $this->processVariables($rule->buttons_text ?? '', $number, $pushName);
         $this->evolutionService->sendText($instance->instance_name, $number, $text);
     }
 
