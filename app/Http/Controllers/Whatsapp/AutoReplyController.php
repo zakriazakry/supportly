@@ -562,25 +562,23 @@ class AutoReplyController extends Controller
         }
 
         try {
-            $response = $this->ai->generate(
+            $generate = $this->ai->generate(
                 $request->message,
                 $aiReply->system_prompt ?? '',
                 $aiReply->provider
             );
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'response' => $response,
-                    'message' => $request->message,
-                ],
-            ]);
+            if (!$generate) {
+                return responseFormat('فشل الاختبار: ', 500);
+            }
+            $response =  $generate['response'];
+            return responseFormat([
+                'response' => $response,
+                'message' => $request->message,
+            ], 200);
         } catch (\Exception $e) {
             Log::error('AI Test failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل الاختبار: ' . $e->getMessage(),
-            ], 500);
+            return responseFormat('فشل الاختبار: ' . $e->getMessage(), 500);
         }
     }
 
@@ -761,6 +759,13 @@ class AutoReplyController extends Controller
                     'max_tokens' => $aiReply->max_tokens,
                 ]
             );
+            if (!$generating) {
+                Log::error('Auto Reply failed', [
+                    'error' => 'Failed to generate response',
+                    'instance' => $instance->instance_name,
+                ]);
+                return;
+            }
 
             $instance->messages()->create([
                 'instance_id' => $instance->id,

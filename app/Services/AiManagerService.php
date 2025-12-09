@@ -21,7 +21,7 @@ class AiManagerService
      * @param array $options خيارات إضافية
      * @return string The generated response text
      */
-    public function generate(string $prompt, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): string
+    public function generate(string $prompt, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): array|null
     {
         $result = null;
 
@@ -32,9 +32,9 @@ class AiManagerService
         }
 
         if (is_array($result) && !empty($result['success']) && !empty($result['response'])) {
-            return $result['response'];
+            return $result;
         }
-        return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
+        return null;
     }
 
     /**
