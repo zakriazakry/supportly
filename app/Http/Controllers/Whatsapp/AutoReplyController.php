@@ -818,7 +818,6 @@ class AutoReplyController extends Controller
                 'from_me' => false,
                 'message_type' => 'text',
                 'message_content' => $message,
-                'status' => 'received',
                 'sent_at' => now(),
                 'delivered_at' => now(),
                 'read_at' => now(),
