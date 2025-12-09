@@ -731,7 +731,7 @@ class AutoReplyController extends Controller
             return true; // نوقف المعالجة
         }
         WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
-
+        Log::info($autoReply);
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
         if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords)) {
