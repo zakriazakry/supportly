@@ -1120,7 +1120,7 @@ class AutoReplyController extends Controller
         // from_me = false يعني أن الرسالة واردة من المستخدم
         $ownerMessage = $instance->messages()
             ->where('remote_jid', $number)
-            ->where('from_me', true) // ✅ تم التصحيح: نبحث عن رسائل المالك فقط
+            ->where('from_me', false) // ✅ تم التصحيح: نبحث عن رسائل المالك فقط
             ->where('created_at', '>=', now()->subMinutes($minutes))
             ->exists();
 
