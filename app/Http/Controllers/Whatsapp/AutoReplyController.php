@@ -650,7 +650,7 @@ class AutoReplyController extends Controller
         }
 
         // معالجة الذكاء الاصطناعي
-        $this->processAiReply($instance, $fromNumber, $message, $isGroup);
+        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName);
     }
 
     /**
@@ -725,7 +725,7 @@ class AutoReplyController extends Controller
      * معالجة الرد بالذكاء الاصطناعي
      */
 
-    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup): void
+    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName): void
     {
         $aiReply = $instance->aiReply;
 
@@ -745,7 +745,7 @@ class AutoReplyController extends Controller
 
         try {
             DB::beginTransaction(); // 🟢 بدء المعاملة
-
+            $system_prompt = "إسم المستخدم : " . $pushName . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
 
             // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
             $formattedMessages = [];
@@ -775,10 +775,22 @@ class AutoReplyController extends Controller
                 'content' => $message
             ];
 
+            // 📊 تسجيل تفاصيل الرسائل المُرسلة للذكاء الاصطناعي
+            Log::info('🔄 Sending messages to AI', [
+                'instance' => $instance->instance_name,
+                'number' => $number,
+                'include_context' => $aiReply->include_context,
+                'context_messages_count' => $aiReply->context_messages_count,
+                'total_messages_sent' => count($formattedMessages),
+                'messages' => $formattedMessages, // 📝 جميع الرسائل المُرسلة
+                'provider' => $aiReply->provider,
+                'model' => $aiReply->model,
+            ]);
+
             // 🤖 توليد الرد
             $aiResponse = $this->ai->chat(
                 $formattedMessages,
-                $aiReply->system_prompt ?? '',
+                $system_prompt ?? '',
                 $aiReply->provider,
                 null,
                 [
