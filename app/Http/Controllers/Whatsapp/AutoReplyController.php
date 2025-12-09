@@ -901,7 +901,7 @@ class AutoReplyController extends Controller
         }
 
         // ✅ التحقق من رسالة المالك
-        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5) && $fromMe) {
+        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
             // إنشاء إيقاف جديد
             WhatsAppAutoReplyStop::createStop(
                 $instance->id,
