@@ -43,7 +43,7 @@ class WhatsAppAiReply extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'temperature' => 'decimal:2',
+        'temperature' => 'float',
         'max_tokens' => 'integer',
         'response_delay' => 'integer',
         'stop_on_owner_message' => 'boolean',
