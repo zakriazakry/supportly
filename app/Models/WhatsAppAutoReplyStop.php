@@ -67,7 +67,6 @@ class WhatsAppAutoReplyStop extends Model
     {
         $stop = static::where('whats_app_instance_id', $instanceId)
             ->where('contact_number', $contactNumber)
-            ->where('is_active', true)
             ->where('resume_at', '>', now())
             ->first();
 
