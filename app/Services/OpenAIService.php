@@ -34,7 +34,7 @@ class OpenAIService
             $messages = [];
             Log::info('OpenAI API Request', [
                 'url' => $this->baseUrl . '/chat/completions',
-                'model' => $options['model'] ?? $this->model,
+                'model' =>  $this->model,
                 'prompt_length' => strlen($prompt),
                 'options' => $options
             ]);
@@ -51,7 +51,7 @@ class OpenAIService
             ];
 
             $payload = [
-                'model' => $options['model'] ?? $this->model,
+                'model' => $this->model,
                 'messages' => $messages,
                 'temperature' => $options['temperature'] ?? 0.7,
                 'max_tokens' => $options['max_tokens'] ?? 500,

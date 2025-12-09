@@ -7,6 +7,7 @@ use App\Models\WhatsAppAiReply;
 use App\Models\WhatsAppAutoReply;
 use App\Models\WhatsAppAutoReplyRoles;
 use App\Models\WhatsAppInstance;
+use App\Models\WhatsAppMessage;
 use App\Services\AiManagerService;
 use App\Services\EvolutionService;
 use Illuminate\Http\JsonResponse;
@@ -724,6 +725,7 @@ class AutoReplyController extends Controller
     /**
      * معالجة الرد بالذكاء الاصطناعي
      */
+
     protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup): void
     {
         $aiReply = $instance->aiReply;
@@ -743,17 +745,49 @@ class AutoReplyController extends Controller
         }
 
         try {
+            DB::beginTransaction(); // 🟢 بدء المعاملة
 
             // توليد الرد
-            $aiResponse = $this->ai->generate(
+            $generating = $this->ai->generate(
                 $message,
                 $aiReply->system_prompt ?? '',
-                $aiReply->provider
+                $aiReply->provider,
+                $aiReply->model,
+                [
+                    'response_delay' => $aiReply->response_delay,
+                    'show_typing' => $aiReply->show_typing,
+                    'temperature' => $aiReply->temperature,
+                    'max_tokens' => $aiReply->max_tokens,
+                ]
             );
+
+            $instance->messages()->create([
+                'instance_id' => $instance->id,
+                'message_id' => $generating['message_id'],
+                'remote_jid' => $number,
+                'from_me' => false,
+                'message_type' => 'text',
+                'message_content' => $generating['response'],
+                'message_context' => $generating['context'],
+                'message_data' => $generating['data'],
+                'status' => 'sent',
+                'sent_at' => now(),
+                'delivered_at' => now(),
+                'read_at' => now(),
+            ]);
+
+            DB::commit(); // ✔️ نجاح المعاملة
+
+            $aiResponse = $generating['response'];
 
             // إظهار "جاري الكتابة"
             if ($aiReply->show_typing) {
-                $this->evolutionService->sendChatPresence($instance->instance_name, $number, 'composing', $aiReply->response_delay * 1000);
+                $this->evolutionService->sendChatPresence(
+                    $instance->instance_name,
+                    $number,
+                    'composing',
+                    $aiReply->response_delay * 1000
+                );
             }
 
             // إرسال الرد
@@ -767,6 +801,9 @@ class AutoReplyController extends Controller
                 'response_length' => strlen($aiResponse),
             ]);
         } catch (\Exception $e) {
+
+            DB::rollBack(); // ❗ فشل المعاملة
+
             Log::error('AI Reply failed', [
                 'error' => $e->getMessage(),
                 'instance' => $instance->instance_name,
@@ -781,6 +818,7 @@ class AutoReplyController extends Controller
             );
         }
     }
+
 
     // ==========================================
     //              دوال مساعدة
