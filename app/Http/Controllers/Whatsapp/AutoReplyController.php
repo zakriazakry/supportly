@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Whatsapp;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAiReply;
-use App\Models\WhatsAppAutoReply;
 use App\Models\WhatsAppAutoReplyRoles;
 use App\Models\WhatsAppAutoReplyStop;
 use App\Models\WhatsAppInstance;
-use App\Models\WhatsAppMessage;
 use App\Services\AiManagerService;
 use App\Services\EvolutionService;
 use Illuminate\Http\JsonResponse;
@@ -16,8 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use phpDocumentor\Reflection\Types\Boolean;
-use Ramsey\Uuid\Uuid;
 
 class AutoReplyController extends Controller
 {
