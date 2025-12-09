@@ -612,59 +612,6 @@ class AutoReplyController extends Controller
     }
 
     // ==========================================
-    //        إدارة الإيقافات المؤقتة
-    // ==========================================
-
-    /**
-     * الحصول على قائمة الإيقافات النشطة
-     */
-    public function getActiveStops(int $instanceId): JsonResponse
-    {
-        $instance = WhatsAppInstance::find($instanceId);
-
-        if (!$instance) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لم يتم العثور على الـ Instance',
-            ], 404);
-        }
-
-        $stops = WhatsAppAutoReplyStop::where('whats_app_instance_id', $instanceId)
-            ->active()
-            ->orderBy('stopped_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $stops,
-        ]);
-    }
-
-    /**
-     * إلغاء إيقاف مؤقت
-     */
-    public function removeStop(int $instanceId, int $stopId): JsonResponse
-    {
-        $stop = WhatsAppAutoReplyStop::where('id', $stopId)
-            ->where('whats_app_instance_id', $instanceId)
-            ->first();
-
-        if (!$stop) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لم يتم العثور على الإيقاف',
-            ], 404);
-        }
-
-        $stop->deactivate();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم إلغاء الإيقاف بنجاح',
-        ]);
-    }
-
-    // ==========================================
     //           معالجة الرسائل الواردة
     // ==========================================
 
