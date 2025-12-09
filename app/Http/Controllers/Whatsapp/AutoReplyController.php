@@ -722,17 +722,16 @@ class AutoReplyController extends Controller
         if ($isGroup && $autoReply->ignore_groups) {
             return false;
         }
-
         // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
         if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
             Log::info('Auto Reply is stopped for this contact', [
                 'instance' => $instance->instance_name,
                 'number' => $number,
-                'stop_id' => WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->first(),
-
             ]);
             return true; // نوقف المعالجة
         }
+        WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
+
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
         if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords)) {
@@ -866,6 +865,7 @@ class AutoReplyController extends Controller
             ]);
             return; // نوقف المعالجة
         }
+        WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
         if ($aiReply->stop_on_keyword && !empty($aiReply->stop_keywords)) {
@@ -1115,10 +1115,12 @@ class AutoReplyController extends Controller
      */
     protected function hasOwnerMessageRecently(WhatsAppInstance $instance, string $number, int $minutes = 5): bool
     {
-        // التحقق من وجود رسالة مرسلة من المالك (from_me = true) خلال الدقائق الماضية
+        // ✅ التحقق من وجود رسالة مرسلة من المالك (from_me = true) خلال الدقائق الماضية
+        // from_me = true يعني أن الرسالة مرسلة من صاحب الحساب (المالك)
+        // from_me = false يعني أن الرسالة واردة من المستخدم
         $ownerMessage = $instance->messages()
             ->where('remote_jid', $number)
-            ->where('from_me', true)
+            ->where('from_me', true) // ✅ تم التصحيح: نبحث عن رسائل المالك فقط
             ->where('created_at', '>=', now()->subMinutes($minutes))
             ->exists();
 
