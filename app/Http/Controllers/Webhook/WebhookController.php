@@ -273,7 +273,7 @@ class WebhookController extends Controller
                         'message' => $messageInfo['content']
                     ]);
                 }
-                return; // لا نعالج رسائل المالك للرد التلقائي
+                // return; // لا نعالج رسائل المالك للرد التلقائي
             }
 
             switch ($messageInfo['type']) {
