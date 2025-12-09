@@ -732,7 +732,6 @@ class AutoReplyController extends Controller
             return true; // نوقف المعالجة
         }
         WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
-        Log::info($autoReply);
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
         if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords) && $fromMe) {
@@ -784,6 +783,9 @@ class AutoReplyController extends Controller
             return true; // نوقف الرد التلقائي
         }
 
+        if ($fromMe) {
+            return false;
+        }
         // البحث عن قاعدة مطابقة
         $matchedRule = $autoReply->activeRules()
             ->get()
@@ -917,7 +919,9 @@ class AutoReplyController extends Controller
 
             return; // نوقف الرد بالذكاء الاصطناعي
         }
-
+        if ($fromMe) {
+            return;
+        }
         // ------------------
 
         try {
