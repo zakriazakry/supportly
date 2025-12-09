@@ -746,47 +746,90 @@ class AutoReplyController extends Controller
         try {
             DB::beginTransaction(); // 🟢 بدء المعاملة
 
-            // توليد الرد
-            $generating = $this->ai->generate(
-                $message,
+
+            // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
+            $formattedMessages = [];
+
+            // �📝 جلب الرسائل السابقة فقط إذا كان include_context مفعلاً
+            if ($aiReply->include_context) {
+                $contextCount = $aiReply->context_messages_count ?? 5;
+                $oldMessages = $instance->messages()
+                    ->where('remote_jid', $number)
+                    ->orderBy('created_at', 'desc')
+                    ->limit($contextCount * 2) // x2 لأننا نريد رسائل المستخدم والردود
+                    ->get()
+                    ->reverse(); // نعكسها للحصول على الترتيب الزمني الصحيح
+
+                // تحويل الرسائل إلى تنسيق OpenAI
+                foreach ($oldMessages as $msg) {
+                    $formattedMessages[] = [
+                        'role' => $msg['from_me'] ? 'assistant' : 'user',
+                        'content' => $msg['message_content'] ?? ''
+                    ];
+                }
+            }
+
+            // ➕ إضافة الرسالة الجديدة
+            $formattedMessages[] = [
+                'role' => 'user',
+                'content' => $message
+            ];
+
+            // 🤖 توليد الرد
+            $aiResponse = $this->ai->chat(
+                $formattedMessages,
                 $aiReply->system_prompt ?? '',
                 $aiReply->provider,
-                $aiReply->model,
                 [
-                    'response_delay' => $aiReply->response_delay,
-                    'show_typing' => $aiReply->show_typing,
+                    'model' => $aiReply->model,
                     'temperature' => $aiReply->temperature,
                     'max_tokens' => $aiReply->max_tokens,
                 ]
             );
-            if (!$generating) {
-                Log::error('Auto Reply failed', [
+
+            if (!$aiResponse) {
+                Log::error('AI Reply failed', [
                     'error' => 'Failed to generate response',
                     'instance' => $instance->instance_name,
                 ]);
+                DB::rollBack();
                 return;
             }
-            Log::info($generating);
-            return;
 
+            Log::info('AI Response Generated', [
+                'instance' => $instance->instance_name,
+                'response_length' => strlen($aiResponse),
+                'context_messages' => count($formattedMessages)
+            ]);
+
+
+            // 💾 تخزين الرسالة الواردة من المستخدم
             $instance->messages()->create([
                 'instance_id' => $instance->id,
-                'message_id' => Uuid::uuid4()->toString(),
+                'message_id' => 'user_' . time() . '_' . rand(1000, 9999),
                 'remote_jid' => $number,
                 'from_me' => false,
                 'message_type' => 'text',
-                'message_content' => $generating['response'],
-                'message_context' => $generating['context'],
-                'message_data' => $generating['data'],
-                'status' => 'sent',
+                'message_content' => $message,
+                'status' => 'received',
                 'sent_at' => now(),
                 'delivered_at' => now(),
                 'read_at' => now(),
             ]);
 
-            DB::commit(); // ✔️ نجاح المعاملة
+            // 💾 تخزين الرد المُولّد من AI
+            $instance->messages()->create([
+                'instance_id' => $instance->id,
+                'message_id' => 'ai_' . time() . '_' . rand(1000, 9999),
+                'remote_jid' => $number,
+                'from_me' => true,
+                'message_type' => 'text',
+                'message_content' => $aiResponse,
+                'status' => 'pending',
+                'sent_at' => now(),
+            ]);
 
-            $aiResponse = $generating['response'];
+            DB::commit(); // ✔️ نجاح المعاملة
 
             // إظهار "جاري الكتابة"
             if ($aiReply->show_typing) {
