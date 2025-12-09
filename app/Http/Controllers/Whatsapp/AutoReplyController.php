@@ -801,13 +801,7 @@ class AutoReplyController extends Controller
             // 📤 استخراج النص من النتيجة
             $responseText = $aiResponse['response'];
 
-            Log::info('AI Response Generated', [
-                'instance' => $instance->instance_name,
-                'response_length' => strlen($responseText),
-                'context_messages' => count($formattedMessages),
-                'model' => $aiResponse['model'] ?? 'unknown',
-                'usage' => $aiResponse['usage'] ?? null
-            ]);
+            Log::info('AI Response Generated', $aiResponse);
 
 
             // 💾 تخزين الرسالة الواردة من المستخدم

@@ -107,7 +107,7 @@ class OllamaService
      * @param array $options Additional options
      * @return array
      */
-    public function chat(array $messages, ?string $systemPrompt = null, array $options = []): array
+    public function chat(array $messages, ?string $systemPrompt = null, array $options = []): array|null
     {
         try {
             $payload = [
@@ -122,6 +122,15 @@ class OllamaService
                     'role' => 'system',
                     'content' => $systemPrompt
                 ]);
+            }
+
+            // Add temperature and max_tokens options if provided
+            if (!empty($options['temperature'])) {
+                $payload['options']['temperature'] = (float) $options['temperature'];
+            }
+
+            if (!empty($options['max_tokens'])) {
+                $payload['options']['num_predict'] = (int) $options['max_tokens'];
             }
 
             $response = Http::timeout($this->timeout)
