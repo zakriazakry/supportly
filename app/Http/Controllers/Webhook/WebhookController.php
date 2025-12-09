@@ -241,14 +241,41 @@ class WebhookController extends Controller
 
             $sender = $fromMe ? 'Me (Bot)' : $remoteJid;
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
-            if ($fromMe == true) {
-                return;
-            }
-            $messageInfo = $this->extractMessageInfo($messageContent);
+
+            // ✅ استخراج رقم الهاتف
             $phone = $this->extractPhone($remoteJid, $remoteJidAlt);
             if (!$phone) {
                 return;
             }
+
+            $messageInfo = $this->extractMessageInfo($messageContent);
+
+            // ✅ إذا كانت الرسالة من المالك (fromMe = true)
+            // نحفظها في قاعدة البيانات فقط ولا نعالجها للرد التلقائي
+            if ($fromMe == true) {
+                $instance = WhatsAppInstance::where('instance_name', $instanceName)->first();
+                if ($instance && $messageInfo['type'] === 'text') {
+                    // 💾 حفظ رسالة المالك في قاعدة البيانات
+                    $instance->messages()->create([
+                        'instance_id' => $instance->id,
+                        'message_id' => $messageId ?? 'owner_' . time() . '_' . rand(1000, 9999),
+                        'remote_jid' => $phone,
+                        'from_me' => true, // ✅ رسالة من المالك
+                        'message_type' => $messageInfo['type'],
+                        'message_content' => $messageInfo['content'],
+                        'sent_at' => now(),
+                        'status' => 'delivered',
+                    ]);
+
+                    Log::info('💾 Owner message saved to database', [
+                        'instance' => $instanceName,
+                        'to' => $phone,
+                        'message' => $messageInfo['content']
+                    ]);
+                }
+                return; // لا نعالج رسائل المالك للرد التلقائي
+            }
+
             switch ($messageInfo['type']) {
                 case 'text':
                     $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
@@ -256,12 +283,13 @@ class WebhookController extends Controller
                         'from' => $sender,
                         'form_number' => $phone,
                         'to' => $receiver,
-                        'message' => $messageContent['conversation'],
+                        'message' => $messageInfo['content'],
                         'pushName' => $pushName,
                         'messageTimestamp' => $messageTimestamp,
                         'messageId' => $messageId,
                         'fromMe' => $fromMe,
                         'remoteJid' => $remoteJid,
+                        'remote_jid' => $remoteJid,
                         'key' => $key,
                         'messageInfo' => $messageInfo,
                         'instanceName' => $instanceName,
