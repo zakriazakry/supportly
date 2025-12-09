@@ -776,8 +776,8 @@ class AutoReplyController extends Controller
             ];
 
             // 🤖 توليد الرد
-            $aiResponse = $this->ai->generate(
-                $message,
+            $aiResponse = $this->ai->chat(
+                $formattedMessages,
                 $aiReply->system_prompt ?? '',
                 $aiReply->provider,
                 null,
@@ -786,7 +786,6 @@ class AutoReplyController extends Controller
                     'temperature' => $aiReply->temperature,
                     'max_tokens' => $aiReply->max_tokens,
                 ]
-
             );
 
 
