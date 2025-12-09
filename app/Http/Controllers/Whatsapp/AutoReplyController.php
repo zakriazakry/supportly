@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAiReply;
 use App\Models\WhatsAppAutoReply;
 use App\Models\WhatsAppAutoReplyRoles;
+use App\Models\WhatsAppAutoReplyStop;
 use App\Models\WhatsAppInstance;
 use App\Models\WhatsAppMessage;
 use App\Services\AiManagerService;
@@ -611,6 +612,59 @@ class AutoReplyController extends Controller
     }
 
     // ==========================================
+    //        إدارة الإيقافات المؤقتة
+    // ==========================================
+
+    /**
+     * الحصول على قائمة الإيقافات النشطة
+     */
+    public function getActiveStops(int $instanceId): JsonResponse
+    {
+        $instance = WhatsAppInstance::find($instanceId);
+
+        if (!$instance) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم العثور على الـ Instance',
+            ], 404);
+        }
+
+        $stops = WhatsAppAutoReplyStop::where('whats_app_instance_id', $instanceId)
+            ->active()
+            ->orderBy('stopped_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $stops,
+        ]);
+    }
+
+    /**
+     * إلغاء إيقاف مؤقت
+     */
+    public function removeStop(int $instanceId, int $stopId): JsonResponse
+    {
+        $stop = WhatsAppAutoReplyStop::where('id', $stopId)
+            ->where('whats_app_instance_id', $instanceId)
+            ->first();
+
+        if (!$stop) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم العثور على الإيقاف',
+            ], 404);
+        }
+
+        $stop->deactivate();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إلغاء الإيقاف بنجاح',
+        ]);
+    }
+
+    // ==========================================
     //           معالجة الرسائل الواردة
     // ==========================================
 
@@ -667,6 +721,65 @@ class AutoReplyController extends Controller
         // تجاهل المجموعات إذا كان الإعداد مفعلاً
         if ($isGroup && $autoReply->ignore_groups) {
             return false;
+        }
+
+        // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
+        if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
+            Log::info('Auto Reply is stopped for this contact', [
+                'instance' => $instance->instance_name,
+                'number' => $number,
+            ]);
+            return true; // نوقف المعالجة
+        }
+
+        // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
+        if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords)) {
+            $messageLower = mb_strtolower(trim($message));
+
+            foreach ($autoReply->stop_keywords as $keyword) {
+                $keywordLower = mb_strtolower(trim($keyword));
+
+                // التحقق من تطابق الكلمة
+                if ($messageLower === $keywordLower || str_contains($messageLower, $keywordLower)) {
+                    // إنشاء إيقاف جديد
+                    WhatsAppAutoReplyStop::createStop(
+                        $instance->id,
+                        $number,
+                        $autoReply->stop_duration ?? 30,
+                        'keyword',
+                        $keyword
+                    );
+
+                    Log::info('Auto Reply stopped due to keyword', [
+                        'instance' => $instance->instance_name,
+                        'number' => $number,
+                        'keyword' => $keyword,
+                        'duration' => $autoReply->stop_duration,
+                    ]);
+
+                    return true; // نوقف الرد التلقائي
+                }
+            }
+        }
+
+        // ✅ التحقق من رسالة المالك
+        if ($autoReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
+            // إنشاء إيقاف جديد
+            WhatsAppAutoReplyStop::createStop(
+                $instance->id,
+                $number,
+                $autoReply->stop_duration ?? 30,
+                'owner_message',
+                null
+            );
+
+            Log::info('Auto Reply stopped due to owner message', [
+                'instance' => $instance->instance_name,
+                'number' => $number,
+                'duration' => $autoReply->stop_duration,
+            ]);
+
+            return true; // نوقف الرد التلقائي
         }
 
         // البحث عن قاعدة مطابقة
@@ -742,6 +855,67 @@ class AutoReplyController extends Controller
         if ($aiReply->isNumberExcluded($number)) {
             return;
         }
+
+        // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
+        if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
+            Log::info('AI Reply is stopped for this contact', [
+                'instance' => $instance->instance_name,
+                'number' => $number,
+            ]);
+            return; // نوقف المعالجة
+        }
+
+        // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
+        if ($aiReply->stop_on_keyword && !empty($aiReply->stop_keywords)) {
+            $messageLower = mb_strtolower(trim($message));
+
+            foreach ($aiReply->stop_keywords as $keyword) {
+                $keywordLower = mb_strtolower(trim($keyword));
+
+                // التحقق من تطابق الكلمة
+                if ($messageLower === $keywordLower || str_contains($messageLower, $keywordLower)) {
+                    // إنشاء إيقاف جديد
+                    WhatsAppAutoReplyStop::createStop(
+                        $instance->id,
+                        $number,
+                        $aiReply->stop_duration ?? 30,
+                        'keyword',
+                        $keyword
+                    );
+
+                    Log::info('AI Reply stopped due to keyword', [
+                        'instance' => $instance->instance_name,
+                        'number' => $number,
+                        'keyword' => $keyword,
+                        'duration' => $aiReply->stop_duration,
+                    ]);
+
+                    return; // نوقف الرد بالذكاء الاصطناعي
+                }
+            }
+        }
+
+        // ✅ التحقق من رسالة المالك
+        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
+            // إنشاء إيقاف جديد
+            WhatsAppAutoReplyStop::createStop(
+                $instance->id,
+                $number,
+                $aiReply->stop_duration ?? 30,
+                'owner_message',
+                null
+            );
+
+            Log::info('AI Reply stopped due to owner message', [
+                'instance' => $instance->instance_name,
+                'number' => $number,
+                'duration' => $aiReply->stop_duration,
+            ]);
+
+            return; // نوقف الرد بالذكاء الاصطناعي
+        }
+
+        // ------------------
 
         try {
             DB::beginTransaction(); // 🟢 بدء المعاملة
@@ -830,6 +1004,7 @@ class AutoReplyController extends Controller
                 'message_type' => 'text',
                 'message_content' => $message,
                 'sent_at' => now(),
+                'status' => 'delivered',
                 'delivered_at' => now(),
                 'read_at' => now(),
             ]);
@@ -842,7 +1017,7 @@ class AutoReplyController extends Controller
                 'from_me' => true,
                 'message_type' => 'text',
                 'message_content' => $responseText,
-                'status' => 'pending',
+                'status' => 'delivered',
                 'sent_at' => now(),
             ]);
 
@@ -931,6 +1106,21 @@ class AutoReplyController extends Controller
         // يمكن تخصيص هذه الدالة حسب API المستخدم
         $text = $this->processVariables($rule->buttons_text ?? '', $number, $pushName);
         $this->evolutionService->sendText($instance->instance_name, $number, $text);
+    }
+
+    /**
+     * التحقق من وجود رسالة من المالك في آخر فترة
+     */
+    protected function hasOwnerMessageRecently(WhatsAppInstance $instance, string $number, int $minutes = 5): bool
+    {
+        // التحقق من وجود رسالة مرسلة من المالك (from_me = true) خلال الدقائق الماضية
+        $ownerMessage = $instance->messages()
+            ->where('remote_jid', $number)
+            ->where('from_me', true)
+            ->where('created_at', '>=', now()->subMinutes($minutes))
+            ->exists();
+
+        return $ownerMessage;
     }
 
     /**
