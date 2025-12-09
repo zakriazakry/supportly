@@ -46,7 +46,7 @@ class AiManagerService
      * @param array $options
      * @return string The generated response text
      */
-    public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', array $options = []): string
+    public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', array $options = []): array|null
     {
         $result = null;
 
@@ -58,11 +58,11 @@ class AiManagerService
 
         // Extract the response string from the result array
         if (is_array($result) && !empty($result['success']) && !empty($result['response'])) {
-            return $result['response'];
+            return $result;
         }
 
         // Fallback message if AI fails
-        return "شكراً لتواصلك معنا! 🙏\nجاري تحويل استفسارك لأحد ممثلي خدمة العملاء.\nسيتم الرد عليك في أقرب وقت ممكن.";
+        return null;
     }
 
 
