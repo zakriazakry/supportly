@@ -3,6 +3,7 @@
 use App\Http\Controllers\User\WhatsAppController;
 use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Http\Controllers\Webhook\WebhookController;
+use App\Http\Controllers\Whatsapp\WhatsappWebhooksController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/evolution/webhook', [WebhookController::class, 'handle']);
@@ -70,5 +71,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/ai-reply/toggle', 'toggleAi');
         Route::post('/ai-reply/test', 'testAi');
         Route::get('/ai-reply/stats', 'getAiStats');
+    });
+
+    // ==========================================
+    //      Webhooks \u0026 API Keys Routes
+    // ==========================================
+    Route::controller(WhatsappWebhooksController::class)->prefix('whatsapp/instances/{instanceId}')->group(function () {
+        // Webhooks Routes
+        Route::prefix('webhooks')->group(function () {
+            Route::get('/', 'getWebhooks');                            // GET /webhooks
+            Route::get('/{webhookId}', 'getWebhook');                  // GET /webhooks/{webhook_id}
+            Route::post('/', 'createWebhook');                         // POST /webhooks
+            Route::put('/{webhookId}', 'updateWebhook');               // PUT /webhooks/{webhook_id}
+            Route::delete('/{webhookId}', 'deleteWebhook');            // DELETE /webhooks/{webhook_id}
+            Route::post('/{webhookId}/toggle', 'toggleWebhook');       // POST /webhooks/{webhook_id}/toggle
+            Route::post('/{webhookId}/test', 'testWebhook');           // POST /webhooks/{webhook_id}/test
+            Route::get('/{webhookId}/events', 'getWebhookEvents');     // GET /webhooks/{webhook_id}/events
+        });
+
+        // API Keys Routes
+        Route::prefix('api-keys')->group(function () {
+            Route::get('/', 'getApiKeys');                             // GET /api-keys
+            Route::get('/{keyId}', 'getApiKey');                       // GET /api-keys/{key_id}
+            Route::post('/', 'createApiKey');                          // POST /api-keys
+            Route::put('/{keyId}', 'updateApiKey');                    // PUT /api-keys/{key_id}
+            Route::delete('/{keyId}', 'deleteApiKey');                 // DELETE /api-keys/{key_id}
+            Route::post('/{keyId}/toggle', 'toggleApiKey');            // POST /api-keys/{key_id}/toggle
+        });
     });
 });

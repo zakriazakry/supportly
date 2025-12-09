@@ -1,0 +1,599 @@
+<?php
+
+namespace App\Http\Controllers\Whatsapp;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+use App\Models\WhatsAppInstance;
+use App\Models\Webhook;
+use App\Models\WebhookEvent;
+use App\Models\ApiKey;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+
+class WhatsappWebhooksController extends Controller
+{
+    // ==========================================
+    //         Webhooks Management
+    // ==========================================
+
+    /**
+     * Get all webhooks for an instance
+     * GET /api/whatsapp/instances/{instanceId}/webhooks
+     */
+    public function getWebhooks(Request $request, $instanceId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhooks = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $webhooks,
+                'message' => 'Webhooks retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Get a single webhook
+     * GET /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}
+     */
+    public function getWebhook(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            return response()->json([
+                'success' => true,
+                'data' => $webhook,
+                'message' => 'Webhook retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Create a new webhook
+     * POST /api/whatsapp/instances/{instanceId}/webhooks
+     */
+    public function createWebhook(Request $request, $instanceId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'url' => 'required|url|max:500',
+                'events' => 'required|array|min:1',
+                'events.*' => 'required|string|in:message.received,message.sent,message.delivered,message.read,contact.created,group.created,status.changed,qr.updated',
+                'is_active' => 'boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $validator->errors(),
+                    'message' => 'Validation failed'
+                ], 422);
+            }
+
+            // Create webhook
+            $webhook = Webhook::create([
+                'whatsapp_instance_id' => $instance->id,
+                'name' => $request->name,
+                'url' => $request->url,
+                'events' => $request->events,
+                'secret' => Str::random(32), // Generate secret for signature verification
+                'is_active' => $request->is_active ?? true,
+                'total_calls' => 0,
+                'success_rate' => 100.00
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $webhook,
+                'message' => 'Webhook created successfully'
+            ], 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Update a webhook
+     * PUT /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}
+     */
+    public function updateWebhook(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'url' => 'required|url|max:500',
+                'events' => 'required|array|min:1',
+                'events.*' => 'required|string|in:message.received,message.sent,message.delivered,message.read,contact.created,group.created,status.changed,qr.updated',
+                'is_active' => 'boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $validator->errors(),
+                    'message' => 'Validation failed'
+                ], 422);
+            }
+
+            // Update webhook
+            $webhook->update([
+                'name' => $request->name,
+                'url' => $request->url,
+                'events' => $request->events,
+                'is_active' => $request->is_active ?? $webhook->is_active
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $webhook->fresh(),
+                'message' => 'Webhook updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete a webhook
+     * DELETE /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}
+     */
+    public function deleteWebhook(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            $webhook->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Webhook deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle webhook status
+     * POST /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}/toggle
+     */
+    public function toggleWebhook(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            $webhook->is_active = !$webhook->is_active;
+            $webhook->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => ['is_active' => $webhook->is_active],
+                'message' => 'Webhook status toggled successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Test a webhook
+     * POST /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}/test
+     */
+    public function testWebhook(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            // Prepare test payload
+            $testPayload = [
+                'event' => 'test.webhook',
+                'instance_id' => $instance->id,
+                'timestamp' => now()->toIso8601String(),
+                'data' => [
+                    'message' => 'This is a test webhook event',
+                    'test' => true
+                ]
+            ];
+
+            // Send webhook
+            $result = $this->sendWebhook($webhook, $testPayload);
+
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+                'message' => 'Test webhook sent successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Get webhook events (logs)
+     * GET /api/whatsapp/instances/{instanceId}/webhooks/{webhookId}/events
+     */
+    public function getWebhookEvents(Request $request, $instanceId, $webhookId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($webhookId);
+
+            $limit = $request->get('limit', 50);
+
+            $events = WebhookEvent::where('webhook_id', $webhook->id)
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $events,
+                'message' => 'Webhook events retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    // ==========================================
+    //         API Keys Management
+    // ==========================================
+
+    /**
+     * Get all API keys for an instance
+     * GET /api/whatsapp/instances/{instanceId}/api-keys
+     */
+    public function getApiKeys(Request $request, $instanceId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $apiKeys = ApiKey::where('whatsapp_instance_id', $instance->id)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($key) {
+                    // Hide the full API key
+                    $key->key = $this->maskApiKey($key->key);
+                    return $key;
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $apiKeys,
+                'message' => 'API Keys retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Get a single API key
+     * GET /api/whatsapp/instances/{instanceId}/api-keys/{keyId}
+     */
+    public function getApiKey(Request $request, $instanceId, $keyId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($keyId);
+
+            // Hide the full API key
+            $apiKey->key = $this->maskApiKey($apiKey->key);
+
+            return response()->json([
+                'success' => true,
+                'data' => $apiKey,
+                'message' => 'API Key retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Create a new API key
+     * POST /api/whatsapp/instances/{instanceId}/api-keys
+     */
+    public function createApiKey(Request $request, $instanceId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'permissions' => 'required|array|min:1',
+                'permissions.*' => 'required|string|in:messages.send,messages.read,contacts.read,contacts.manage,groups.read,groups.manage,instance.read,instance.manage'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $validator->errors(),
+                    'message' => 'Validation failed'
+                ], 422);
+            }
+
+            // Generate API key
+            $plainKey = 'sk_live_' . Str::random(32);
+            $hashedKey = hash('sha256', $plainKey);
+
+            // Create API key
+            $apiKey = ApiKey::create([
+                'whatsapp_instance_id' => $instance->id,
+                'name' => $request->name,
+                'key' => $hashedKey,
+                'permissions' => $request->permissions,
+                'is_active' => true
+            ]);
+
+            // Return full key only once
+            $apiKey->key = $plainKey;
+
+            return response()->json([
+                'success' => true,
+                'data' => $apiKey,
+                'message' => 'API Key created successfully. Please save this key, it will not be shown again.'
+            ], 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Update an API key
+     * PUT /api/whatsapp/instances/{instanceId}/api-keys/{keyId}
+     */
+    public function updateApiKey(Request $request, $instanceId, $keyId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($keyId);
+
+            // Validation
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'permissions' => 'required|array|min:1',
+                'permissions.*' => 'required|string|in:messages.send,messages.read,contacts.read,contacts.manage,groups.read,groups.manage,instance.read,instance.manage',
+                'is_active' => 'boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $validator->errors(),
+                    'message' => 'Validation failed'
+                ], 422);
+            }
+
+            // Update API key (but not the key itself)
+            $apiKey->update([
+                'name' => $request->name,
+                'permissions' => $request->permissions,
+                'is_active' => $request->is_active ?? $apiKey->is_active
+            ]);
+
+            // Hide the full API key
+            $apiKey->key = $this->maskApiKey($apiKey->key);
+
+            return response()->json([
+                'success' => true,
+                'data' => $apiKey->fresh(),
+                'message' => 'API Key updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete an API key
+     * DELETE /api/whatsapp/instances/{instanceId}/api-keys/{keyId}
+     */
+    public function deleteApiKey(Request $request, $instanceId, $keyId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($keyId);
+
+            $apiKey->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'API Key deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle API key status
+     * POST /api/whatsapp/instances/{instanceId}/api-keys/{keyId}/toggle
+     */
+    public function toggleApiKey(Request $request, $instanceId, $keyId)
+    {
+        try {
+            $instance = $this->verifyInstanceOwnership($request, $instanceId);
+
+            $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
+                ->findOrFail($keyId);
+
+            $apiKey->is_active = !$apiKey->is_active;
+            $apiKey->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => ['is_active' => $apiKey->is_active],
+                'message' => 'API Key status toggled successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    // ==========================================
+    //         Helper Methods
+    // ==========================================
+
+    /**
+     * Verify that the instance belongs to the authenticated user
+     */
+    private function verifyInstanceOwnership(Request $request, $instanceId)
+    {
+        $instance = WhatsAppInstance::where('id', $instanceId)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$instance) {
+            throw new \Exception('Instance not found or access denied');
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Send webhook HTTP request
+     */
+    private function sendWebhook($webhook, $payload)
+    {
+        $startTime = microtime(true);
+        $success = false;
+        $responseStatus = null;
+        $errorMessage = null;
+
+        try {
+            // Add signature to headers
+            $signature = hash_hmac('sha256', json_encode($payload), $webhook->secret);
+
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'X-Webhook-Signature' => $signature,
+                    'Content-Type' => 'application/json'
+                ])
+                ->retry(3, 100) // Retry 3 times with 100ms delay
+                ->post($webhook->url, $payload);
+
+            $responseStatus = $response->status();
+            $success = $response->successful();
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            $success = false;
+        }
+
+        $responseTime = (int)((microtime(true) - $startTime) * 1000);
+
+        // Log the event
+        WebhookEvent::create([
+            'webhook_id' => $webhook->id,
+            'event_type' => $payload['event'] ?? 'unknown',
+            'payload' => $payload,
+            'response_status' => $responseStatus,
+            'response_time' => $responseTime,
+            'success' => $success,
+            'error_message' => $errorMessage
+        ]);
+
+        // Update webhook statistics
+        $webhook->increment('total_calls');
+        if ($success) {
+            $webhook->last_triggered = now();
+        }
+
+        // Update success rate
+        $this->updateSuccessRate($webhook);
+
+        return [
+            'success' => $success,
+            'response_status' => $responseStatus,
+            'response_time' => $responseTime,
+            'error' => $errorMessage
+        ];
+    }
+
+    /**
+     * Update webhook success rate
+     */
+    private function updateSuccessRate($webhook)
+    {
+        $totalEvents = WebhookEvent::where('webhook_id', $webhook->id)->count();
+
+        if ($totalEvents > 0) {
+            $successfulEvents = WebhookEvent::where('webhook_id', $webhook->id)
+                ->where('success', true)
+                ->count();
+
+            $successRate = ($successfulEvents / $totalEvents) * 100;
+            $webhook->success_rate = round($successRate, 2);
+            $webhook->save();
+        }
+    }
+
+    /**
+     * Mask API key for security
+     */
+    private function maskApiKey($key)
+    {
+        if (strlen($key) <= 12) {
+            return 'sk_***';
+        }
+
+        return substr($key, 0, 8) . '***' . substr($key, -4);
+    }
+
+    /**
+     * Return error response
+     */
+    private function errorResponse($message, $code = 400)
+    {
+        return response()->json([
+            'success' => false,
+            'error' => $message,
+            'message' => 'Operation failed'
+        ], $code);
+    }
+}

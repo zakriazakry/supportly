@@ -15,4 +15,5 @@ Route::post('test', function (Request $request) {
 });
 require_once base_path('routes/apis/user.php');
 require_once base_path('routes/apis/webhooks.php');
+require_once base_path('routes/apis/docs.php');
 require_once base_path('routes/apis/whatsapp.php');
