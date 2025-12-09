@@ -766,6 +766,8 @@ class AutoReplyController extends Controller
                 ]);
                 return;
             }
+            Log::info($generating);
+            return;
 
             $instance->messages()->create([
                 'instance_id' => $instance->id,
