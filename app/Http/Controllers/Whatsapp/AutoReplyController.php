@@ -745,7 +745,7 @@ class AutoReplyController extends Controller
 
         try {
             DB::beginTransaction(); // 🟢 بدء المعاملة
-            $system_prompt = "إسم المستخدم : " . $pushName . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
+            $system_prompt = "إسم المستخدم : " . $pushName . "\n رقم المستخدم : " . $number . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
 
             // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
             $formattedMessages = [];
