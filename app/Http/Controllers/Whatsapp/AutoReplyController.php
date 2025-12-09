@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use phpDocumentor\Reflection\Types\Boolean;
+use Ramsey\Uuid\Uuid;
 
 class AutoReplyController extends Controller
 {
@@ -763,7 +764,7 @@ class AutoReplyController extends Controller
 
             $instance->messages()->create([
                 'instance_id' => $instance->id,
-                'message_id' => $generating['message_id'],
+                'message_id' => Uuid::uuid4()->toString(),
                 'remote_jid' => $number,
                 'from_me' => false,
                 'message_type' => 'text',
