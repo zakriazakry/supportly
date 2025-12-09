@@ -159,7 +159,7 @@ class OpenAIService
                     'success' => true,
                     'response' => $data['choices'][0]['message']['content'] ?? null,
                     'error' => null,
-                    'context' => $data,
+                    'context' => $data['context']['choices']['content'] ?? null,
                     'model' => $data['model'] ?? $this->model,
                     'usage' => $data['usage'] ?? null,
                 ];

@@ -46,7 +46,7 @@ class AiManagerService
      * @param array $options
      * @return string The generated response text
      */
-    public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', array $options = []): array|null
+    public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): array|null
     {
         $result = null;
 
