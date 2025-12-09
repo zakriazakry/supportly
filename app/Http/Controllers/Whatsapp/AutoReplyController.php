@@ -635,26 +635,19 @@ class AutoReplyController extends Controller
             return;
         }
 
-        // تحديد الرسالة كمقروءة
-        $messageKey = $data['key'] ?? null;
-        if ($messageKey) {
-            $messageKey['remoteJid'] = $this->extractJid($messageKey['remoteJid'], $messageKey['remoteJidAlt'] ?? null);
-            $this->evolutionService->markAsRead($instanceName, [$messageKey]);
-        }
-
         // معالجة الرد التلقائي (قواعد)
-        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe)) {
+        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'])) {
             return;
         }
 
         // معالجة الذكاء الاصطناعي
-        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe);
+        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key']);
     }
 
     /**
      * معالجة الرد التلقائي باستخدام القواعد
      */
-    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe): bool
+    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe, $messageKey): bool
     {
         $autoReply = $instance->autoReply;
 
@@ -737,7 +730,10 @@ class AutoReplyController extends Controller
         if (!$matchedRule) {
             return false;
         }
-
+        if ($messageKey) {
+            $messageKey['remoteJid'] = $this->extractJid($messageKey['remoteJid'], $messageKey['remoteJidAlt'] ?? null);
+            $this->evolutionService->markAsRead($instance->instance_name, [$messageKey]);
+        }
         // إظهار "جاري الكتابة" إذا كان مفعلاً
         if ($autoReply->show_typing) {
             $this->evolutionService->sendChatPresence($instance->instance_name, $number, 'composing', $autoReply->reply_delay * 1000);
@@ -785,7 +781,7 @@ class AutoReplyController extends Controller
      * معالجة الرد بالذكاء الاصطناعي
      */
 
-    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe): void
+    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe, $messageKey): void
     {
         $aiReply = $instance->aiReply;
 
@@ -914,6 +910,11 @@ class AutoReplyController extends Controller
                 'provider' => $aiReply->provider,
                 'model' => $aiReply->model,
             ]);
+
+            if ($messageKey) {
+                $messageKey['remoteJid'] = $this->extractJid($messageKey['remoteJid'], $messageKey['remoteJidAlt'] ?? null);
+                $this->evolutionService->markAsRead($instance->instance_name, [$messageKey]);
+            }
 
             // 🤖 توليد الرد
             $aiResponse = $this->ai->chat(
