@@ -1115,12 +1115,16 @@ class AutoReplyController extends Controller
      */
     protected function hasOwnerMessageRecently(WhatsAppInstance $instance, string $number, int $minutes = 5): bool
     {
-        // ✅ التحقق من وجود رسالة مرسلة من المالك (from_me = true) خلال الدقائق الماضية
-        // from_me = true يعني أن الرسالة مرسلة من صاحب الحساب (المالك) - يتم تسجيلها في WebhookController
-        // from_me = false يعني أن الرسالة واردة من المستخدم الخارجي
+        // ✅ التحقق من وجود رسالة مرسلة من المالك يدوياً (وليس من البوت)
+        // from_me = true يعني رسالة صادرة من حساب WhatsApp
+        // لكن نحتاج للتمييز بين:
+        // - رسائل المالك اليدوية: message_id يبدأ بـ 'owner_'
+        // - ردود البوت التلقائية: message_id يبدأ بـ 'ai_' أو 'auto_'
+
         $ownerMessage = $instance->messages()
             ->where('remote_jid', $number)
-            ->where('from_me', true) // ✅ نبحث فقط عن الرسائل المرسلة من المالك
+            ->where('from_me', true) // رسائل صادرة من حساب WhatsApp
+            ->where('message_id', 'LIKE', 'owner_%') // ✅ فقط رسائل المالك اليدوية
             ->where('created_at', '>=', now()->subMinutes($minutes))
             ->exists();
 
