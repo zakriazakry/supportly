@@ -53,8 +53,8 @@ class OpenAIService
             $payload = [
                 'model' => $this->model,
                 'messages' => $messages,
-                'temperature' => $options['temperature'] ?? 0.7,
-                'max_tokens' => $options['max_tokens'] ?? 500,
+                'temperature' => (float) ($options['temperature'] ?? 0.7),
+                'max_tokens' => (int) ($options['max_tokens'] ?? 500),
             ];
 
             Log::info('OpenAI API Request', [
@@ -140,8 +140,8 @@ class OpenAIService
             $payload = [
                 'model' => $options['model'] ?? $this->model,
                 'messages' => $allMessages,
-                'temperature' => $options['temperature'] ?? 0.7,
-                'max_tokens' => $options['max_tokens'] ?? 500,
+                'temperature' => (float) ($options['temperature'] ?? 0.7),
+                'max_tokens' => (int) ($options['max_tokens'] ?? 500),
             ];
 
             $response = Http::timeout($this->timeout)

@@ -47,11 +47,11 @@ class OllamaService
 
             // Add any additional options
             if (!empty($options['temperature'])) {
-                $payload['options']['temperature'] = $options['temperature'];
+                $payload['options']['temperature'] = (float) $options['temperature'];
             }
 
             if (!empty($options['max_tokens'])) {
-                $payload['options']['num_predict'] = $options['max_tokens'];
+                $payload['options']['num_predict'] = (int) $options['max_tokens'];
             }
 
 
