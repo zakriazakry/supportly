@@ -764,7 +764,7 @@ class AutoReplyController extends Controller
         }
 
         // ✅ التحقق من رسالة المالك
-        if ($autoReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5) && $fromMe) {
+        if ($autoReply->stop_on_owner_message && $fromMe) {
             // إنشاء إيقاف جديد
             WhatsAppAutoReplyStop::createStop(
                 $instance->id,
@@ -901,7 +901,7 @@ class AutoReplyController extends Controller
         }
 
         // ✅ التحقق من رسالة المالك
-        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
+        if ($aiReply->stop_on_owner_message && $fromMe) {
             // إنشاء إيقاف جديد
             WhatsAppAutoReplyStop::createStop(
                 $instance->id,
@@ -1118,23 +1118,7 @@ class AutoReplyController extends Controller
     /**
      * التحقق من وجود رسالة من المالك في آخر فترة
      */
-    protected function hasOwnerMessageRecently(WhatsAppInstance $instance, string $number, int $minutes = 5): bool
-    {
-        // ✅ التحقق من وجود رسالة مرسلة من المالك يدوياً (وليس من البوت)
-        // from_me = true يعني رسالة صادرة من حساب WhatsApp
-        // لكن نحتاج للتمييز بين:
-        // - رسائل المالك اليدوية: message_id يبدأ بـ 'owner_'
-        // - ردود البوت التلقائية: message_id يبدأ بـ 'ai_' أو 'auto_'
 
-        $ownerMessage = $instance->messages()
-            ->where('remote_jid', $number)
-            ->where('from_me', true) // رسائل صادرة من حساب WhatsApp
-            ->where('message_id', 'LIKE', 'owner_%') // ✅ فقط رسائل المالك اليدوية
-            ->where('created_at', '>=', now()->subMinutes($minutes))
-            ->exists();
-
-        return $ownerMessage;
-    }
 
     /**
      * استخراج JID
