@@ -679,6 +679,7 @@ class AutoReplyController extends Controller
         $fromNumber = $data['form_number'] ?? null;
         $remoteJid = $data['remote_jid'] ?? null;
         $pushName = $data['pushName'] ?? null;
+        $fromMe = $data['fromMe'] ?? null;
         $isGroup = str_contains($remoteJid ?? '', '@g.us');
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
@@ -699,18 +700,18 @@ class AutoReplyController extends Controller
         }
 
         // معالجة الرد التلقائي (قواعد)
-        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName)) {
+        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe)) {
             return;
         }
 
         // معالجة الذكاء الاصطناعي
-        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName);
+        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe);
     }
 
     /**
      * معالجة الرد التلقائي باستخدام القواعد
      */
-    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName): bool
+    protected function processAutoReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe): bool
     {
         $autoReply = $instance->autoReply;
 
@@ -764,7 +765,7 @@ class AutoReplyController extends Controller
         }
 
         // ✅ التحقق من رسالة المالك
-        if ($autoReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
+        if ($autoReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5) && $fromMe) {
             // إنشاء إيقاف جديد
             WhatsAppAutoReplyStop::createStop(
                 $instance->id,
