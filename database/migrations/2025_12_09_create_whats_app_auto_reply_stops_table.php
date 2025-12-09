@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Indexes for better performance
-            $table->index(['whats_app_instance_id', 'contact_number', 'is_active']);
+            $table->index(['contact_number', 'is_active']);
             $table->index('resume_at');
         });
     }
