@@ -745,6 +745,10 @@ class AutoReplyController extends Controller
 
         try {
             DB::beginTransaction(); // 🟢 بدء المعاملة
+            $time = date('H:i:s');
+            $date = date('Y-m-d');
+            $day = date('l');
+            $varSTR = " <name> : {$pushName} <phone> : {$number} <time> : {$time} <date> : {$date} <day> : {$day}";
             $system_prompt = "إسم المستخدم : " . $pushName . "\n رقم المستخدم : " . $number . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
 
             // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
