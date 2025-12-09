@@ -26,9 +26,7 @@ class ApiKey extends Model
         'updated_at' => 'datetime'
     ];
 
-    protected $hidden = [
-        'key' // Don't expose the hashed key by default
-    ];
+    protected $hidden = [];
 
     /**
      * Get the WhatsApp instance that owns the API key
