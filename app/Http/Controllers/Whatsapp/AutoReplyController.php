@@ -728,6 +728,8 @@ class AutoReplyController extends Controller
             Log::info('Auto Reply is stopped for this contact', [
                 'instance' => $instance->instance_name,
                 'number' => $number,
+                'stop_id' => WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->first(),
+
             ]);
             return true; // نوقف المعالجة
         }
