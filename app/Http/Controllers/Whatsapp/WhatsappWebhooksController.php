@@ -33,13 +33,9 @@ class WhatsappWebhooksController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $webhooks,
-                'message' => 'Webhooks retrieved successfully'
-            ]);
+            return responseFormat($webhooks);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -53,15 +49,16 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
 
-            return response()->json([
-                'success' => true,
-                'data' => $webhook,
-                'message' => 'Webhook retrieved successfully'
-            ]);
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
+
+            return responseFormat($webhook);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -84,11 +81,7 @@ class WhatsappWebhooksController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $validator->errors(),
-                    'message' => 'Validation failed'
-                ], 422);
+                return responseFormat($validator->errors()->first(), 422);
             }
 
             // Create webhook
@@ -103,13 +96,9 @@ class WhatsappWebhooksController extends Controller
                 'success_rate' => 100.00
             ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $webhook,
-                'message' => 'Webhook created successfully'
-            ], 201);
+            return responseFormat($webhook, 201);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -123,7 +112,12 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
+
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
 
             // Validation
             $validator = Validator::make($request->all(), [
@@ -135,11 +129,7 @@ class WhatsappWebhooksController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $validator->errors(),
-                    'message' => 'Validation failed'
-                ], 422);
+                return responseFormat($validator->errors()->first(), 422);
             }
 
             // Update webhook
@@ -150,13 +140,9 @@ class WhatsappWebhooksController extends Controller
                 'is_active' => $request->is_active ?? $webhook->is_active
             ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $webhook->fresh(),
-                'message' => 'Webhook updated successfully'
-            ]);
+            return responseFormat($webhook->fresh());
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -170,16 +156,18 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
+
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
 
             $webhook->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Webhook deleted successfully'
-            ]);
+            return responseFormat('Webhook deleted successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -193,18 +181,19 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
+
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
 
             $webhook->is_active = !$webhook->is_active;
             $webhook->save();
 
-            return response()->json([
-                'success' => true,
-                'data' => ['is_active' => $webhook->is_active],
-                'message' => 'Webhook status toggled successfully'
-            ]);
+            return responseFormat(['is_active' => $webhook->is_active]);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -218,7 +207,12 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
+
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
 
             // Prepare test payload
             $testPayload = [
@@ -234,13 +228,9 @@ class WhatsappWebhooksController extends Controller
             // Send webhook
             $result = $this->sendWebhook($webhook, $testPayload);
 
-            return response()->json([
-                'success' => true,
-                'data' => $result,
-                'message' => 'Test webhook sent successfully'
-            ]);
+            return responseFormat($result);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -254,7 +244,12 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $webhook = Webhook::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($webhookId);
+                ->where('id', $webhookId)
+                ->first();
+
+            if (!$webhook) {
+                return responseFormat('Webhook not found', 404);
+            }
 
             $limit = $request->get('limit', 50);
 
@@ -263,13 +258,9 @@ class WhatsappWebhooksController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $events,
-                'message' => 'Webhook events retrieved successfully'
-            ]);
+            return responseFormat($events);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -295,13 +286,9 @@ class WhatsappWebhooksController extends Controller
                     return $key;
                 });
 
-            return response()->json([
-                'success' => true,
-                'data' => $apiKeys,
-                'message' => 'API Keys retrieved successfully'
-            ]);
+            return responseFormat($apiKeys);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -315,18 +302,19 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($keyId);
+                ->where('id', $keyId)
+                ->first();
+
+            if (!$apiKey) {
+                return responseFormat('API Key not found', 404);
+            }
 
             // Hide the full API key
             $apiKey->key = $this->maskApiKey($apiKey->key);
 
-            return response()->json([
-                'success' => true,
-                'data' => $apiKey,
-                'message' => 'API Key retrieved successfully'
-            ]);
+            return responseFormat($apiKey);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -347,11 +335,7 @@ class WhatsappWebhooksController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $validator->errors(),
-                    'message' => 'Validation failed'
-                ], 422);
+                return responseFormat($validator->errors()->first(), 422);
             }
 
             // Generate API key
@@ -370,13 +354,9 @@ class WhatsappWebhooksController extends Controller
             // Return full key only once
             $apiKey->key = $plainKey;
 
-            return response()->json([
-                'success' => true,
-                'data' => $apiKey,
-                'message' => 'API Key created successfully. Please save this key, it will not be shown again.'
-            ], 201);
+            return responseFormat($apiKey, 201, 'API Key created successfully. Please save this key, it will not be shown again.');
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -390,7 +370,12 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($keyId);
+                ->where('id', $keyId)
+                ->first();
+
+            if (!$apiKey) {
+                return responseFormat('API Key not found', 404);
+            }
 
             // Validation
             $validator = Validator::make($request->all(), [
@@ -401,11 +386,7 @@ class WhatsappWebhooksController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => $validator->errors(),
-                    'message' => 'Validation failed'
-                ], 422);
+                return responseFormat($validator->errors()->first(), 422);
             }
 
             // Update API key (but not the key itself)
@@ -418,13 +399,9 @@ class WhatsappWebhooksController extends Controller
             // Hide the full API key
             $apiKey->key = $this->maskApiKey($apiKey->key);
 
-            return response()->json([
-                'success' => true,
-                'data' => $apiKey->fresh(),
-                'message' => 'API Key updated successfully'
-            ]);
+            return responseFormat($apiKey->fresh());
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -438,16 +415,18 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($keyId);
+                ->where('id', $keyId)
+                ->first();
+
+            if (!$apiKey) {
+                return responseFormat('API Key not found', 404);
+            }
 
             $apiKey->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'API Key deleted successfully'
-            ]);
+            return responseFormat('API Key deleted successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -461,18 +440,19 @@ class WhatsappWebhooksController extends Controller
             $instance = $this->verifyInstanceOwnership($request, $instanceId);
 
             $apiKey = ApiKey::where('whatsapp_instance_id', $instance->id)
-                ->findOrFail($keyId);
+                ->where('id', $keyId)
+                ->first();
+
+            if (!$apiKey) {
+                return responseFormat('API Key not found', 404);
+            }
 
             $apiKey->is_active = !$apiKey->is_active;
             $apiKey->save();
 
-            return response()->json([
-                'success' => true,
-                'data' => ['is_active' => $apiKey->is_active],
-                'message' => 'API Key status toggled successfully'
-            ]);
+            return responseFormat(['is_active' => $apiKey->is_active]);
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
+            return responseFormat($e->getMessage(), 500);
         }
     }
 
@@ -583,17 +563,5 @@ class WhatsappWebhooksController extends Controller
         }
 
         return substr($key, 0, 8) . '***' . substr($key, -4);
-    }
-
-    /**
-     * Return error response
-     */
-    private function errorResponse($message, $code = 400)
-    {
-        return response()->json([
-            'success' => false,
-            'error' => $message,
-            'message' => 'Operation failed'
-        ], $code);
     }
 }
