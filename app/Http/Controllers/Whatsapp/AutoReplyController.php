@@ -735,7 +735,7 @@ class AutoReplyController extends Controller
         Log::info($autoReply);
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
-        if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords)) {
+        if ($autoReply->stop_on_keyword && !empty($autoReply->stop_keywords) && $fromMe) {
             $messageLower = mb_strtolower(trim($message));
 
             foreach ($autoReply->stop_keywords as $keyword) {
@@ -840,7 +840,7 @@ class AutoReplyController extends Controller
      * معالجة الرد بالذكاء الاصطناعي
      */
 
-    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName): void
+    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe): void
     {
         $aiReply = $instance->aiReply;
 
@@ -869,7 +869,7 @@ class AutoReplyController extends Controller
         WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
 
         // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
-        if ($aiReply->stop_on_keyword && !empty($aiReply->stop_keywords)) {
+        if ($aiReply->stop_on_keyword && !empty($aiReply->stop_keywords) && $fromMe) {
             $messageLower = mb_strtolower(trim($message));
 
             foreach ($aiReply->stop_keywords as $keyword) {
@@ -899,7 +899,7 @@ class AutoReplyController extends Controller
         }
 
         // ✅ التحقق من رسالة المالك
-        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5)) {
+        if ($aiReply->stop_on_owner_message && $this->hasOwnerMessageRecently($instance, $number, 5) && $fromMe) {
             // إنشاء إيقاف جديد
             WhatsAppAutoReplyStop::createStop(
                 $instance->id,
