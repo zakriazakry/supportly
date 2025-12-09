@@ -82,7 +82,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/', 'getWebhooks');                            // GET /webhooks
             Route::get('/{webhookId}', 'getWebhook');                  // GET /webhooks/{webhook_id}
             Route::post('/', 'createWebhook');                         // POST /webhooks
-            Route::put('/{webhookId}', 'updateWebhook');               // PUT /webhooks/{webhook_id}
+            Route::post('/{webhookId}', 'updateWebhook');               // post /webhooks/{webhook_id}
             Route::delete('/{webhookId}', 'deleteWebhook');            // DELETE /webhooks/{webhook_id}
             Route::post('/{webhookId}/toggle', 'toggleWebhook');       // POST /webhooks/{webhook_id}/toggle
             Route::post('/{webhookId}/test', 'testWebhook');           // POST /webhooks/{webhook_id}/test
@@ -94,7 +94,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/', 'getApiKeys');                             // GET /api-keys
             Route::get('/{keyId}', 'getApiKey');                       // GET /api-keys/{key_id}
             Route::post('/', 'createApiKey');                          // POST /api-keys
-            Route::put('/{keyId}', 'updateApiKey');                    // PUT /api-keys/{key_id}
+            Route::post('/{keyId}', 'updateApiKey');                    // post /api-keys/{key_id}
             Route::delete('/{keyId}', 'deleteApiKey');                 // DELETE /api-keys/{key_id}
             Route::post('/{keyId}/toggle', 'toggleApiKey');            // POST /api-keys/{key_id}/toggle
         });
