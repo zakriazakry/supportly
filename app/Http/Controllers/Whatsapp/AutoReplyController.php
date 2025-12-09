@@ -787,19 +787,26 @@ class AutoReplyController extends Controller
                 ]
             );
 
-            if (!$aiResponse) {
+
+            if (!$aiResponse || !is_array($aiResponse) || empty($aiResponse['response'])) {
                 Log::error('AI Reply failed', [
                     'error' => 'Failed to generate response',
                     'instance' => $instance->instance_name,
+                    'ai_result' => $aiResponse
                 ]);
                 DB::rollBack();
                 return;
             }
 
+            // 📤 استخراج النص من النتيجة
+            $responseText = $aiResponse['response'];
+
             Log::info('AI Response Generated', [
                 'instance' => $instance->instance_name,
-                'response_length' => strlen($aiResponse),
-                'context_messages' => count($formattedMessages)
+                'response_length' => strlen($responseText),
+                'context_messages' => count($formattedMessages),
+                'model' => $aiResponse['model'] ?? 'unknown',
+                'usage' => $aiResponse['usage'] ?? null
             ]);
 
 
@@ -824,7 +831,7 @@ class AutoReplyController extends Controller
                 'remote_jid' => $number,
                 'from_me' => true,
                 'message_type' => 'text',
-                'message_content' => $aiResponse,
+                'message_content' => $responseText,
                 'status' => 'pending',
                 'sent_at' => now(),
             ]);
@@ -842,14 +849,14 @@ class AutoReplyController extends Controller
             }
 
             // إرسال الرد
-            $this->evolutionService->sendText($instance->instance_name, $number, $aiResponse);
+            $this->evolutionService->sendText($instance->instance_name, $number, $responseText);
 
             $aiReply->incrementStats();
 
             Log::info('AI Reply sent', [
                 'instance' => $instance->instance_name,
                 'to' => $number,
-                'response_length' => strlen($aiResponse),
+                'response_length' => strlen($responseText),
             ]);
         } catch (\Exception $e) {
 
