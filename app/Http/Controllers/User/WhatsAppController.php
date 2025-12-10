@@ -37,52 +37,10 @@ class WhatsAppController extends Controller
     {
         $instances = WhatsAppInstance::where('user_id', $request->user()->id)->get();
         $providerData = $this->evolutionService->fetchInstances();
-        // providerData : 
-        // [
-        //     {
-        //         "id": "5fae50bf-19e1-4d1e-850a-f587043fbc08",
-        //         "name": "Zakria Zakry",
-        //         "connectionStatus": "open",
-        //         "ownerJid": "218921730546@s.whatsapp.net",
-        //         "profileName": null,
-        //         "profilePicUrl": null,
-        //         "integration": "WHATSAPP-BAILEYS",
-        //         "number": null,
-        //         "businessId": null,
-        //         "token": "D46C4F6F-37E5-4EDD-88C8-BD4A1BC80471",
-        //         "clientName": "evolution_exchange",
-        //         "disconnectionReasonCode": 401,
-        //         "disconnectionObject": "{\"error\":{\"data\":null,\"isBoom\":true,\"isServer\":false,\"output\":{\"statusCode\":401,\"payload\":{\"statusCode\":401,\"error\":\"Unauthorized\",\"message\":\"Log out instance: Zakria Zakry\"},\"headers\":{}}},\"date\":\"2025-12-04T09:26:24.599Z\"}",
-        //         "disconnectionAt": "2025-12-04T09:26:24.608Z",
-        //         "createdAt": "2025-12-04T09:21:01.917Z",
-        //         "updatedAt": "2025-12-04T09:27:01.055Z",
-        //         "Chatwoot": null,
-        //         "Proxy": null,
-        //         "Rabbitmq": null,
-        //         "Nats": null,
-        //         "Sqs": null,
-        //         "Websocket": null,
-        //         "Setting": {
-        //             "id": "cmir87f1b0075ms4qa6a52fgw",
-        //             "rejectCall": true,
-        //             "msgCall": "عذراً، لا أقبل المكالمات",
-        //             "groupsIgnore": false,
-        //             "alwaysOnline": true,
-        //             "readMessages": false,
-        //             "readStatus": false,
-        //             "syncFullHistory": false,
-        //             "wavoipToken": "",
-        //             "createdAt": "2025-12-04T09:21:01.920Z",
-        //             "updatedAt": "2025-12-04T09:21:01.920Z",
-        //             "instanceId": "5fae50bf-19e1-4d1e-850a-f587043fbc08"
-        //         },
-        //         "_count": {
-        //             "Message": 24,
-        //             "Contact": 353,
-        //             "Chat": 4
-        //         }
-        //     }
-        // ]
+        $instances->map(function ($instance) use ($providerData) {
+            $instance->evo = $providerData['data'][0] ?? null;
+            return $instance;
+        });
 
         return responseFormat($instances);
     }
