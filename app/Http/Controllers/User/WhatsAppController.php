@@ -35,20 +35,40 @@ class WhatsAppController extends Controller
      */
     public function getInstances(Request $request)
     {
+        // 1. جلب الـ instances من قاعدة البيانات
         $instances = WhatsAppInstance::where('user_id', $request->user()->id)->get();
-        $providerData = $this->evolutionService->fetchInstances()['data'] ?? [];
 
-        // حوّل بيانات المزود إلى مصفوفة مفهرسة حسب instance_key
-        $providerMap = collect($providerData)->keyBy('instance_key');
+        // 2. جلب بيانات Evolution API
+        $providerData = $this->evolutionService->fetchInstances();
+        $providerList = collect($providerData['data'] ?? []);
 
+        // 3. تحويل البيانات إلى خريطة (key = UUID)
+        $providerMap = $providerList->keyBy('id');
+
+        // 4. ربط كل instance محلي بالـ evo الصحيح
         $instances->transform(function ($instance) use ($providerMap) {
-            // اربط الـ instance المحلي بالبيانات الصحيحة من المزود
-            $instance->evo = $providerMap[$instance->instance_key] ?? null;
+
+            // instance_id يجب أن يحتوي على UUID من Evolution
+            $evoId = $instance->instance_id;
+
+            // ربط البيانات
+            $instance->evo = $evoId ? ($providerMap[$evoId] ?? null) : null;
+
+            // يمكنك إضافة حالة اتصال إن أردت
+            if ($instance->evo) {
+                $instance->is_connected = $instance->evo['connectionStatus'] === 'open';
+                $instance->status_label = $instance->is_connected ? 'متصل' : 'غير متصل';
+            } else {
+                $instance->is_connected = false;
+                $instance->status_label = 'غير معروف';
+            }
+
             return $instance;
         });
 
         return responseFormat($instances);
     }
+
 
 
     /**
