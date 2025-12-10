@@ -55,8 +55,10 @@ class WebhookHelper
             $webhook->last_triggered = now();
         }
 
-        // Update success rate
-        self::updateSuccessRate($webhook);
+        foreach ($instance->webhooks as $webhook) {
+            WebhookHelper::sendWebhook($webhook, $data);
+        }
+
 
         return [
             'success' => $success,
