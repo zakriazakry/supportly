@@ -139,7 +139,7 @@ class OpenAIService
             $allMessages = array_merge($allMessages, $messages);
 
             $payload = [
-                'model' => $options['model'] ?? $this->model,
+                'model' => $this->model,
                 'messages' => $allMessages,
                 'temperature' => (float) ($options['temperature'] ?? 0.7),
                 'max_tokens' => (int) ($options['max_tokens'] ?? 500),
