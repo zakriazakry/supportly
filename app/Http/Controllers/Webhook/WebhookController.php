@@ -45,6 +45,7 @@ class WebhookController extends Controller
                 'webhooks' => $instance->webhooks,
                 'data' => $data,
             ]);
+            sendWebhook("https://zeko.ly", $data);
 
             return responseFormat('ok');
         } catch (\Exception $e) {
