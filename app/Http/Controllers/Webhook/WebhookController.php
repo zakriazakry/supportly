@@ -33,21 +33,21 @@ class WebhookController extends Controller
             $event = $data['event'] ?? null;
 
             if (!$event) {
-                Log::warning('Webhook received without event type', ['data' => $data]);
                 return responseFormat('No event type provided', 400);
             }
 
-            // Route to appropriate handler based on event type
             $method = $this->getHandlerMethod($event);
 
             if (method_exists($this, $method)) {
                 $this->$method($data);
-            } else {
-                Log::warning('No handler for event type', [
-                    'event' => $event,
-                    'method_attempted' => $method
-                ]);
             }
+            $instance = WhatsAppInstance::where('instance_name', $data['instance'])->first();
+            Log::alert('Webhook received', [
+                'instance' => $instance->instance_name,
+                'event' => $event,
+                'data' => $data,
+            ]);
+
 
             return responseFormat('ok');
         } catch (\Exception $e) {
@@ -67,8 +67,6 @@ class WebhookController extends Controller
      */
     protected function getHandlerMethod($event)
     {
-        // Convert event name to method name
-        // e.g., MESSAGES.UPSERT -> handleMessagesUpsert
         $parts = explode('.', strtolower($event));
         $method = 'handle';
 
@@ -77,78 +75,6 @@ class WebhookController extends Controller
         }
 
         return $method;
-    }
-
-    // ==================== APPLICATION EVENTS ====================
-
-    /**
-     * Handle application startup event
-     */
-    protected function handleApplicationStartup($data)
-    {
-        Log::info('📱 Application Started', [
-            'instance' => $data['instance'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== QRCODE EVENTS ====================
-
-    /**
-     * Handle QR code update event
-     */
-    protected function handleQrcodeUpdated($data)
-    {
-        $instanceName = $data['instance'] ?? null;
-        $qrcode = $data['data']['qrcode'] ?? null;
-
-        Log::info('🔲 QR Code Updated', [
-            'instance' => $instanceName,
-            'has_qrcode' => !empty($qrcode),
-            'timestamp' => now()->toDateTimeString()
-        ]);
-
-        if ($instanceName && $qrcode) {
-            // Update instance with QR code
-            WhatsAppInstance::where('instance_name', $instanceName)
-                ->update([
-                    'qr_code' => $qrcode['base64'] ?? null,
-                    'status' => 'qr_code',
-                ]);
-
-            Log::info('✅ QR Code saved to database', ['instance' => $instanceName]);
-        }
-    }
-
-    // ==================== CONNECTION EVENTS ====================
-
-    /**
-     * Handle connection update event
-     */
-    protected function handleConnectionUpdate($data)
-    {
-        // $instanceName = $data['instance'] ?? null;
-        // $state = $data['data']['state'] ?? null;
-
-        // $status = match ($state) {
-        //     'open' => 'connected',
-        //     'close' => 'disconnected',
-        //     'connecting' => 'connecting',
-        //     default => 'unknown'
-        // };
-
-
-        // if ($instanceName) {
-        //     WhatsAppInstance::where('instance_name', $instanceName)
-        //         ->update([
-        //             'status' => $status,
-        //         ]);
-
-        //     Log::info('✅ Connection status updated in database', [
-        //         'instance' => $instanceName,
-        //         'status' => $status
-        //     ]);
-        // }
     }
 
     // ==================== MESSAGE EVENTS ====================
@@ -179,41 +105,6 @@ class WebhookController extends Controller
         $this->processMessages($data);
     }
 
-    /**
-     * Handle message update event
-     */
-    protected function handleMessagesUpdate($data)
-    {
-        Log::info('🔄 Message Updated', [
-            'instance' => $data['instance'] ?? null,
-            'update_data' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle message delete event
-     */
-    protected function handleMessagesDelete($data)
-    {
-        Log::info('🗑️ Message Deleted', [
-            'instance' => $data['instance'] ?? null,
-            'delete_data' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle sent message event
-     */
-    protected function handleSendMessage($data)
-    {
-        Log::info('📤 Message Sent', [
-            'instance' => $data['instance'] ?? null,
-            'message_data' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
 // =======================================================================================================
     /**
      * Process messages (common logic for message events)
@@ -564,217 +455,6 @@ class WebhookController extends Controller
         return $info['content'];
     }
 
-    // ==================== CONTACT EVENTS ====================
-
-    /**
-     * Handle contacts set event
-     */
-    protected function handleContactsSet($data)
-    {
-        $contactCount = count($data['data']['contacts'] ?? []);
-
-        Log::info('👥 Contacts Set Received', [
-            'instance' => $data['instance'] ?? null,
-            'contact_count' => $contactCount,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle contact upsert event
-     */
-    protected function handleContactsUpsert($data)
-    {
-        Log::info('👤 Contact Upserted', [
-            'instance' => $data['instance'] ?? null,
-            'contact' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle contact update event
-     */
-    protected function handleContactsUpdate($data)
-    {
-        Log::info('👤 Contact Updated', [
-            'instance' => $data['instance'] ?? null,
-            'contact' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== PRESENCE EVENTS ====================
-
-    /**
-     * Handle presence update event
-     */
-    protected function handlePresenceUpdate($data)
-    {
-        Log::info('👁️ Presence Updated', [
-            'instance' => $data['instance'] ?? null,
-            'presence' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== CHAT EVENTS ====================
-
-    /**
-     * Handle chats set event
-     */
-    protected function handleChatsSet($data)
-    {
-        $chatCount = count($data['data']['chats'] ?? []);
-
-        Log::info('💬 Chats Set Received', [
-            'instance' => $data['instance'] ?? null,
-            'chat_count' => $chatCount,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle chat upsert event
-     */
-    protected function handleChatsUpsert($data)
-    {
-        Log::info('💬 Chat Upserted', [
-            'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle chat update event
-     */
-    protected function handleChatsUpdate($data)
-    {
-        Log::info('💬 Chat Updated', [
-            'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle chat delete event
-     */
-    protected function handleChatsDelete($data)
-    {
-        Log::info('🗑️ Chat Deleted', [
-            'instance' => $data['instance'] ?? null,
-            'chat' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== GROUP EVENTS ====================
-
-    /**
-     * Handle groups upsert event
-     */
-    protected function handleGroupsUpsert($data)
-    {
-        Log::info('👥 Group Upserted', [
-            'instance' => $data['instance'] ?? null,
-            'group' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle group update event
-     */
-    protected function handleGroupUpdate($data)
-    {
-        Log::info('👥 Group Updated', [
-            'instance' => $data['instance'] ?? null,
-            'group' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle group participants update event
-     */
-    protected function handleGroupParticipantsUpdate($data)
-    {
-        Log::info('👥 Group Participants Updated', [
-            'instance' => $data['instance'] ?? null,
-            'update' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== LABEL EVENTS ====================
-
-    /**
-     * Handle labels edit event
-     */
-    protected function handleLabelsEdit($data)
-    {
-        Log::info('🏷️ Labels Edited', [
-            'instance' => $data['instance'] ?? null,
-            'labels' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle labels association event
-     */
-    protected function handleLabelsAssociation($data)
-    {
-        Log::info('🏷️ Labels Associated', [
-            'instance' => $data['instance'] ?? null,
-            'association' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    // ==================== CALL EVENTS ====================
-
-    /**
-     * Handle call event
-     */
-    protected function handleCall($data)
-    {
-        Log::info('📞 Call Received', [
-            'instance' => $data['instance'] ?? null,
-            'call' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-
-        // TODO: Handle incoming calls (e.g., auto-reject, notify user, etc.)
-    }
-
-    // ==================== TYPEBOT EVENTS ====================
-
-    /**
-     * Handle Typebot start event
-     */
-    protected function handleTypebotStart($data)
-    {
-        Log::info('🤖 Typebot Started', [
-            'instance' => $data['instance'] ?? null,
-            'typebot' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
-
-    /**
-     * Handle Typebot status change event
-     */
-    protected function handleTypebotChangeStatus($data)
-    {
-        Log::info('🤖 Typebot Status Changed', [
-            'instance' => $data['instance'] ?? null,
-            'status' => $data['data'] ?? null,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-    }
     // ------------------Helper Functions------------------
     protected  function extractPhone($remoteJid, $remoteJidAlt)
     {
