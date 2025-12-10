@@ -36,19 +36,27 @@ class WhatsAppController extends Controller
     public function getInstances(Request $request)
     {
         $instances = WhatsAppInstance::where('user_id', $request->user()->id)->get();
-        $providerData = $this->evolutionService->fetchInstances()['data'] ?? [];
-        return $providerData;
-        // حوّل بيانات المزود إلى مصفوفة مفهرسة حسب instance_key
-        $providerMap = collect($providerData)->keyBy('instance_key');
 
+        // Evolution API Data
+        $providerData = $this->evolutionService->fetchInstances()['data'] ?? [];
+
+        // الفهرسة الصحيحة حسب id
+        $providerMap = collect($providerData)->keyBy('id');
+
+        // ربط البيانات
         $instances->transform(function ($instance) use ($providerMap) {
-            // اربط الـ instance المحلي بالبيانات الصحيحة من المزود
-            $instance->evo = $providerMap[$instance->instance_key] ?? null;
+
+            // يجب أن يحتوي على UUID القادم من Evolution
+            $instance->evo = $instance->instance_id
+                ? ($providerMap[$instance->instance_id] ?? null)
+                : null;
+
             return $instance;
         });
 
         return responseFormat($instances);
     }
+
 
 
     /**
