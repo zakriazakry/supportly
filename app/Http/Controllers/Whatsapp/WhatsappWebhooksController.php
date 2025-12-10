@@ -279,12 +279,7 @@ class WhatsappWebhooksController extends Controller
 
             $apiKeys = ApiKey::where('whatsapp_instance_id', $instance->id)
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($key) {
-                    // Hide the full API key
-                    $key->key = $this->maskApiKey($key->key);
-                    return $key;
-                });
+                ->get();
 
             return responseFormat($apiKeys);
         } catch (\Exception $e) {
