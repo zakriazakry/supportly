@@ -76,7 +76,7 @@ class WhatsappWebhooksController extends Controller
                 'name' => 'required|string|max:255',
                 'url' => 'required|url|max:500',
                 'events' => 'required|array|min:1',
-                'events.*' => 'required|string|in:message.received,message.sent,message.delivered,message.read,contact.created,group.created,status.changed,qr.updated',
+                'events.*' => 'required|string|in:APPLICATION.STARTUP,CALL,CHATS.DELETE,CHATS.SET,CHATS.UPDATE,CHATS.UPSERT,CONNECTION.UPDATE,CONTACTS.SET,CONTACTS.UPDATE,CONTACTS.UPSERT,GROUP.PARTICIPANTS.UPDATE,GROUP.UPDATE,GROUPS.UPSERT,LABELS.ASSOCIATION,LABELS.EDIT,LOGOUT.INSTANCE,MESSAGES.DELETE,MESSAGES.SET,MESSAGES.UPDATE,MESSAGES.UPSERT,PRESENCE.UPDATE,QRCODE.UPDATED,REMOVE.INSTANCE,SEND.MESSAGE,TYPEBOT.CHANGE.STATUS,TYPEBOT.START',
                 'is_active' => 'boolean'
             ]);
 
@@ -124,7 +124,7 @@ class WhatsappWebhooksController extends Controller
                 'name' => 'required|string|max:255',
                 'url' => 'required|url|max:500',
                 'events' => 'required|array|min:1',
-                'events.*' => 'required|string|in:message.received,message.sent,message.delivered,message.read,contact.created,group.created,status.changed,qr.updated',
+                'events.*' => 'required|string|in:APPLICATION.STARTUP,CALL,CHATS.DELETE,CHATS.SET,CHATS.UPDATE,CHATS.UPSERT,CONNECTION.UPDATE,CONTACTS.SET,CONTACTS.UPDATE,CONTACTS.UPSERT,GROUP.PARTICIPANTS.UPDATE,GROUP.UPDATE,GROUPS.UPSERT,LABELS.ASSOCIATION,LABELS.EDIT,LOGOUT.INSTANCE,MESSAGES.DELETE,MESSAGES.SET,MESSAGES.UPDATE,MESSAGES.UPSERT,PRESENCE.UPDATE,QRCODE.UPDATED,REMOVE.INSTANCE,SEND.MESSAGE,TYPEBOT.CHANGE.STATUS,TYPEBOT.START',
                 'is_active' => 'boolean'
             ]);
 
