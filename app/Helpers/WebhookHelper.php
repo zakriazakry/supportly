@@ -69,7 +69,7 @@ class WebhookHelper
     /**
      * Update webhook success rate
      */
-    function updateSuccessRate($webhook)
+    static function updateSuccessRate($webhook)
     {
         $totalEvents = WebhookEvent::where('webhook_id', $webhook->id)->count();
 
