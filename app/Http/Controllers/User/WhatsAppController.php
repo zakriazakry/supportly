@@ -66,7 +66,11 @@ class WhatsAppController extends Controller
         }
 
         $providerData = $this->evolutionService->fetchInstances($instance->name);
-        $instance->evo = $providerData['data'][0] ?? null;
+        foreach ($providerData['data'] as $item) {
+            if ($item['name'] == $instance->name) {
+                $instance->evo = $item;
+            }
+        }
         return responseFormat($instance);
     }
 
