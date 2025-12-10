@@ -38,7 +38,7 @@ class WhatsAppController extends Controller
         $instances = WhatsAppInstance::where('user_id', $request->user()->id)->get();
         $providerData = $this->evolutionService->fetchInstances();
         foreach ($providerData['data'] as $item) {
-            return $item;
+            return $item['name'];
             foreach ($instances as $instance) {
                 if ($instance->instance_name ==) {
                     $instance->evo = $item;
