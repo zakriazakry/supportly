@@ -47,6 +47,9 @@ class WebhookController extends Controller
                 'webhooks' => $instance->webhooks,
                 'data' => $data,
             ]);
+            foreach ($instance->webhooks as $webhook) {
+                sendWebhook($webhook, $data);
+            }
 
 
             return responseFormat('ok');
