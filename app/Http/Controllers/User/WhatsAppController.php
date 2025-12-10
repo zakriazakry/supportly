@@ -40,7 +40,7 @@ class WhatsAppController extends Controller
         foreach ($providerData['data'] as $item) {
             return $item['name'];
             foreach ($instances as $instance) {
-                if ($instance->instance_name ==) {
+                if ($instance->instance_name == $item['name']) {
                     $instance->evo = $item;
                 }
             }
