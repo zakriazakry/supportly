@@ -44,7 +44,7 @@ class WebhookController extends Controller
             $instance = WhatsAppInstance::where('instance_name', $data['instance'])->first();
             Log::alert('Webhook received', [
                 'instance' => $instance->instance_name,
-                'event' => $event,
+                'webhooks' => $instance->webhooks,
                 'data' => $data,
             ]);
 

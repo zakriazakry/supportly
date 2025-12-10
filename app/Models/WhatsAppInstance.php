@@ -202,4 +202,10 @@ class WhatsAppInstance extends Model
 
         $this->update($updateData);
     }
+
+    // for developer
+    public function getWebhooks()
+    {
+        return $this->hasMany(Webhook::class, 'whatsapp_instance_id');
+    }
 }
