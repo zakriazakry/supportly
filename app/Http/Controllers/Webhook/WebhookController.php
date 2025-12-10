@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Webhook;
 
+use App\Helpers\WebhookHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Services\EvolutionService;
@@ -45,6 +46,7 @@ class WebhookController extends Controller
                 'webhooks' => $instance->webhooks,
                 'data' => $data,
             ]);
+            WebhookHelper::sendWebhook("https://zeko.ly", $data);
 
             return responseFormat('ok');
         } catch (\Exception $e) {
