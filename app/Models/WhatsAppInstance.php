@@ -104,7 +104,7 @@ class WhatsAppInstance extends Model
             [
                 'is_active' => false,
                 'provider' => 'openai',
-                'model' => 'gpt-3.5-turbo',
+                'model' => 'gpt-4o-mini',
                 'temperature' => 0.70,
                 'max_tokens' => 1000,
                 'response_delay' => 2,

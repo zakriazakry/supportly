@@ -23,7 +23,7 @@ return new class extends Migration
             // إعدادات المزود
             $table->enum('provider', ['openai', 'ONU'])->default('openai')->comment('مزود الذكاء الاصطناعي');
             $table->string('api_key', 500)->nullable()->comment('مفتاح API - مشفر');
-            $table->string('model')->default('gpt-3.5-turbo')->comment('النموذج المستخدم');
+            $table->string('model')->default('gpt-4o-mini')->comment('النموذج المستخدم');
 
             // إعدادات الاستجابة
             $table->decimal('temperature', 3, 2)->default(0.70)->comment('مدى الإبداع (0-2)');

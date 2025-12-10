@@ -1013,7 +1013,7 @@
              "whats_app_instance_id": 1,
              "is_active": false,
              "provider": "openai",
-             "model": "gpt-3.5-turbo",
+             "model": "gpt-4o-mini",
              "temperature": 0.7,
              "max_tokens": 500,
              "response_delay": 2,
@@ -1034,7 +1034,7 @@
           },
           "has_api_key": false,
           "available_providers": ["openai", "ONU"],
-          "available_models": ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"]
+          "available_models": ["gpt-4o-mini", "gpt-4", "gpt-4-turbo"]
        }
     }
 
@@ -1054,7 +1054,7 @@
        "is_active": true,                    // boolean
        "provider": "openai",                 // in: openai, ONU
        "api_key": "sk-xxx...",               // string (لا يُحذف إذا كان فارغاً)
-       "model": "gpt-3.5-turbo",             // string
+       "model": "gpt-4o-mini",             // string
        "temperature": 0.7,                   // numeric (0-2)
        "max_tokens": 500,                    // integer (1-4096)
        "response_delay": 2,                  // integer (0-60) بالثواني
@@ -1155,7 +1155,7 @@
           "total_tokens_used": 25000,
           "is_active": true,
           "provider": "openai",
-          "model": "gpt-3.5-turbo"
+          "model": "gpt-4o-mini"
        }
     }
 
