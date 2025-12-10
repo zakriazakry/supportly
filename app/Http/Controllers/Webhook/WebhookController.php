@@ -46,7 +46,9 @@ class WebhookController extends Controller
                 'webhooks' => $instance->webhooks,
                 'data' => $data,
             ]);
-            WebhookHelper::sendWebhook("https://zeko.ly", $data);
+            foreach ($instance->webhooks as $webhook) {
+                WebhookHelper::sendWebhook($webhook, $data);
+            }
 
             return responseFormat('ok');
         } catch (\Exception $e) {
