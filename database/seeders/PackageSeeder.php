@@ -127,7 +127,7 @@ class PackageSeeder extends Seeder
                 'feature_whatsapp_ai_reply' => true,
                 'feature_whatsapp_openai_support' => true,
                 'feature_whatsapp_developer' => true,
-                'limit_whatsapp_accounts' => null,
+                'limit_whatsapp_accounts' => 7,
                 'limit_whatsapp_auto_replies_per_month' => null,
 
                 'is_active' => true,
