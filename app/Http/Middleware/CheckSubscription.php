@@ -18,20 +18,12 @@ class CheckSubscription
         $user = $request->user();
 
         if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'غير مصرح',
-                'data' => null
-            ], 401);
+            return responseFormat('غير مصرح', 401);
         }
 
         // التحقق من وجود اشتراك نشط
         if (!$user->hasActiveSubscription()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'يجب أن يكون لديك اشتراك نشط للوصول إلى هذه الميزة',
-                'data' => null
-            ], 403);
+            return responseFormat('يجب أن يكون لديك اشتراك نشط للوصول إلى هذه الميزة', 403);
         }
 
         return $next($request);

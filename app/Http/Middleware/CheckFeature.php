@@ -14,37 +14,27 @@ class CheckFeature
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      * @param  string  $feature
      */
-    public function handle(Request $request, Closure $next, string $feature): Response
+    public function handle(Request $request, Closure $next, ?string $feature = null, ?string $resource = null): Response
     {
         $user = $request->user();
 
         if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'غير مصرح',
-                'data' => null
-            ], 401);
+            return responseFormat('غير مصرح', 401);
         }
 
         // التحقق من وجود اشتراك نشط
         if (!$user->hasActiveSubscription()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'يجب أن يكون لديك اشتراك نشط للوصول إلى هذه الميزة',
-                'data' => null
-            ], 403);
+            return responseFormat('يجب أن يكون لديك اشتراك نشط للوصول إلى هذه الميزة', 403);
         }
 
         // التحقق من الميزة
-        if (!$user->hasFeature($feature)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'هذه الميزة غير متاحة في باقتك الحالية. يرجى الترقية للباقة الأعلى',
-                'data' => [
-                    'required_feature' => $feature,
-                    'current_package' => $user->getCurrentSubscription()?->package?->name
-                ]
-            ], 403);
+        if ($feature && !$user->hasFeature($feature)) {
+            return responseFormat('هذه الميزة غير متاحة في باقتك الحالية. يرجى الترقية للباقة الأعلى', 403);
+        }
+
+        // التحقق من الحد (الموارد)
+        if ($resource && !$user->canAdd($resource)) {
+            return responseFormat('لقد تجاوزت الحد المسموح به في باقتك الحالية. يرجى الترقية لإضافة المزيد', 403);
         }
 
         return $next($request);
