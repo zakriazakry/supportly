@@ -34,30 +34,33 @@ class WebhookController extends Controller
             if (!$event) {
                 return responseFormat('No event type provided', 400);
             }
+            $instance = WhatsAppInstance::where('instance_name', $data['instance'])->first();
+            if (!$instance) {
+                return responseFormat('stop', 200);
+            }
+            $user = $instance->user;
+            if (!$user) {
+                return responseFormat('stop', 200);
+            }
+            $feature = 'whatsapp';
+            if (!$user->hasFeature($feature)) {
+                Log::info('Feature not found', ['feature' => $feature]);
+                return responseFormat('stop', 200);
+            }
+
 
             $method = $this->getHandlerMethod($event);
-
             if (method_exists($this, $method)) {
                 $this->$method($data);
             }
-            $instance = WhatsAppInstance::where('instance_name', $data['instance'])->first();
-            Log::alert('Webhook received', [
-                'instance' => $instance->instance_name,
-                'webhooks' => $instance->webhooks,
-                'data' => $data,
-            ]);
-            foreach ($instance->webhooks as $webhook) {
-                WebhookHelper::sendWebhook($webhook, $data);
+            if ($user->hasFeature('whatsapp_webhook')) {
+                foreach ($instance->webhooks as $webhook) {
+                    WebhookHelper::sendWebhook($webhook, $data);
+                }
             }
 
             return responseFormat('ok');
         } catch (\Exception $e) {
-            Log::error('Webhook handling error', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return responseFormat($e->getMessage(), 500);
         }
@@ -134,7 +137,6 @@ class WebhookController extends Controller
             $sender = $fromMe ? 'Me (Bot)' : $remoteJid;
             $receiver = $fromMe ? $remoteJid : 'Me (Bot)';
 
-            // ✅ استخراج رقم الهاتف
             $phone = $this->extractPhone($remoteJid, $remoteJidAlt);
             if (!$phone) {
                 return;
@@ -142,30 +144,27 @@ class WebhookController extends Controller
 
             $messageInfo = $this->extractMessageInfo($messageContent);
 
-            // ✅ إذا كانت الرسالة من المالك (fromMe = true)
-            // نحفظها في قاعدة البيانات فقط ولا نعالجها للرد التلقائي
             if ($fromMe == true) {
                 $instance = WhatsAppInstance::where('instance_name', $instanceName)->first();
                 if ($instance && $messageInfo['type'] === 'text') {
-                    // 💾 حفظ رسالة المالك في قاعدة البيانات
                     $instance->messages()->create([
                         'instance_id' => $instance->id,
                         'message_id' => $messageId ?? 'owner_' . time() . '_' . rand(1000, 9999),
                         'remote_jid' => $phone,
-                        'from_me' => true, // ✅ رسالة من المالك
+                        'from_me' => true,
                         'message_type' => $messageInfo['type'],
                         'message_content' => $messageInfo['content'],
                         'sent_at' => now(),
                         'status' => 'delivered',
                     ]);
-
-                    Log::info('💾 Owner message saved to database', [
-                        'instance' => $instanceName,
-                        'to' => $phone,
-                        'message' => $messageInfo['content']
-                    ]);
                 }
             }
+
+            $instance = WhatsAppInstance::where('instance_name', $instanceName)->first();
+            if (!$instance) {
+                return responseFormat('Instance not found', 404);
+            }
+            $user = $instance->user;
 
             switch ($messageInfo['type']) {
                 case 'text':
@@ -184,6 +183,9 @@ class WebhookController extends Controller
                         'key' => $key,
                         'messageInfo' => $messageInfo,
                         'instanceName' => $instanceName,
+                        'whatsapp_auto_reply' => $user->hasFeature('whatsapp_auto_reply'),
+                        'whatsapp_ai_reply' => $user->hasFeature('whatsapp_ai_reply'),
+                        'whatsapp_openai_support' => $user->hasFeature('whatsapp_openai_support'),
                     ]);
                     break;
 

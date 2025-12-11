@@ -624,6 +624,10 @@ class AutoReplyController extends Controller
         $pushName = $data['pushName'] ?? null;
         $fromMe = $data['fromMe'] ?? null;
         $isGroup = str_contains($remoteJid ?? '', '@g.us');
+        $user = $data['user'] ?? null;
+        $whatsapp_auto_reply = $data['whatsapp_auto_reply'] ?? null;
+        $whatsapp_ai_reply = $data['whatsapp_ai_reply'] ?? null;
+        $whatsapp_openai_support = $data['whatsapp_openai_support'] ?? null;
         if (!$instanceName || !$fromNumber || !$message) {
             Log::warning('Missing required fields in WhatsApp webhook', $data);
             return;
@@ -636,12 +640,14 @@ class AutoReplyController extends Controller
         }
 
         // معالجة الرد التلقائي (قواعد)
-        if ($this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'])) {
+        if ($whatsapp_auto_reply && $this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'])) {
             return;
         }
 
         // معالجة الذكاء الاصطناعي
-        $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key']);
+        if ($whatsapp_ai_reply && $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'], $whatsapp_openai_support)) {
+            return;
+        }
     }
 
     /**
@@ -781,7 +787,7 @@ class AutoReplyController extends Controller
      * معالجة الرد بالذكاء الاصطناعي
      */
 
-    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe, $messageKey): void
+    protected function processAiReply(WhatsAppInstance $instance, string $number, string $message, bool $isGroup, string $pushName, bool $fromMe, $messageKey, $whatsapp_openai_support): void
     {
         $aiReply = $instance->aiReply;
 
@@ -801,10 +807,7 @@ class AutoReplyController extends Controller
 
         // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
         if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
-            Log::info('AI Reply is stopped for this contact', [
-                'instance' => $instance->instance_name,
-                'number' => $number,
-            ]);
+
             return; // نوقف المعالجة
         }
         WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
@@ -869,7 +872,7 @@ class AutoReplyController extends Controller
             $date = date('Y-m-d');
             $day = date('l');
             $varSTR = " <name> : {$pushName} <phone> : {$number} <time> : {$time} <date> : {$date} <day> : {$day}";
-            $system_prompt = "إسم المستخدم : " . $pushName . "\n رقم المستخدم : " . $number . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
+            $system_prompt = $varSTR  . '\n' . "إسم المستخدم : " . $pushName . "\n رقم المستخدم : " . $number . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
 
             // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
             $formattedMessages = [];
@@ -899,28 +902,17 @@ class AutoReplyController extends Controller
                 'content' => $message
             ];
 
-            // 📊 تسجيل تفاصيل الرسائل المُرسلة للذكاء الاصطناعي
-            Log::info('🔄 Sending messages to AI', [
-                'instance' => $instance->instance_name,
-                'number' => $number,
-                'include_context' => $aiReply->include_context,
-                'context_messages_count' => $aiReply->context_messages_count,
-                'total_messages_sent' => count($formattedMessages),
-                'messages' => $formattedMessages, // 📝 جميع الرسائل المُرسلة
-                'provider' => $aiReply->provider,
-                'model' => $aiReply->model,
-            ]);
 
             if ($messageKey) {
                 $messageKey['remoteJid'] = $this->extractJid($messageKey['remoteJid'], $messageKey['remoteJidAlt'] ?? null);
                 $this->evolutionService->markAsRead($instance->instance_name, [$messageKey]);
             }
-
+            $provider = !$whatsapp_openai_support ? 'ollama' : $aiReply->provider;
             // 🤖 توليد الرد
             $aiResponse = $this->ai->chat(
                 $formattedMessages,
                 $system_prompt ?? '',
-                $aiReply->provider,
+                $provider,
                 null,
                 [
                     'model' => $aiReply->model,
