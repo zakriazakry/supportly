@@ -16,7 +16,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/instances', 'createInstance')->middleware('feature:whatsapp,whatsapp_accounts'); // Check Feature + Limit
         Route::post('/instances/{instanceName}/logout', 'logoutInstance')->middleware('feature:whatsapp');
         Route::post('/instances/{instanceName}/disconnect', 'disconnectInstance')->middleware('feature:whatsapp');
-        Route::delete('/instances/{instanceName}', 'deleteInstance')->middleware('feature:whatsapp');
+        Route::delete('/instances/{instanceName}', 'deleteInstance');
 
         // Connection & QR Code
         Route::post('/instances/{instanceName}/qr', 'generateQRCode')->middleware('feature:whatsapp');
