@@ -19,6 +19,8 @@ return new class extends Migration
             $table->integer('auto_replies_count')->default(0); // عدد الردود التلقائية
             $table->integer('messages_sent')->default(0); // عدد الرسائل المرسلة
             $table->integer('comments_replied')->default(0); // عدد التعليقات المجاب عليها
+            $table->integer('webhook_calls')->default(0); // عدد الاتصالات بالhook
+            $table->integer('webhook_success_rate')->default(0); // نسبة نجاح الاتصالات بالhook
             $table->timestamps();
 
             // Index مركب للبحث السريع
