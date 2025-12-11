@@ -48,7 +48,7 @@ class Package extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price' => 'floats',
             'feature_24_support' => 'boolean',
             'feature_unlimited_replies' => 'boolean',
             'feature_advanced_reports' => 'boolean',

@@ -186,6 +186,8 @@ class User extends Authenticatable
             'facebook_accounts' => $this->facebookAccounts()->count(),
             'facebook_pages' => $this->facebookPages()->count(),
             'templates' => $this->autoReplyTemplates()->count(),
+            'whatsapp_accounts' => $this->whatsappAccounts()->count(),
+            'whatsapp_auto_replies_per_month' => $this->whatsappAutoReplies()->count(),
             default => 0,
         };
 
@@ -255,5 +257,15 @@ class User extends Authenticatable
     {
         $stats = $this->getCurrentMonthUsage();
         $stats->incrementAutoReplies();
+    }
+    // whatsapp
+    public function whatsappAccounts(): HasMany
+    {
+        return $this->hasMany(WhatsAppInstance::class);
+    }
+
+    public function whatsappAutoReplies()
+    {
+        return $this->hasMany(WhatsAppMessage::class)->where('from_me', false);
     }
 }
