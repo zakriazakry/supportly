@@ -420,7 +420,7 @@ class ProfileController extends Controller
 
         try {
             $result = $user->applyCoupon($request->coupon_code);
-            return responseFormat($result, $result['message']);
+            return responseFormat('تم تطبيق الكوبون بنجاح', 200);
         } catch (\Exception $e) {
             return responseFormat($e->getMessage(), 400);
         }
