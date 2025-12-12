@@ -111,7 +111,7 @@ class OllamaService
     {
         try {
             $payload = [
-                'model' => $options['model'] ?? $this->model,
+                'model' =>  $this->model,
                 'messages' => $messages,
                 'stream' => false,
             ];
