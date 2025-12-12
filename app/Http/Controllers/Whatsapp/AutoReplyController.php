@@ -654,7 +654,7 @@ class AutoReplyController extends Controller
         }
 
         // معالجة الذكاء الاصطناعي
-        if ($whatsapp_ai_reply && $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'], $whatsapp_openai_support)) {
+        if ($whatsapp_ai_reply && $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'], $whatsapp_openai_support && $instance->aiReply->provider == 'openai')) {
             return;
         }
     }
