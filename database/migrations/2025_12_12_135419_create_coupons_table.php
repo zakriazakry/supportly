@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('value_type', ['fixed', 'percentage'])->default('fixed'); // نوع القيمة
             $table->integer('max_uses')->default(1); // الحد الأقصى للاستخدام (null = غير محدود)
             $table->integer('used_count')->default(1); // عدد مرات الاستخدام
+            
             $table->timestamp('valid_from')->nullable(); // تاريخ بداية الصلاحية
             $table->timestamp('valid_until')->nullable(); // تاريخ نهاية الصلاحية
             $table->boolean('is_active')->default(true); // حالة الكوبون

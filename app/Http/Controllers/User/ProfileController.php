@@ -180,51 +180,25 @@ class ProfileController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'package_id' => 'required|exists:packages,id',
-            'payment_method' => 'required|string',
-            'payment_reference' => 'nullable|string',
-            'auto_renew' => 'boolean',
         ]);
 
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
 
-        $user = $request->user();
-        $package = Package::findOrFail($request->package_id);
+        try {
+            $user = $request->user();
+            $package = Package::find($request->package_id);
+            if (!$package) {
+                return responseFormat('الباقة غير موجودة', 404);
+            }
 
-        if (!$package->is_active) {
-            return responseFormat('هذه الباقة غير متاحة حالياً', 400);
+            $user->purchaseSubscriptionWithWallet($package->id);
+
+            return responseFormat('تم الاشتراك بنجاح');
+        } catch (\Throwable $th) {
+            return responseFormat($th->getMessage(), 400);
         }
-
-        // Check if user already has an active subscription
-        if ($user->hasActiveSubscription()) {
-            return responseFormat('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً', 400);
-        }
-
-        // Calculate dates
-        $startDate = Carbon::now();
-        if ($package->duration_type === 'monthly') {
-            $endDate = $startDate->copy()->addMonths($package->duration_value);
-        } else {
-            $endDate = $startDate->copy()->addYears($package->duration_value);
-        }
-
-        // Create subscription
-        $subscription = Subscription::create([
-            'user_id' => $user->id,
-            'package_id' => $package->id,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'status' => 'active', // في التطبيق الحقيقي، يجب أن يكون 'pending' حتى يتم تأكيد الدفع
-            'paid_amount' => $package->price,
-            'payment_method' => $request->payment_method,
-            'payment_reference' => $request->payment_reference,
-            'auto_renew' => $request->auto_renew ?? false,
-        ]);
-
-        $subscription->load('package');
-
-        return responseFormat($subscription, 'تم الاشتراك بنجاح');
     }
 
     /**
