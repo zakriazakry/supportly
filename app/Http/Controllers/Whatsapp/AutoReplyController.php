@@ -642,7 +642,7 @@ class AutoReplyController extends Controller
             Log::error('User not found for WhatsApp instance', ['instance_name' => $instanceName]);
             return;
         }
-        $userLimit = $user->getLimit('auto_replies_per_month');
+        $userLimit = $user->getLimit('whatsapp_auto_replies_per_month');
         if ($userLimit <= ($instance->messagesCount() / 2) && $userLimit != null) {
             Log::error('User Limit limit reached', ['instance_name' => $instanceName]);
             return;
