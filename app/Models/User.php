@@ -392,6 +392,10 @@ class User extends Authenticatable
         if ($this->hasActiveSubscription() && $this->getCurrentSubscription()->paid_amount != 0) {
             throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
         }
+        // منع المستخدم م العودة الي الخطه المجانية في حال كان لديه اشتراك نشط
+        if ($finalPrice == 0 && $this->getCurrentSubscription()->paid_amount != 0) {
+            throw new \Exception('لا يمكنك شراء اشتراك مجاني لانك مشترك بالفعل');
+        }
         // التحقق من الرصيد
         $wallet = $this->getActiveWallet();
         if (!$wallet || !$wallet->hasSufficientBalance($finalPrice)) {
