@@ -392,21 +392,16 @@ class User extends Authenticatable
 
             $finalPrice = max(0, $package->price - $discount);
         }
-
-        // FIX: Use $currentSubscription for safe property access
-        // Check if user has an active *paid* subscription. If so, they must cancel first.
+        if ($currentSubscription->package_id == $packageId) {
+            throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
+        }
         if ($currentSubscription && $currentSubscription->paid_amount != 0) {
             throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
         }
-
-        // التحقق من الرصيد
         $wallet = $this->getActiveWallet();
         if (!$wallet || !$wallet->hasSufficientBalance($finalPrice)) {
             throw new \Exception('رصيد المحفظة غير كافٍ');
         }
-
-        // FIX: Use $currentSubscription for safe property access
-        // Prevent user from downgrading to a free plan (finalPrice == 0) if they previously had a paid subscription.
         if ($finalPrice == 0 && $currentSubscription && $currentSubscription->paid_amount != 0) {
             throw new \Exception('لا يمكنك شراء اشتراك مجاني لانك مشترك بالفعل');
         }
