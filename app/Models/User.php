@@ -46,7 +46,7 @@ class User extends Authenticatable
 
     public function getImageAttribute($value)
     {
-        return asset('storage/' . $value);
+        return asset('Storage/' . $value);
     }
     protected function casts(): array
     {
