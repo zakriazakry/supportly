@@ -29,7 +29,23 @@ class ProfileController extends Controller
             'package' => $subscriptionData,
         ]);
     }
-
+    public function updateProfile(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:255',
+        ]);
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+        $user = $request->user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->save();
+        return responseFormat('تم تحديث الملف الشخصي بنجاح');
+    }
     /**
      * Get current subscription details.
      */
@@ -41,9 +57,7 @@ class ProfileController extends Controller
         if (!$subscription) {
             return responseFormat('لا يوجد اشتراك نشط', 404);
         }
-
         $subscription->load('package');
-
         $data = [
             'subscription' => [
                 'id' => $subscription->id,
@@ -66,12 +80,19 @@ class ProfileController extends Controller
                     'multiple_accounts' => $subscription->package->feature_multiple_accounts,
                     'custom_templates' => $subscription->package->feature_custom_templates,
                     'priority_processing' => $subscription->package->feature_priority_processing,
+                    'whatsapp' =>   $subscription->package->feature_whatsapp,
+                    'whatsapp_auto_reply' =>   $subscription->package->feature_whatsapp_auto_reply,
+                    'whatsapp_ai_reply' =>   $subscription->package->feature_whatsapp_ai_reply,
+                    'whatsapp_openai_support' =>   $subscription->package->feature_whatsapp_openai_support,
+                    'whatsapp_developer' =>   $subscription->package->feature_whatsapp_developer,
                 ],
                 'limits' => [
                     'facebook_accounts' => $subscription->package->limit_facebook_accounts,
                     'facebook_pages' => $subscription->package->limit_facebook_pages,
                     'auto_replies_per_month' => $subscription->package->limit_auto_replies_per_month,
                     'templates' => $subscription->package->limit_templates,
+                    'whatsapp_accounts' => $subscription->package->limit_whatsapp_accounts,
+                    'whatsapp_auto_replies_per_month' => $subscription->package->limit_whatsapp_auto_replies_per_month,
                 ],
             ],
         ];

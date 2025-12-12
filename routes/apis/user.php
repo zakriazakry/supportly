@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'index');
-
+        Route::post('update', 'updateProfile');
         // Subscription routes
         Route::get('subscription/current', 'getCurrentSubscription');
         Route::get('subscription/history', 'getSubscriptionHistory');
