@@ -46,7 +46,7 @@ class PackageSeeder extends Seeder
             [
                 'name' => 'الباقة الأساسية',
                 'description' => 'مناسبة للأفراد والمشاريع الصغيرة',
-                'price' => 99,
+                'price' => 25,
                 'currency' => 'LYD',
                 'duration_type' => 'monthly',
                 'duration_value' => 1,
@@ -76,7 +76,7 @@ class PackageSeeder extends Seeder
             [
                 'name' => 'الباقة الاحترافية',
                 'description' => 'الأنسب للشركات والأعمال المتوسطة',
-                'price' => 299,
+                'price' => 50,
                 'currency' => 'LYD',
                 'duration_type' => 'monthly',
                 'duration_value' => 1,
@@ -106,7 +106,7 @@ class PackageSeeder extends Seeder
             [
                 'name' => 'باقة الأعمال',
                 'description' => 'للشركات الكبيرة والمؤسسات',
-                'price' => 599,
+                'price' => 135,
                 'currency' => 'LYD',
                 'duration_type' => 'monthly',
                 'duration_value' => 1,

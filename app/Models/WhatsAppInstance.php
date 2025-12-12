@@ -58,6 +58,12 @@ class WhatsAppInstance extends Model
         return $this->hasMany(WhatsAppMessage::class, 'instance_id');
     }
 
+    public function messagesCount(): int
+    {
+        return $this->messages()->count();
+    }
+
+
     /**
      * العلاقة مع إعدادات الرد التلقائي
      */

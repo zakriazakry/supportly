@@ -624,7 +624,6 @@ class AutoReplyController extends Controller
         $pushName = $data['pushName'] ?? null;
         $fromMe = $data['fromMe'] ?? null;
         $isGroup = str_contains($remoteJid ?? '', '@g.us');
-        $user = $data['user'] ?? null;
         $whatsapp_auto_reply = $data['whatsapp_auto_reply'] ?? null;
         $whatsapp_ai_reply = $data['whatsapp_ai_reply'] ?? null;
         $whatsapp_openai_support = $data['whatsapp_openai_support'] ?? null;
@@ -636,6 +635,16 @@ class AutoReplyController extends Controller
         $instance = WhatsAppInstance::where('instance_name', $instanceName)->first();
         if (!$instance) {
             Log::error('WhatsApp instance not found', ['instance_name' => $instanceName]);
+            return;
+        }
+        $user = $instance->user;
+        if (!$user) {
+            Log::error('User not found for WhatsApp instance', ['instance_name' => $instanceName]);
+            return;
+        }
+        $userLimit = $user->getLimit('auto_replies_per_month');
+        if ($userLimit <= ($instance->messagesCount() / 2) && $userLimit != null) {
+            Log::error('User Limit limit reached', ['instance_name' => $instanceName]);
             return;
         }
 
