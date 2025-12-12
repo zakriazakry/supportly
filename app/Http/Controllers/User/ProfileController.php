@@ -386,19 +386,7 @@ class ProfileController extends Controller
 
         $transactions = $wallet->transactions()
             ->latest()
-            ->paginate(20)
-            ->through(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'type' => $transaction->type,
-                    'amount' => $transaction->amount,
-                    'balance_before' => $transaction->balance_before,
-                    'balance_after' => $transaction->balance_after,
-                    'description' => $transaction->description,
-                    'reference_type' => $transaction->reference_type,
-                    'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
-                ];
-            });
+            ->get();
 
         return responseFormat($transactions);
     }
