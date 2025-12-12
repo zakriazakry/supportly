@@ -68,6 +68,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(PackageController::class)->prefix('packages')->group(function () {
         Route::get('/', 'index');
         Route::post('subscribe', 'subscribe');
-        Route::post('activate-coupon', 'activateCoupon');
     });
 });

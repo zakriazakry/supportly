@@ -31,24 +31,4 @@ class PackageController extends Controller
         $user->save();
         return responseFormat('تم الاشتراك بنجاح', 200);
     }
-    public function activateCoupon(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'code' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return responseFormat($validator->errors()->first(), 422);
-        }
-        $coupon = Coupon::where('code', $request->code)->first();
-        if (!$coupon) {
-            return responseFormat('كوبون غير صحيح', 404);
-        }
-        $user = $request->user();
-        if ($user->hasActiveSubscription()) {
-            return responseFormat('لديك اشتراك نشط بالفعل', 403);
-        }
-        $user->package_id = $coupon->package_id;
-        $user->save();
-        return responseFormat('تم تفعيل الكوبون بنجاح', 200);
-    }
 }
