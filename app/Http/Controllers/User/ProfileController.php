@@ -192,9 +192,7 @@ class ProfileController extends Controller
             if (!$package) {
                 return responseFormat('الباقة غير موجودة', 404);
             }
-
             $user->purchaseSubscriptionWithWallet($package->id);
-
             return responseFormat('تم الاشتراك بنجاح');
         } catch (\Throwable $th) {
             return responseFormat($th->getMessage(), 400);

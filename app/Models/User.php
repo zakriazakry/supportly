@@ -375,7 +375,7 @@ class User extends Authenticatable
 
         // تطبيق الكوبون إذا وجد
         if ($couponCode) {
-            $coupon = Coupon::findByCode($couponCode);
+            $coupon = Coupon::where('code', $couponCode)->first();
 
             if (!$coupon || !$coupon->isValid() || $coupon->type !== 'subscription_discount') {
                 throw new \Exception('كوبون الخصم غير صالح');
@@ -389,7 +389,9 @@ class User extends Authenticatable
 
             $finalPrice = max(0, $package->price - $discount);
         }
-
+        if ($this->hasActiveSubscription()) {
+            throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
+        }
         // التحقق من الرصيد
         $wallet = $this->getActiveWallet();
         if (!$wallet || !$wallet->hasSufficientBalance($finalPrice)) {
