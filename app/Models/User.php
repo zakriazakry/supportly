@@ -392,7 +392,7 @@ class User extends Authenticatable
 
             $finalPrice = max(0, $package->price - $discount);
         }
-        if ($currentSubscription->package_id == $packageId) {
+        if ($currentSubscription && $currentSubscription->package_id == $packageId) {
             throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
         }
         if ($currentSubscription && $currentSubscription->paid_amount != 0) {
