@@ -39,7 +39,7 @@ class ProfileController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
         $user = $request->user();
-        $user->image = $request->file('image')->store('users');
+        $user->image = $request->file('image')->store('users', 'public');
         $user->save();
         return responseFormat('تم تحديث الصورة بنجاح');
     }
