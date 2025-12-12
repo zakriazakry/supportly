@@ -1,0 +1,366 @@
+# نظام المحفظة والكوبونات - Wallet & Coupons System
+
+## نظرة عامة
+تم تطوير نظام متكامل لإدارة المحافظ والكوبونات مع إمكانية شراء الاشتراكات من خلال رصيد المحفظة.
+
+## الميزات الرئيسية
+
+### 1. نظام المحافظ (Wallets)
+- **إنشاء محفظة افتراضية**: يتم إنشاء محفظة افتراضية تلقائياً لكل مستخدم جديد
+- **محافظ متعددة**: يمكن للمستخدم امتلاك أكثر من محفظة
+- **التبديل بين المحافظ**: إمكانية التبديل بين المحافظ المختلفة
+- **محفظة نشطة واحدة**: يجب أن تكون محفظة واحدة فقط نشطة في كل وقت
+- **إدارة الرصيد**: إضافة وخصم الرصيد مع تسجيل كامل للمعاملات
+
+### 2. نظام الكوبونات (Coupons)
+#### أنواع الكوبونات:
+1. **كوبونات تعبئة المحفظة** (`wallet_recharge`)
+   - تضيف رصيد مباشر للمحفظة
+   - مثال: WALLET5, WALLET10, WALLET20, WALLET50
+
+2. **كوبونات خصم الاشتراكات** (`subscription_discount`)
+   - خصم نسبة مئوية أو مبلغ ثابت
+   - مثال: DISCOUNT10 (10%), DISCOUNT20 (20%), FIXED5OFF ($5)
+
+#### خصائص الكوبونات:
+- **رمز فريد** (code): كود الكوبون
+- **نوع القيمة**: ثابت (fixed) أو نسبة مئوية (percentage)
+- **حد الاستخدام**: عدد محدود أو غير محدود
+- **تاريخ الصلاحية**: تاريخ بداية ونهاية
+- **حالة التفعيل**: نشط أو معطل
+
+### 3. معاملات المحفظة (Wallet Transactions)
+- تسجيل كامل لجميع العمليات
+- نوعان: إضافة (credit) وخصم (debit)
+- تتبع الرصيد قبل وبعد كل معاملة
+- ربط المعاملات بمصادرها (كوبون، اشتراك، إلخ)
+
+## الجداول (Database Tables)
+
+### 1. wallets
+```sql
+- id
+- user_id (foreign key)
+- currency (string)
+- balance (decimal)
+- status (1=active, 0=inactive)
+- is_default (boolean)
+- timestamps
+```
+
+### 2. wallet_transactions
+```sql
+- id
+- wallet_id (foreign key)
+- type (credit/debit)
+- amount (decimal)
+- balance_before (decimal)
+- balance_after (decimal)
+- description (string)
+- reference_type (nullable)
+- reference_id (nullable)
+- metadata (json)
+- timestamps
+```
+
+### 3. coupons
+```sql
+- id
+- code (unique string)
+- type (wallet_recharge/subscription_discount)
+- value (decimal)
+- value_type (fixed/percentage)
+- max_uses (nullable integer)
+- used_count (integer)
+- valid_from (timestamp)
+- valid_until (timestamp)
+- is_active (boolean)
+- description (text)
+- timestamps
+```
+
+## API Endpoints
+
+### المحافظ (Wallets)
+
+#### 1. عرض جميع المحافظ
+```
+GET /api/user/profile/wallets
+```
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "currency": "USD",
+      "balance": "50.00",
+      "status": 1,
+      "is_active": true,
+      "transactions_count": 5,
+      "created_at": "2025-12-12 15:00:00"
+    }
+  ]
+}
+```
+
+#### 2. التبديل بين المحافظ
+```
+POST /api/user/profile/wallets/switch
+```
+**Request:**
+```json
+{
+  "wallet_id": 1
+}
+```
+
+#### 3. عرض معاملات المحفظة
+```
+GET /api/user/profile/wallets/transactions
+```
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "type": "credit",
+      "amount": "10.00",
+      "balance_before": "0.00",
+      "balance_after": "10.00",
+      "description": "تعبئة المحفظة بواسطة الكوبون: WALLET10",
+      "reference_type": "coupon",
+      "created_at": "2025-12-12 15:30:00"
+    }
+  ]
+}
+```
+
+### الكوبونات (Coupons)
+
+#### 4. تطبيق كوبون
+```
+POST /api/user/profile/wallets/apply-coupon
+```
+**Request:**
+```json
+{
+  "coupon_code": "WALLET10"
+}
+```
+**Response (Wallet Recharge):**
+```json
+{
+  "data": {
+    "type": "wallet_recharge",
+    "amount": "10.00",
+    "transaction": {...},
+    "message": "تم تعبئة المحفظة بمبلغ 10.00 بنجاح"
+  }
+}
+```
+
+**Response (Subscription Discount):**
+```json
+{
+  "data": {
+    "type": "subscription_discount",
+    "discount": "10.00",
+    "value_type": "percentage",
+    "message": "كوبون خصم جاهز للاستخدام عند الاشتراك"
+  }
+}
+```
+
+### الاشتراكات (Subscriptions)
+
+#### 5. شراء اشتراك من المحفظة
+```
+POST /api/user/profile/wallets/purchase-subscription
+```
+**Request:**
+```json
+{
+  "package_id": 1,
+  "coupon_code": "DISCOUNT10" // اختياري
+}
+```
+**Response:**
+```json
+{
+  "data": {
+    "id": 1,
+    "user_id": 1,
+    "package_id": 1,
+    "start_date": "2025-12-12",
+    "end_date": "2026-01-12",
+    "status": "active",
+    "paid_amount": "27.00",
+    "payment_method": "wallet",
+    "package": {...}
+  },
+  "message": "تم شراء الاشتراك بنجاح من المحفظة"
+}
+```
+
+## دوال User Model
+
+### 1. getActiveWallet()
+```php
+$wallet = $user->getActiveWallet();
+```
+الحصول على المحفظة النشطة للمستخدم
+
+### 2. addWalletCredit()
+```php
+$transaction = $user->addWalletCredit(
+    amount: 10.00,
+    description: 'تعبئة رصيد',
+    referenceType: 'coupon',
+    referenceId: 1,
+    metadata: ['key' => 'value']
+);
+```
+إضافة رصيد للمحفظة النشطة
+
+### 3. deductWalletBalance()
+```php
+$transaction = $user->deductWalletBalance(
+    amount: 5.00,
+    description: 'شراء اشتراك',
+    referenceType: 'subscription',
+    referenceId: 1
+);
+```
+خصم رصيد من المحفظة النشطة
+
+### 4. applyCoupon()
+```php
+$result = $user->applyCoupon('WALLET10');
+```
+تطبيق كوبون (تعبئة محفظة أو خصم اشتراك)
+
+### 5. purchaseSubscriptionWithWallet()
+```php
+$subscription = $user->purchaseSubscriptionWithWallet(
+    packageId: 1,
+    couponCode: 'DISCOUNT10' // اختياري
+);
+```
+شراء اشتراك باستخدام رصيد المحفظة
+
+## دوال Wallet Model
+
+### 1. addCredit()
+```php
+$transaction = $wallet->addCredit(
+    amount: 10.00,
+    description: 'وصف المعاملة'
+);
+```
+
+### 2. deductBalance()
+```php
+$transaction = $wallet->deductBalance(
+    amount: 5.00,
+    description: 'وصف المعاملة'
+);
+```
+
+### 3. hasSufficientBalance()
+```php
+if ($wallet->hasSufficientBalance(10.00)) {
+    // الرصيد كافٍ
+}
+```
+
+### 4. activate()
+```php
+$wallet->activate(); // تفعيل المحفظة وإيقاف الأخرى
+```
+
+### 5. isActive()
+```php
+if ($wallet->isActive()) {
+    // المحفظة نشطة
+}
+```
+
+## دوال Coupon Model
+
+### 1. isValid()
+```php
+if ($coupon->isValid()) {
+    // الكوبون صالح للاستخدام
+}
+```
+
+### 2. incrementUsage()
+```php
+$coupon->incrementUsage(); // زيادة عداد الاستخدام
+```
+
+### 3. getRemainingUses()
+```php
+$remaining = $coupon->getRemainingUses(); // null = غير محدود
+```
+
+### 4. findByCode()
+```php
+$coupon = Coupon::findByCode('WALLET10');
+```
+
+## الكوبونات المتاحة (Seeded Coupons)
+
+### كوبونات تعبئة المحفظة:
+- **WALLET5**: تعبئة 5 دولار (100 استخدام)
+- **WALLET10**: تعبئة 10 دولار (50 استخدام)
+- **WALLET20**: تعبئة 20 دولار (25 استخدام)
+- **WALLET50**: تعبئة 50 دولار (10 استخدام)
+- **WELCOME2025**: تعبئة 15 دولار (غير محدود)
+
+### كوبونات خصم الاشتراكات:
+- **DISCOUNT10**: خصم 10% (200 استخدام)
+- **DISCOUNT20**: خصم 20% (100 استخدام)
+- **DISCOUNT50**: خصم 50% (20 استخدام)
+- **FIXED5OFF**: خصم 5 دولار (150 استخدام)
+- **FIXED10OFF**: خصم 10 دولار (75 استخدام)
+
+## تشغيل النظام
+
+### 1. تشغيل Migrations
+```bash
+php artisan migrate
+```
+
+### 2. تشغيل Seeders
+```bash
+php artisan db:seed --class=CouponSeeder
+```
+
+## ملاحظات مهمة
+
+1. **المحفظة الافتراضية**: يتم إنشاؤها تلقائياً عند تسجيل مستخدم جديد
+2. **محفظة نشطة واحدة**: لا يمكن إيقاف جميع المحافظ، يجب أن تكون واحدة نشطة دائماً
+3. **التحقق من الرصيد**: يتم التحقق من كفاية الرصيد قبل أي عملية خصم
+4. **تسجيل المعاملات**: جميع العمليات يتم تسجيلها في جدول wallet_transactions
+5. **صلاحية الكوبونات**: يتم التحقق من التاريخ وعدد الاستخدامات قبل التطبيق
+6. **الخصومات**: يمكن استخدام كوبونات الخصم عند الشراء من المحفظة
+
+## الأمان
+
+- جميع العمليات المالية تتم داخل transactions لضمان سلامة البيانات
+- التحقق من صلاحية الكوبونات قبل الاستخدام
+- التحقق من ملكية المحفظة للمستخدم
+- التحقق من كفاية الرصيد قبل الخصم
+
+## التطوير المستقبلي
+
+يمكن إضافة:
+- نظام إشعارات للمعاملات
+- تقارير مالية للمستخدم
+- تاريخ استخدام الكوبونات
+- كوبونات خاصة بمستخدمين محددين
+- نظام استرداد الأموال
+- محافظ بعملات مختلفة

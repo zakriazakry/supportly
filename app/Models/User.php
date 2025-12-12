@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -273,5 +274,167 @@ class User extends Authenticatable
     public function whatsappAutoReplies()
     {
         return $this->hasMany(WhatsAppMessage::class)->where('from_me', false);
+    }
+
+    /**
+     * Get the active wallet for the user.
+     */
+    public function getActiveWallet(): ?Wallet
+    {
+        return $this->wallets()->active()->first();
+    }
+
+    /**
+     * Add credit to user's active wallet.
+     */
+    public function addWalletCredit(float $amount, string $description, ?string $referenceType = null, ?int $referenceId = null, ?array $metadata = null): WalletTransaction
+    {
+        $wallet = $this->getActiveWallet();
+
+        if (!$wallet) {
+            throw new \Exception('لا توجد محفظة نشطة');
+        }
+
+        return $wallet->addCredit($amount, $description, $referenceType, $referenceId, $metadata);
+    }
+
+    /**
+     * Deduct from user's active wallet.
+     */
+    public function deductWalletBalance(float $amount, string $description, ?string $referenceType = null, ?int $referenceId = null, ?array $metadata = null): WalletTransaction
+    {
+        $wallet = $this->getActiveWallet();
+
+        if (!$wallet) {
+            throw new \Exception('لا توجد محفظة نشطة');
+        }
+
+        return $wallet->deductBalance($amount, $description, $referenceType, $referenceId, $metadata);
+    }
+
+    /**
+     * Apply coupon to wallet.
+     */
+    public function applyCoupon(string $couponCode): array
+    {
+        $coupon = Coupon::findByCode($couponCode);
+
+        if (!$coupon) {
+            throw new \Exception('الكوبون غير موجود');
+        }
+
+        if (!$coupon->isValid()) {
+            throw new \Exception('الكوبون غير صالح أو منتهي الصلاحية');
+        }
+
+        // تطبيق الكوبون حسب نوعه
+        if ($coupon->type === 'wallet_recharge') {
+            $amount = $coupon->value;
+
+            $transaction = $this->addWalletCredit(
+                $amount,
+                "تعبئة المحفظة بواسطة الكوبون: {$couponCode}",
+                'coupon',
+                $coupon->id,
+                ['coupon_code' => $couponCode]
+            );
+
+            $coupon->incrementUsage();
+
+            return [
+                'type' => 'wallet_recharge',
+                'amount' => $amount,
+                'transaction' => $transaction,
+                'message' => "تم تعبئة المحفظة بمبلغ {$amount} بنجاح"
+            ];
+        }
+
+        // إذا كان كوبون خصم على الاشتراك
+        return [
+            'type' => 'subscription_discount',
+            'discount' => $coupon->value,
+            'value_type' => $coupon->value_type,
+            'message' => 'كوبون خصم جاهز للاستخدام عند الاشتراك'
+        ];
+    }
+
+    /**
+     * Purchase subscription using wallet.
+     */
+    public function purchaseSubscriptionWithWallet(int $packageId, ?string $couponCode = null): Subscription
+    {
+        $package = Package::findOrFail($packageId);
+
+        if (!$package->is_active) {
+            throw new \Exception('هذه الباقة غير متاحة حالياً');
+        }
+
+        $finalPrice = $package->price;
+        $discount = 0;
+        $coupon = null;
+
+        // تطبيق الكوبون إذا وجد
+        if ($couponCode) {
+            $coupon = Coupon::findByCode($couponCode);
+
+            if (!$coupon || !$coupon->isValid() || $coupon->type !== 'subscription_discount') {
+                throw new \Exception('كوبون الخصم غير صالح');
+            }
+
+            if ($coupon->value_type === 'percentage') {
+                $discount = ($package->price * $coupon->value) / 100;
+            } else {
+                $discount = $coupon->value;
+            }
+
+            $finalPrice = max(0, $package->price - $discount);
+        }
+
+        // التحقق من الرصيد
+        $wallet = $this->getActiveWallet();
+        if (!$wallet || !$wallet->hasSufficientBalance($finalPrice)) {
+            throw new \Exception('رصيد المحفظة غير كافٍ');
+        }
+
+        // خصم المبلغ من المحفظة
+        $transaction = $this->deductWalletBalance(
+            $finalPrice,
+            "شراء اشتراك: {$package->name}",
+            'subscription',
+            null,
+            [
+                'package_id' => $packageId,
+                'original_price' => $package->price,
+                'discount' => $discount,
+                'coupon_code' => $couponCode
+            ]
+        );
+
+        // إنشاء الاشتراك
+        $startDate = Carbon::now();
+        if ($package->duration_type === 'monthly') {
+            $endDate = $startDate->copy()->addMonths($package->duration_value);
+        } else {
+            $endDate = $startDate->copy()->addYears($package->duration_value);
+        }
+
+        $subscription = Subscription::create([
+            'user_id' => $this->id,
+            'package_id' => $package->id,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'status' => 'active',
+            'paid_amount' => $finalPrice,
+            'payment_method' => 'wallet',
+            'payment_reference' => $transaction->id,
+            'auto_renew' => false,
+        ]);
+
+        // تحديث استخدام الكوبون
+        if ($coupon) {
+            $coupon->incrementUsage();
+        }
+
+        return $subscription;
     }
 }

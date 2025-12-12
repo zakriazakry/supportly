@@ -326,4 +326,138 @@ class ProfileController extends Controller
         $user->delete();
         return responseFormat('تم حذف الحساب بنجاح');
     }
+
+    /**
+     * Get all user wallets.
+     */
+    public function getWallets(Request $request)
+    {
+        $user = $request->user();
+        $wallets = $user->wallets()->with('transactions')->get()->map(function ($wallet) {
+            return [
+                'id' => $wallet->id,
+                'currency' => $wallet->currency,
+                'balance' => $wallet->balance,
+                'status' => $wallet->status,
+                'is_active' => $wallet->isActive(),
+                'transactions_count' => $wallet->transactions()->count(),
+                'created_at' => $wallet->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
+        return responseFormat($wallets);
+    }
+
+    /**
+     * Switch active wallet.
+     */
+    public function switchWallet(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'wallet_id' => 'required|exists:wallets,id',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $user = $request->user();
+        $wallet = $user->wallets()->findOrFail($request->wallet_id);
+
+        try {
+            $wallet->activate();
+            return responseFormat('تم تفعيل المحفظة بنجاح');
+        } catch (\Exception $e) {
+            return responseFormat($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Get wallet transactions.
+     */
+    public function getWalletTransactions(Request $request)
+    {
+        $user = $request->user();
+        $wallet = $user->getActiveWallet();
+
+        if (!$wallet) {
+            return responseFormat('لا توجد محفظة نشطة', 404);
+        }
+
+        $transactions = $wallet->transactions()
+            ->latest()
+            ->paginate(20)
+            ->through(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'type' => $transaction->type,
+                    'amount' => $transaction->amount,
+                    'balance_before' => $transaction->balance_before,
+                    'balance_after' => $transaction->balance_after,
+                    'description' => $transaction->description,
+                    'reference_type' => $transaction->reference_type,
+                    'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
+                ];
+            });
+
+        return responseFormat($transactions);
+    }
+
+    /**
+     * Apply coupon.
+     */
+    public function applyCoupon(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'coupon_code' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $user = $request->user();
+
+        try {
+            $result = $user->applyCoupon($request->coupon_code);
+            return responseFormat($result, $result['message']);
+        } catch (\Exception $e) {
+            return responseFormat($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Purchase subscription with wallet.
+     */
+    public function purchaseWithWallet(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'package_id' => 'required|exists:packages,id',
+            'coupon_code' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $user = $request->user();
+
+        // Check if user already has an active subscription
+        if ($user->hasActiveSubscription()) {
+            return responseFormat('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً', 400);
+        }
+
+        try {
+            $subscription = $user->purchaseSubscriptionWithWallet(
+                $request->package_id,
+                $request->coupon_code
+            );
+
+            $subscription->load('package');
+
+            return responseFormat($subscription, 'تم شراء الاشتراك بنجاح من المحفظة');
+        } catch (\Exception $e) {
+            return responseFormat($e->getMessage(), 400);
+        }
+    }
 }

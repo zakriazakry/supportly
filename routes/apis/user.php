@@ -55,10 +55,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // Packages routes
         Route::get('packages', 'getPackages');
 
+        // Wallet routes
+        Route::get('wallets', 'getWallets');
+        Route::post('wallets/switch', 'switchWallet');
+        Route::get('wallets/transactions', 'getWalletTransactions');
+        Route::post('wallets/apply-coupon', 'applyCoupon');
+        Route::post('wallets/purchase-subscription', 'purchaseWithWallet');
+
         // delete Account
         Route::delete('delete-account', 'deleteAccount');
     });
     Route::controller(PackageController::class)->prefix('packages')->group(function () {
         Route::get('/', 'index');
+        Route::post('subscribe', 'subscribe');
+        Route::post('activate-coupon', 'activateCoupon');
     });
 });

@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('wallets', function (Blueprint $table) {
+        Schema::create('user_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('currency', 10); // USD, EUR, BTC, etc.
-            $table->decimal('balance', 20, 2)->default(0.00);
-            $table->tinyInteger('status')->default(1); // 1 = active, 0 = suspended
-            $table->boolean('is_default')->default(false); // المحفظة الافتراضية
-
+            $table->string('transaction_id')->unique();
+            $table->decimal('amount', 10, 2);
+            $table->string('currency', 10);
+            $table->string('payment_method');
+            $table->enum('type', ['credit', 'debit']);
+            $table->enum('status', ['pending', 'completed', 'failed']);
             $table->timestamps();
-
-            $table->index(['user_id', 'status']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('wallets');
+        Schema::dropIfExists('user_transactions');
     }
 };
