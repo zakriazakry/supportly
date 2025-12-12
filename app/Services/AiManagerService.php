@@ -50,7 +50,7 @@ class AiManagerService
     {
         $result = null;
 
-        if ($provider === 'openai') {
+        if ($provider == 'openai') {
             $result = $this->openai->chat($messages, $system_prompt, $options);
         } else {
             $result = $this->ollama->chat($messages, $system_prompt, $options);
