@@ -419,7 +419,8 @@ class User extends Authenticatable
         } else {
             $endDate = $startDate->copy()->addYears($package->duration_value);
         }
-
+        // disable all active subscriptions
+        $this->subscriptions()->where('status', 'active')->update(['status' => 'cancelled']);
         $subscription = Subscription::create([
             'user_id' => $this->id,
             'package_id' => $package->id,
