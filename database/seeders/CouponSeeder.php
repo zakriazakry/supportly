@@ -132,7 +132,7 @@ class CouponSeeder extends Seeder
                 'type' => 'wallet_recharge',
                 'value' => 15.00,
                 'value_type' => 'fixed',
-                'max_uses' => null, // غير محدود
+                'max_uses' => 1, // غير محدود
                 'used_count' => 0,
                 'valid_from' => Carbon::now(),
                 'valid_until' => Carbon::now()->addYear(),
