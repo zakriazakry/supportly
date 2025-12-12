@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Coupon;
 use App\Models\Package;
+use App\Models\WalletTransaction;
 
 class WalletSystemExamples
 {

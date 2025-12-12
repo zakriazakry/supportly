@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -38,7 +39,7 @@ class PackageController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-        $coupon = Coupon::where('code', $request->coupon_code)->first();
+        $coupon = Coupon::where('code', $request->code)->first();
         if (!$coupon) {
             return responseFormat('كوبون غير صحيح', 404);
         }
