@@ -8,6 +8,7 @@ use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Pest\Mutate\Mutators\Visibility\FunctionPublicToProtected;
 use Symfony\Component\ErrorHandler\Error\UndefinedFunctionError;
 
@@ -28,6 +29,28 @@ class ProfileController extends Controller
             'user' => $user,
             'package' => $subscriptionData,
         ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8',
+            'new_password_confirmation' => 'required|string|min:8',
+        ]);
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+        $user = $request->user();
+        if (!Hash::check($request->current_password, $user->password)) {
+            return responseFormat('كلمة المرور الحالية غير صحيحة', 422);
+        }
+        if ($request->new_password !== $request->new_password_confirmation) {
+            return responseFormat('كلمة المرور الجديدة غير متطابقة', 422);
+        }
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        return responseFormat('تم تحديث كلمة المرور بنجاح');
     }
     public function updateProfile(Request $request)
     {
