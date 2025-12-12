@@ -373,6 +373,9 @@ class User extends Authenticatable
         $discount = 0;
         $coupon = null;
 
+        // Retrieve current active subscription safely
+        $currentSubscription = $this->getCurrentSubscription();
+
         // تطبيق الكوبون إذا وجد
         if ($couponCode) {
             $coupon = Coupon::where('code', $couponCode)->first();
@@ -389,7 +392,10 @@ class User extends Authenticatable
 
             $finalPrice = max(0, $package->price - $discount);
         }
-        if ($this->hasActiveSubscription() && $this->getCurrentSubscription()->paid_amount != 0) {
+
+        // FIX: Use $currentSubscription for safe property access
+        // Check if user has an active *paid* subscription. If so, they must cancel first.
+        if ($currentSubscription && $currentSubscription->paid_amount != 0) {
             throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
         }
 
@@ -399,8 +405,9 @@ class User extends Authenticatable
             throw new \Exception('رصيد المحفظة غير كافٍ');
         }
 
-        // منع المستخدم م العودة الي الخطه المجانية في حال كان لديه اشتراك نشط
-        if ($finalPrice == 0 && $this->getCurrentSubscription()->paid_amount != 0) {
+        // FIX: Use $currentSubscription for safe property access
+        // Prevent user from downgrading to a free plan (finalPrice == 0) if they previously had a paid subscription.
+        if ($finalPrice == 0 && $currentSubscription && $currentSubscription->paid_amount != 0) {
             throw new \Exception('لا يمكنك شراء اشتراك مجاني لانك مشترك بالفعل');
         }
 
@@ -425,8 +432,12 @@ class User extends Authenticatable
         } else {
             $endDate = $startDate->copy()->addYears($package->duration_value);
         }
+
         // disable all active subscriptions
+        // Note: This step is usually only needed if the new subscription is an UPGRADE,
+        // but based on the previous logic, you intend to cancel the old one if it exists.
         $this->subscriptions()->where('status', 'active')->update(['status' => 'cancelled']);
+
         $subscription = Subscription::create([
             'user_id' => $this->id,
             'package_id' => $package->id,
