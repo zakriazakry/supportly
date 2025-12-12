@@ -4,6 +4,7 @@ use App\Http\Controllers\User\FacebookAccountsController;
 use App\Http\Controllers\User\FacebookPagesController;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\PagePostsController;
+use App\Http\Controllers\User\PackageController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\SupportingPagesController;
 use App\Http\Controllers\User\TemeplatesController;
@@ -56,5 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // delete Account
         Route::delete('delete-account', 'deleteAccount');
+    });
+    Route::controller(PackageController::class)->prefix('packages')->group(function () {
+        Route::get('/', 'index');
     });
 });
