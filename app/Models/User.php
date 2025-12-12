@@ -389,7 +389,7 @@ class User extends Authenticatable
 
             $finalPrice = max(0, $package->price - $discount);
         }
-        if ($this->hasActiveSubscription()) {
+        if ($this->hasActiveSubscription() && $this->getCurrentSubscription()->paid_amount != 0) {
             throw new \Exception('لديك اشتراك نشط بالفعل. يرجى إلغاء الاشتراك الحالي أولاً');
         }
         // التحقق من الرصيد
