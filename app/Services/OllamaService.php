@@ -107,7 +107,7 @@ class OllamaService
      * @param array $options Additional options
      * @return array
      */
-    public function chat(array $messages, ?string $systemPrompt = null, array $options = []): array|null
+    public function chat(array $messages, ?string $systemPrompt = null, array $options = []): array
     {
         try {
             $payload = [
@@ -125,27 +125,36 @@ class OllamaService
             }
 
             // Add temperature and max_tokens options if provided
-            if (!empty($options['temperature'])) {
+            if (isset($options['temperature'])) {
                 $payload['options']['temperature'] = (float) $options['temperature'];
             }
 
-            if (!empty($options['max_tokens'])) {
+            if (isset($options['max_tokens'])) {
                 $payload['options']['num_predict'] = (int) $options['max_tokens'];
             }
+
+            Log::info('Ollama Chat Request', ['payload' => $payload]);
 
             $response = Http::timeout($this->timeout)
                 ->post($this->baseUrl . '/api/chat', $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
+                Log::info('Ollama Chat Response Success', ['data' => $data]);
 
                 return [
                     'success' => true,
                     'response' => $data['message']['content'] ?? null,
                     'error' => null,
                     'model' => $data['model'] ?? $this->model,
+                    'total_duration' => $data['total_duration'] ?? null, // Assuming total_duration might be present
                 ];
             }
+
+            Log::error('Ollama Chat API Error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
 
             return [
                 'success' => false,
@@ -153,8 +162,9 @@ class OllamaService
                 'error' => 'Chat API request failed: ' . $response->status()
             ];
         } catch (\Exception $e) {
-            Log::error('Ollama Chat Exception', [
-                'message' => $e->getMessage()
+            Log::error('Ollama Chat Service Exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return [
