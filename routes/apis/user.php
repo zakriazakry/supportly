@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('subscription/check-limits', 'checkLimits');
         // update-password
         Route::post('update-password', 'updatePassword');
+        Route::post('update-image', 'updateImage');
         // Packages routes
         Route::get('packages', 'getPackages');
 

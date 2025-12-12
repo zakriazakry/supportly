@@ -30,6 +30,19 @@ class ProfileController extends Controller
             'package' => $subscriptionData,
         ]);
     }
+    public function updateImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+        $user = $request->user();
+        $user->image = $request->file('image')->store('users');
+        $user->save();
+        return responseFormat('تم تحديث الصورة بنجاح');
+    }
 
     public function updatePassword(Request $request)
     {
