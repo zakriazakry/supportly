@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Log;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class AiManagerService
 {
@@ -51,7 +51,7 @@ class AiManagerService
     public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): array|null
     {
         $result = null;
-        Log::info('AI Chat', [
+        FacadesLog::info('AI Chat', [
             'provider' => $provider,
             'model' => $model,
             'messages' => $messages,
