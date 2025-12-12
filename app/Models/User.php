@@ -21,6 +21,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'image',
         'email',
         'password',
         'phone',
@@ -42,6 +43,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+    public function getImageAttribute($value)
+    {
+        return asset('storage/' . $value);
+    }
     protected function casts(): array
     {
         return [
