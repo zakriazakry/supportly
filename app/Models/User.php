@@ -317,7 +317,7 @@ class User extends Authenticatable
      */
     public function applyCoupon(string $couponCode): array
     {
-        $coupon = Coupon::findByCode($couponCode);
+        $coupon = Coupon::where('code', $couponCode)->first();
 
         if (!$coupon) {
             throw new \Exception('الكوبون غير موجود');
