@@ -51,13 +51,7 @@ class AiManagerService
     public function chat(array $messages, string $system_prompt, ?string $provider = 'openai', ?string $model = null, array $options = []): array|null
     {
         $result = null;
-        FacadesLog::info('AI Chat', [
-            'provider' => $provider,
-            'model' => $model,
-            'messages' => $messages,
-            'system_prompt' => $system_prompt,
-            'options' => $options,
-        ]);
+
         if ($provider == 'openai') {
             $result = $this->openai->chat($messages, $system_prompt, $options);
         } else {

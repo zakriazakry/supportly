@@ -164,19 +164,14 @@ class OpenAIService
                     'usage' => $data['usage'] ?? null,
                 ];
             }
-            Log::info('OpenAI Chat Exception', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
+
             return [
                 'success' => false,
                 'response' => null,
                 'error' => 'Chat API request failed: ' . $response->status()
             ];
         } catch (\Exception $e) {
-            Log::error('OpenAI Chat Exception', [
-                'message' => $e->getMessage()
-            ]);
+
 
             return [
                 'success' => false,
