@@ -648,7 +648,7 @@ class AutoReplyController extends Controller
             Log::error('User Limit limit reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
             return;
         } else {
-            Log::info('User Limit limit reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
+            Log::info('User Limit limit not reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber, 'isToday' => $lastMessage->created_at->isToday()]);
         }
 
         // معالجة الرد التلقائي (قواعد)
