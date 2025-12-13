@@ -616,8 +616,6 @@ class AutoReplyController extends Controller
      */
     public function whenReceiveTextMessage(array $data): void
     {
-        Log::info('WhatsApp Webhook received', $data);
-
         $instanceName = $data['instanceName'] ?? null;
         $message = $data['message'] ?? null;
         $fromNumber = $data['form_number'] ?? null;
@@ -649,13 +647,10 @@ class AutoReplyController extends Controller
             Log::error('User Limit limit reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
             return;
         }
-        Log::info('User Limit limit not reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
-        // معالجة الرد التلقائي (قواعد)
         if ($whatsapp_auto_reply && $this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'])) {
             return;
         }
 
-        // معالجة الذكاء الاصطناعي
         if ($whatsapp_ai_reply && $this->processAiReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'], $whatsapp_openai_support && $instance->aiReply->provider == 'openai')) {
             return;
         }
