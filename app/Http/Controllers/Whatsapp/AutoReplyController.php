@@ -616,6 +616,7 @@ class AutoReplyController extends Controller
      */
     public function whenReceiveTextMessage(array $data): void
     {
+        Log::info('WhatsApp Webhook received', $data);
 
         $instanceName = $data['instanceName'] ?? null;
         $message = $data['message'] ?? null;
