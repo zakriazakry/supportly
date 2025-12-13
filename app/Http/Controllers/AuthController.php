@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -17,6 +18,9 @@ class AuthController extends Controller
         ]);
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
+        }
+        if (!$this->checkCaptcha($request->captcha, $request->ip())) {
+            return responseFormat('Captcha failed', 422);
         }
         $user = User::where('email', $request->email)->first();
         if (!$user) {
@@ -43,6 +47,9 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
+        if (!$this->checkCaptcha($request->captcha, $request->ip())) {
+            return responseFormat('Captcha failed', 422);
+        }
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -54,5 +61,22 @@ class AuthController extends Controller
             'token' => $token,
             'user' => $user,
         ], 200);
+    }
+
+    private function checkCaptcha($captcha, $ip): bool
+    {
+        $response = Http::asForm()->post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            [
+                'secret' => env('CLOUDFLARE_SECRET_KEY'),
+                'response' => $captcha,
+                'remoteip' => $ip,
+            ]
+        );
+
+        if (!($response->json()['success'] ?? false)) {
+            return false;
+        }
+        return true;
     }
 }
