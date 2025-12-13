@@ -15,6 +15,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
+            'captcha' => 'required',
         ]);
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
@@ -43,6 +44,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'phone' => 'required',
             'password' => 'required',
+            'captcha' => 'required',
         ]);
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
