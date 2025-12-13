@@ -947,7 +947,6 @@ class AutoReplyController extends Controller
             // 📤 استخراج النص من النتيجة
             $responseText = $aiResponse['response'];
 
-            Log::info('AI Response Generated', $aiResponse);
 
 
             // 💾 تخزين الرسالة الواردة من المستخدم
