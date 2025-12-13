@@ -58,9 +58,11 @@ class WhatsAppInstance extends Model
         return $this->hasMany(WhatsAppMessage::class, 'instance_id');
     }
 
-    public function messagesCount(): int
+    public function messagesCount(string $number): int
     {
-        return $this->messages()->count();
+        return $this->messages()
+            ->where('remote_jid', $number)
+            ->count();
     }
 
 

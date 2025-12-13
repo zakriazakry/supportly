@@ -643,7 +643,7 @@ class AutoReplyController extends Controller
             return;
         }
         $userLimit = $user->getLimit('whatsapp_auto_replies_per_month');
-        if ($userLimit <= ($instance->messagesCount() / 2) && $userLimit != null) {
+        if ($userLimit <= ($instance->messagesCount($fromNumber) / 2) && $userLimit != null) {
             Log::error('User Limit limit reached', ['instance_name' => $instanceName]);
             return;
         }
