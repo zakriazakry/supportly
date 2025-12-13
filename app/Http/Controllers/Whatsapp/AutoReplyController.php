@@ -649,7 +649,7 @@ class AutoReplyController extends Controller
             Log::error('User Limit limit reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
             return;
         }
-
+        Log::info('User Limit limit not reached', ['instance_name' => $instanceName, 'user_limit' => $userLimit, 'messages_count' => $instance->messagesCount($fromNumber), 'last_message' => $lastMessage->created_at->format('Y-m-d H:i:s'), 'from_number' => $fromNumber]);
         // معالجة الرد التلقائي (قواعد)
         if ($whatsapp_auto_reply && $this->processAutoReply($instance, $fromNumber, $message, $isGroup, $pushName, $fromMe, $data['key'])) {
             return;
