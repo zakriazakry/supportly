@@ -70,7 +70,7 @@ class AuthController extends Controller
         $response = Http::asForm()->post(
             'https://challenges.cloudflare.com/turnstile/v0/siteverify',
             [
-                'secret' => env('CLOUDFLARE_SECRET_KEY') . '33',
+                'secret' => env('CLOUDFLARE_SECRET_KEY'),
                 'response' => $captcha,
                 'remoteip' => $ip,
             ]
