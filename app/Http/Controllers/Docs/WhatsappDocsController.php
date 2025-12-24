@@ -30,7 +30,7 @@ class WhatsappDocsController extends Controller
         return responseFormat("تم إرسال الرسالة");
     }
 
-    public function sendChatPresence(Request $request)
+    public function showWirte(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'number' => 'required|string|max:255',
@@ -42,5 +42,18 @@ class WhatsappDocsController extends Controller
         }
         $this->evolutionService->sendChatPresence($instance->instance_name, $request->number, $request->time);
         return responseFormat('send chat presence');
+    }
+
+    public function seen(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'messageKey' => 'required|string|max:255',
+        ]);
+        $instance = $request->instance;
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+        $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
+        return responseFormat('mark as read');
     }
 }
