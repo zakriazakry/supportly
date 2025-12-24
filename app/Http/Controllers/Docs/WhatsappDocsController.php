@@ -25,8 +25,26 @@ class WhatsappDocsController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-
+        return [$instance->name, $request->number, $request->text];
         $send =  $this->evolutionService->sendText($instance->name, $request->number, $request->text);
+        return responseFormat($send);
+    }
+
+    public function sendList(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'number' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'buttonText' => 'required|string|max:255',
+            'sections' => 'required|array',
+        ]);
+        $instance = $request->instance;
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+
+        $send =  $this->evolutionService->sendList($instance->name, $request->number, $request->title, $request->description, $request->buttonText, $request->sections);
         return responseFormat($send);
     }
 }
