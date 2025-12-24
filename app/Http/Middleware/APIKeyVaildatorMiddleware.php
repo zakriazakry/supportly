@@ -21,7 +21,9 @@ class APIKeyVaildatorMiddleware
         }
 
         $key = ApiKey::where('key', $apiKey)->where('is_active', true)->first();
-
+        $key->update([
+            'last_used_at' => now()
+        ]);
         if (!$key) {
             return response()->json([
                 'success' => false,
