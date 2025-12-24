@@ -326,8 +326,6 @@ class WhatsappWebhooksController extends Controller
             // Validation
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'permissions' => 'required|array|min:1',
-                'permissions.*' => 'required|string|in:messages.send,messages.read,contacts.read,contacts.manage,groups.read,groups.manage,instance.read,instance.manage'
             ]);
 
             if ($validator->fails()) {
@@ -342,7 +340,7 @@ class WhatsappWebhooksController extends Controller
                 'whatsapp_instance_id' => $instance->id,
                 'name' => $request->name,
                 'key' => $plainKey,
-                'permissions' => $request->permissions,
+                'permissions' => [],
                 'is_active' => true
             ]);
 
@@ -375,8 +373,6 @@ class WhatsappWebhooksController extends Controller
             // Validation
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'permissions' => 'required|array|min:1',
-                'permissions.*' => 'required|string|in:messages.send,messages.read,contacts.read,contacts.manage,groups.read,groups.manage,instance.read,instance.manage',
                 'is_active' => 'boolean'
             ]);
 
@@ -387,7 +383,7 @@ class WhatsappWebhooksController extends Controller
             // Update API key (but not the key itself)
             $apiKey->update([
                 'name' => $request->name,
-                'permissions' => $request->permissions,
+                'permissions' => [],
                 'is_active' => $request->is_active ?? $apiKey->is_active
             ]);
 
