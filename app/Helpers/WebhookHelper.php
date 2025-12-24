@@ -12,6 +12,9 @@ class WebhookHelper
      */
     static function sendWebhook($webhook, $payload)
     {
+        if (!$webhook->isSubscribedTo($payload['event'])) {
+            return;
+        }
         $startTime = microtime(true);
         $success = false;
         $responseStatus = null;
