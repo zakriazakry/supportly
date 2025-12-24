@@ -53,7 +53,7 @@ class WhatsappDocsController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-        $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
-        return responseFormat('mark as read');
+        $tst =  $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
+        return responseFormat($tst);
     }
 }
