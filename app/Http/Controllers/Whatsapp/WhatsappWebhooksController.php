@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Whatsapp;
 
+use App\Helpers\WebhookHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -226,7 +227,7 @@ class WhatsappWebhooksController extends Controller
             ];
 
             // Send webhook
-            $result = sendWebhook($webhook, $testPayload);
+            $result = WebhookHelper::sendWebhook($webhook, $testPayload);
 
             return responseFormat($result);
         } catch (\Exception $e) {
