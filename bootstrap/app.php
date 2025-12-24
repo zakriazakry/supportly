@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
             'feature' => \App\Http\Middleware\CheckFeature::class,
+            'api-key' => \App\Http\Middleware\APIKeyVaildatorMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
