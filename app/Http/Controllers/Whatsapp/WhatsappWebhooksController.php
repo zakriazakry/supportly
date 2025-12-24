@@ -336,13 +336,12 @@ class WhatsappWebhooksController extends Controller
 
             // Generate API key
             $plainKey = 'sk_live_' . Str::random(32);
-            $hashedKey = hash('sha256', $plainKey);
 
             // Create API key
             $apiKey = ApiKey::create([
                 'whatsapp_instance_id' => $instance->id,
                 'name' => $request->name,
-                'key' => $hashedKey,
+                'key' => $plainKey,
                 'permissions' => $request->permissions,
                 'is_active' => true
             ]);

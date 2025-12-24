@@ -20,8 +20,7 @@ class APIKeyVaildatorMiddleware
             ], 401);
         }
 
-        $hashedKey = hash('sha256', $apiKey);
-        $key = ApiKey::where('key', $hashedKey)->where('is_active', true)->first();
+        $key = ApiKey::where('key', $apiKey)->where('is_active', true)->first();
 
         if (!$key) {
             return response()->json([
