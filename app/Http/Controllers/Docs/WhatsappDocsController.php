@@ -30,21 +30,17 @@ class WhatsappDocsController extends Controller
         return responseFormat($send);
     }
 
-    public function sendList(Request $request)
+    public function sendChatPresence(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'number' => 'required|string|max:255',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'buttonText' => 'required|string|max:255',
-            'sections' => 'required|array',
+            'time' => 'required|numeric',
         ]);
         $instance = $request->instance;
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-
-        $send =  $this->evolutionService->sendList($instance->name, $request->number, $request->title, $request->description, $request->buttonText, $request->sections);
-        return responseFormat($send);
+        $this->evolutionService->sendChatPresence($instance->instance_name, $request->number, $request->time);
+        return responseFormat('send chat presence');
     }
 }
