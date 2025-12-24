@@ -26,7 +26,7 @@ class WhatsappDocsController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
 
-        $this->evolutionService->sendText($instance->name, $request->number, $request->text);
-        return responseFormat('send message');
+        $send =  $this->evolutionService->sendText($instance->name, $request->number, $request->text);
+        return responseFormat($send);
     }
 }
