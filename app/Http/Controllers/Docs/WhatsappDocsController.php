@@ -7,5 +7,8 @@ use Illuminate\Http\Request;
 
 class WhatsappDocsController extends Controller
 {
-    //
+    public function sendMessage(Request $request)
+    {
+        return responseFormat('send message');
+    }
 }
