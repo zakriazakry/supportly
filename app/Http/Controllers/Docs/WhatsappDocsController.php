@@ -54,6 +54,6 @@ class WhatsappDocsController extends Controller
             return responseFormat($validator->errors()->first(), 422);
         }
         $tst =  $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
-        return responseFormat($tst);
+        return responseFormat($tst['success'] == true ? 'تم التحقق من الرسالة' : 'فشل التحقق من الرسالة');
     }
 }
