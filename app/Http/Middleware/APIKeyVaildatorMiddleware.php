@@ -10,13 +10,8 @@ class APIKeyVaildatorMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // $apiKey = $request->header('X-API-Key');
-        // if ($apiKey !== env('API_KEY')) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Unauthorized',
-        ], 401);
-        // }
+        $apiKey = $request->bearerToken();
+        dd($apiKey);
         return $next($request);
     }
 }
