@@ -28,8 +28,8 @@ class APIKeyVaildatorMiddleware
                 'message' => 'Invalid or inactive API key'
             ], 401);
         }
-
-        $request->merge(['api_key' => $key]);
+        $instance = $key->whatsappInstance;
+        $request->merge(['api_key' => $key, 'instance' => $instance]);
 
         return $next($request);
     }
