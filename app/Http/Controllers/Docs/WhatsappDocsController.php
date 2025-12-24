@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Validator;
 class WhatsappDocsController extends Controller
 {
     protected EvolutionService $evolutionService;
-
+    public function __construct(EvolutionService $evolutionService)
+    {
+        $this->evolutionService = $evolutionService;
+    }
 
     public function sendMessage(Request $request)
     {
