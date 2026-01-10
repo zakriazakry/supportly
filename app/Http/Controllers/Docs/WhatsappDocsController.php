@@ -29,7 +29,19 @@ class WhatsappDocsController extends Controller
         $this->evolutionService->sendText($instance->instance_name, $request->number, $request->text);
         return responseFormat("تم إرسال الرسالة");
     }
-
+    public function sendMedia(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'number' => 'required|string|max:255',
+            'media_url' => 'required|string|url',
+        ]);
+        $instance = $request->instance;
+        if ($validator->fails()) {
+            return responseFormat($validator->errors()->first(), 422);
+        }
+        $this->evolutionService->sendMedia($instance->instance_name, $request->number, $request->media_url);
+        return responseFormat("تم إرسال الملف");
+    }
     public function showWirte(Request $request)
     {
         $validator = Validator::make($request->all(), [
