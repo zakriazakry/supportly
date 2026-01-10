@@ -115,7 +115,7 @@ class PackageSeeder extends Seeder
                 'feature_multiple_accounts' => true,
                 'feature_custom_templates' => true,
                 'feature_priority_processing' => true,
-                'limit_facebook_accounts' => 10,
+                'limit_facebook_accounts' => 2,
                 'limit_facebook_pages' => 4,
                 'limit_auto_replies_per_month' => null,
                 'limit_templates' => null,
