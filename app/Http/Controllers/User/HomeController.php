@@ -41,7 +41,7 @@ class HomeController extends Controller
 
         return responseFormat($data);
     }
-    public function getPermissions(Request $request): array
+    public function getPermissions(Request $request)
     {
         $user = $request->user();
         return $user->getCurrentSubscription()?->package?->getFeatures() ?? null;
