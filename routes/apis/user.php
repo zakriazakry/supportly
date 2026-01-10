@@ -15,16 +15,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', 'index');
     });
 
-    Route::controller(FacebookAccountsController::class)->prefix('facebook-accounts')->group(function () {
+    Route::controller(FacebookAccountsController::class)->prefix('facebook-accounts')->middleware('feature:facebook')->group(function () {
         Route::get('', 'index');
-        Route::post('add-account', 'addAccount');
+        Route::post('add-account', 'addAccount')->middleware('feature:facebook,facebook_accounts');
         Route::delete('delete-account/{facebook_user_id}', 'deleteAccount');
     });
 
-    Route::controller(FacebookPagesController::class)->prefix('facebook-pages')->group(function () {
+    Route::controller(FacebookPagesController::class)->prefix('facebook-pages')->middleware('feature:facebook')->group(function () {
         Route::get('/', 'index');
         Route::get('my-pages', 'myPages');
-        Route::post('link-page', 'linkPage');
+        Route::post('link-page', 'linkPage')->middleware('feature:facebook,facebook_pages');
         Route::delete('unlink-page/{account_id}/{page_id}', 'unlinkPage');
     });
 
@@ -33,10 +33,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('send-ticket', 'sendTicket');
     });
 
-    Route::controller(PagePostsController::class)->prefix('page-posts')->group(function () {
+    Route::controller(PagePostsController::class)->prefix('page-posts')->middleware('feature:facebook')->group(function () {
         Route::get('/{page_id}', 'index');
         Route::get('get-settings/{post_id}', 'getSettings');
-        Route::post('update-settings', 'updateSettings');
+        Route::post('update-settings', 'updateSettings')->middleware('feature:facebook_auto_reply');
     });
 
 
