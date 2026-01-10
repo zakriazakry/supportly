@@ -34,7 +34,7 @@ class AuthController extends Controller
         return responseFormat([
             'token' => $token,
             'user' => $user,
-            'permissions' => $user->getCurrentSubscription()?->package?->getFeatures(),
+            'permissions' => $user->getCurrentSubscription()?->package?->getFeatures() ?? null,
         ], 200);
     }
 

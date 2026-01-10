@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::controller(HomeController::class)->prefix('home')->group(function () {
         Route::get('/', 'index');
+        Route::get('permissions', 'getPermissions');
     });
 
     Route::controller(FacebookAccountsController::class)->prefix('facebook-accounts')->middleware('feature:facebook')->group(function () {

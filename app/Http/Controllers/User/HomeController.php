@@ -41,6 +41,11 @@ class HomeController extends Controller
 
         return responseFormat($data);
     }
+    public function getPermissions(Request $request): array
+    {
+        $user = $request->user();
+        return $user->getCurrentSubscription()?->package?->getFeatures() ?? null;
+    }
 
     private function getSubscriptionData($subscription, $package): array
     {
@@ -122,6 +127,8 @@ class HomeController extends Controller
             'recent_transactions' => $recentTransactions,
         ];
     }
+
+
 
     private function getStatistics($user, $package, $monthlyStats): array
     {
