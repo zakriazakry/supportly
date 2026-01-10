@@ -32,7 +32,7 @@ class WhatsappHandlerJob implements ShouldQueue
     public function handle()
     {
         try {
-
+            Log::info('WhatsappHandlerJob', ['data' => $this->data]);
             $event = $this->data['event'] ?? null;
 
             if (!$event) {
