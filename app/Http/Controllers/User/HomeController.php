@@ -27,7 +27,7 @@ class HomeController extends Controller
                 'image' => $user->image,
                 'phone' => $user->phone,
                 'created_at' => $user->created_at,
-                'member_since_days' => Carbon::parse($user->created_at)->diffInDays(now()),
+                'member_since_days' => intval(Carbon::parse($user->created_at)->diffInDays(now())),
             ],
             'subscription' => $this->getSubscriptionData($subscription, $package),
             'wallet' => $this->getWalletData($wallet, $user),
