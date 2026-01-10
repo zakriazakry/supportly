@@ -21,6 +21,13 @@ class APIKeyVaildatorMiddleware
         }
 
         $key = ApiKey::where('key', $apiKey)->where('is_active', true)->first();
+
+        if (!$key) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or inactive API key'
+            ], 401);
+        }
         $key->update([
             'last_used' => now()
         ]);
