@@ -14,18 +14,17 @@ class CouponSeeder extends Seeder
     public function run(): void
     {
         $coupons = [
-            // كوبونات تعبئة المحفظة
             [
                 'code' => 'WALLET5',
                 'type' => 'wallet_recharge',
-                'value' => 5.00,
+                'value' => 5,
                 'value_type' => 'fixed',
                 'max_uses' => 1,
                 'used_count' => 0,
                 'valid_from' => Carbon::now(),
                 'valid_until' => Carbon::now()->addMonths(3),
                 'is_active' => true,
-                'description' => 'كوبون تعبئة محفظة بقيمة 5 دولار',
+                'description' => 'كوبون تعبئة محفظة بقيمة 5 دينار',
             ],
         ];
 
