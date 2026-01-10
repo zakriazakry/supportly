@@ -113,19 +113,19 @@ class Package extends Model
     public function getFeatures(): array
     {
         return [
-            '24_support' => $this->feature_24_support,
-            'unlimited_replies' => $this->feature_unlimited_replies,
-            'advanced_reports' => $this->feature_advanced_reports,
-            'multiple_accounts' => $this->feature_multiple_accounts,
-            'custom_templates' => $this->feature_custom_templates,
-            'priority_processing' => $this->feature_priority_processing,
-            'facebook' => $this->feature_facebook,
-            'facebook_auto_reply' => $this->feature_facebook_auto_reply,
-            'whatsapp' => $this->feature_whatsapp,
-            'whatsapp_auto_reply' => $this->feature_whatsapp_auto_reply,
-            'whatsapp_ai_reply' => $this->feature_whatsapp_ai_reply,
-            'whatsapp_openai_support' => $this->feature_whatsapp_openai_support,
-            'whatsapp_developer' => $this->feature_whatsapp_developer,
+            '24_support' => $this->feature_24_support ?? false,
+            'unlimited_replies' => $this->feature_unlimited_replies ?? false,
+            'advanced_reports' => $this->feature_advanced_reports ?? false,
+            'multiple_accounts' => $this->feature_multiple_accounts ?? false,
+            'custom_templates' => $this->feature_custom_templates ?? false,
+            'priority_processing' => $this->feature_priority_processing ?? false,
+            'facebook' => $this->feature_facebook ?? false,
+            'facebook_auto_reply' => $this->feature_facebook_auto_reply ?? false,
+            'whatsapp' => $this->feature_whatsapp ?? false,
+            'whatsapp_auto_reply' => $this->feature_whatsapp_auto_reply ?? false,
+            'whatsapp_ai_reply' => $this->feature_whatsapp_ai_reply ?? false,
+            'whatsapp_openai_support' => $this->feature_whatsapp_openai_support ?? false,
+            'whatsapp_developer' => $this->feature_whatsapp_developer ?? false,
         ];
     }
 
@@ -135,12 +135,12 @@ class Package extends Model
     public function getLimits(): array
     {
         return [
-            'facebook_accounts' => $this->limit_facebook_accounts,
-            'facebook_pages' => $this->limit_facebook_pages,
-            'auto_replies_per_month' => $this->limit_auto_replies_per_month,
-            'templates' => $this->limit_templates,
-            'whatsapp_accounts' => $this->limit_whatsapp_accounts,
-            'whatsapp_auto_replies_per_month' => $this->limit_whatsapp_auto_replies_per_month,
+            'facebook_accounts' => $this->limit_facebook_accounts ?? 0,
+            'facebook_pages' => $this->limit_facebook_pages ?? 0,
+            'auto_replies_per_month' => $this->limit_auto_replies_per_month ?? 0,
+            'templates' => $this->limit_templates ?? 0,
+            'whatsapp_accounts' => $this->limit_whatsapp_accounts ?? 0,
+            'whatsapp_auto_replies_per_month' => $this->limit_whatsapp_auto_replies_per_month ?? 0,
         ];
     }
 }
