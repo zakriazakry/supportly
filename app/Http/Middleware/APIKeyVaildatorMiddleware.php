@@ -38,6 +38,19 @@ class APIKeyVaildatorMiddleware
             ], 401);
         }
         $instance = $key->whatsappInstance;
+        $user = $instance->user;
+        if (!$user) {
+            return responseFormat('غير مصرح', 401);
+        }
+
+        if (!$user->hasActiveSubscription()) {
+            return responseFormat('يجب أن يكون لديك اشتراك نشط للوصول إلى هذه الميزة', 403);
+        }
+        if (!$user->hasFeature('whatsapp_developer') || !$user->hasFeature('whatsapp')) {
+            return responseFormat('هذه الميزة غير متاحة في باقتك الحالية. يرجى الترقية للباقة الأعلى', 403);
+        }
+
+
         $request->merge(['api_key' => $key, 'instance' => $instance]);
 
         return $next($request);
