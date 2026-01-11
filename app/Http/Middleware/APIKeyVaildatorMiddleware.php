@@ -40,7 +40,7 @@ class APIKeyVaildatorMiddleware
         $instance = $key->whatsappInstance;
         $user = $instance->user;
         if (!$user) {
-            return responseFormat('غير مصرح', 401);
+            return responseFormat('المستخدم غير موجود', 401);
         }
 
         if (!$user->hasActiveSubscription()) {
