@@ -6,14 +6,12 @@ use Illuminate\Support\Facades\Http;
 
 class MessageService
 {
-    // 
-    static protected $apikey = env('WHATSAPP_API_KEY');
     static protected $apiurl = "https://api.uno-bot.ly";
 
     static public function to($phone, $msg, $private_token = null): bool
     {
         $phone = self::phoneFormater($phone);
-        $private_token = $private_token ?? self::$apikey;
+        $private_token = $private_token ?? env('WHATSAPP_API_KEY');
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $private_token,
             'Content-Type'  => 'application/json',
