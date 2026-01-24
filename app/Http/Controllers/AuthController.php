@@ -101,14 +101,14 @@ class AuthController extends Controller
             return responseFormat('Captcha failed', 422);
         }
 
-        // Map type to model
-
-        $modelClass = User::class;
-
-        $user = $modelClass::where('phone', $request->phone)->first();
+        $user = User::where('phone', $request->phone)->first();
 
         if (!$user) {
             return responseFormat('User not found', 404);
+        }
+
+        if ($user->otp_expires_at && $user->otp_expires_at > now()) {
+            return responseFormat('OTP already sent, please wait', 422);
         }
 
         $code = rand(10000, 99999);
@@ -142,9 +142,11 @@ class AuthController extends Controller
         }
 
         if ($user->otp != $request->otp) {
-            return responseFormat('Invalid otp', 401);
+            return responseFormat('Invalid OTP', 422);
         }
-
+        if ($user->otp_expires_at < now()) {
+            return responseFormat('OTP expired', 422);
+        }
         $user->update([
             'password' => Hash::make($request->password),
             'otp' => null,
