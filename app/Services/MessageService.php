@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 class MessageService
 {
-    static protected $apikey = "***REMOVED***";
+    static protected $apikey = env('UNO_BOT_API_KEY');
     static protected $apiurl = "https://api.uno-bot.ly";
 
     static public function to($phone, $msg, $private_token = null): bool
