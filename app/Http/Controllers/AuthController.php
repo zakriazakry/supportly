@@ -107,6 +107,9 @@ class AuthController extends Controller
 
         $user = $modelClass::where('phone', $request->phone)->first();
 
+        if (!$user) {
+            return responseFormat('User not found', 404);
+        }
 
         $code = rand(10000, 99999);
         $user->update([
