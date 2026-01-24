@@ -106,9 +106,6 @@ class AuthController extends Controller
         if (!$user) {
             return responseFormat('User not found', 404);
         }
-        if ($user->status != 'active') {
-            return responseFormat('User not active', 404);
-        }
         if ($user->otp_expires_at && $user->otp_expires_at > now()) {
             return responseFormat('OTP already sent, please wait', 422);
         }
