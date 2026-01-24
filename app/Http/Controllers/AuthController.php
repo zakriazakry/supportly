@@ -90,10 +90,15 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|max:20',
+            'captcha' => 'required',
         ]);
 
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
+        }
+
+        if (!$this->checkCaptcha($request->captcha, $request->ip())) {
+            return responseFormat('Captcha failed', 422);
         }
 
         // Map type to model
@@ -115,7 +120,8 @@ class AuthController extends Controller
         }
         return responseFormat("فشل إرسال الكود", 500);
     }
-    public function resetPassword(Request $request) {
+    public function resetPassword(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|max:20|exists:users,phone',
             'otp' => 'required|string|max:20',
