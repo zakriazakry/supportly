@@ -127,7 +127,7 @@ class AuthController extends Controller
             'otp' => 'required|string|max:20',
             'password' => 'required|string|max:20',
         ]);
-
+        // 
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
