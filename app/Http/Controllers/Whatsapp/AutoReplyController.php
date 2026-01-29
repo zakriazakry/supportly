@@ -791,10 +791,7 @@ class AutoReplyController extends Controller
             return;
         }
 
-        // التحقق من الأرقام المستثناة
-        if ($aiReply->isNumberExcluded($number)) {
-            return;
-        }
+
 
         // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
         if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
@@ -991,7 +988,7 @@ class AutoReplyController extends Controller
             $this->evolutionService->sendText(
                 $instance->instance_name,
                 $number,
-                "شكراً لتواصلك معنا! 🙏\nنعتذر عن التأخير، سيتم الرد عليك قريباً."
+                "شكراً لتواصلك"
             );
         }
     }
