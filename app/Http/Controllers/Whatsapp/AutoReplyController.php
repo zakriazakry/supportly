@@ -919,10 +919,16 @@ class AutoReplyController extends Controller
 
             // 📤 استخراج النص من النتيجة
             $responseText = $aiResponse['response'];
-            $instance->user->chargeAIService(
-                'الرد التلقائي',
-                $aiResponse['usage'],
-                $instance->user->calculateAICost($aiResponse['usage'])
+            $instance->user->deductWalletBalance(
+                $instance->user->calculateAICost($aiResponse['usage']),
+                "استخدام خدمة الرد التلقائي - Tokens: {$aiResponse['usage']['total_tokens']}",
+                'ai_service',
+                null,
+                [
+                    'service_name' => 'الرد التلقائي',
+                    'usage' => $aiResponse['usage'],
+                    'cost' => $instance->user->calculateAICost($aiResponse['usage']),
+                ]
             );
             Log::info('AI Response Generated', $aiResponse);
 
