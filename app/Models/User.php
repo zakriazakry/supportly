@@ -215,15 +215,22 @@ class User extends Authenticatable
 
         return round($totalCostLYD + $platformFee, 4);
     }
-    public function chargeAIService(string $serviceName, array $usage, float $cost): bool
+    public function chargeAIService(string $serviceName, array $usage, float $cost)
     {
         if (!$this->canPay()) {
             throw new \Exception('يجيب ان يكون رصيدك اكثر من 0.5 لكي تتمكن من استخدام هذه الخدمة');
         }
 
-        return $this->deductFromWallet(
+        return $this->deductWalletBalance(
             $cost,
-            "استخدام خدمة {$serviceName} - Tokens: {$usage['total_tokens']}"
+            "استخدام خدمة {$serviceName} - Tokens: {$usage['total_tokens']}",
+            'ai_service',
+            null,
+            [
+                'service_name' => $serviceName,
+                'usage' => $usage,
+                'cost' => $cost,
+            ]
         );
     }
     /**
