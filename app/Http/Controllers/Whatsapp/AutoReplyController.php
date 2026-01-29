@@ -20,13 +20,13 @@ class AutoReplyController extends Controller
 {
     protected EvolutionService $evolutionService;
     protected AiManagerService $ai;
-    protected TokenOptimizerService $tokenOptimizer;
+    protected ?TokenOptimizerService $tokenOptimizer;
 
-    public function __construct(EvolutionService $evolutionService, AiManagerService $ai, TokenOptimizerService $tokenOptimizer)
+    public function __construct(EvolutionService $evolutionService, AiManagerService $ai, ?TokenOptimizerService $tokenOptimizer = null)
     {
         $this->evolutionService = $evolutionService;
         $this->ai = $ai;
-        $this->tokenOptimizer = $tokenOptimizer;
+        $this->tokenOptimizer = $tokenOptimizer ?? new TokenOptimizerService();
     }
 
     // ==========================================
