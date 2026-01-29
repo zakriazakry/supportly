@@ -988,7 +988,7 @@ class AutoReplyController extends Controller
             $this->evolutionService->sendText(
                 $instance->instance_name,
                 $number,
-                "شكراً لتواصلك"
+                "شكراً لتواصلك معنا! 🙏\nنعتذر عن التأخير، سيتم الرد عليك قريباً."
             );
         }
     }
