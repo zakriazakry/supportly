@@ -446,10 +446,7 @@ class AutoReplyController extends Controller
         $instance = WhatsAppInstance::find($instanceId);
 
         if (!$instance) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لم يتم العثور على الـ Instance',
-            ], 404);
+            return responseFormat('لم يتم العثور على الـ Instance', 404);
         }
 
         $validator = Validator::make($request->all(), [
@@ -475,11 +472,7 @@ class AutoReplyController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'بيانات غير صالحة',
-                'errors' => $validator->errors(),
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $aiReply = $instance->getOrCreateAiReply();
@@ -507,10 +500,7 @@ class AutoReplyController extends Controller
         $instance = WhatsAppInstance::find($instanceId);
 
         if (!$instance) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لم يتم العثور على الـ Instance',
-            ], 404);
+            return responseFormat('لم يتم العثور على الـ Instance', 404);
         }
 
         $aiReply = $instance->getOrCreateAiReply();
@@ -531,10 +521,7 @@ class AutoReplyController extends Controller
         $instance = WhatsAppInstance::find($instanceId);
 
         if (!$instance) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لم يتم العثور على الـ Instance',
-            ], 404);
+            return responseFormat('لم يتم العثور على الـ Instance', 404);
         }
 
         $validator = Validator::make($request->all(), [
@@ -542,20 +529,13 @@ class AutoReplyController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'بيانات غير صالحة',
-                'errors' => $validator->errors(),
-            ], 422);
+            return responseFormat($validator->errors()->first(), 422);
         }
 
         $aiReply = $instance->getOrCreateAiReply();
 
         if (!$aiReply->hasApiKey() && $aiReply->provider === 'openai') {
-            return response()->json([
-                'success' => false,
-                'message' => 'يرجى إضافة مفتاح API أولاً',
-            ], 400);
+            return responseFormat('يرجى إضافة مفتاح API أولاً', 400);
         }
 
         try {
