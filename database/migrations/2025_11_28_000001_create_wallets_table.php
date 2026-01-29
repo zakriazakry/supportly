@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('currency', 10); // USD, EUR, BTC, etc.
-            $table->decimal('balance', 20, 2)->default(0.00);
+            $table->decimal('balance', 20, 5)->default(0.00000);
             $table->tinyInteger('status')->default(1); // 1 = active, 0 = suspended
             $table->boolean('is_default')->default(false); // المحفظة الافتراضية
 
