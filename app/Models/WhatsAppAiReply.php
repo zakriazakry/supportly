@@ -128,6 +128,11 @@ class WhatsAppAiReply extends Model
         return false;
     }
 
+    public function canPay(): bool
+    {
+        return $this->instance->canPay();
+    }
+
     /**
      * زيادة عداد الرسائل والرموز
      */

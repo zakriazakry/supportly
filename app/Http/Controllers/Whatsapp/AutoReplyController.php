@@ -811,6 +811,11 @@ class AutoReplyController extends Controller
             return;
         }
 
+        // التحقق من الأرقام المستثناة
+        if ($aiReply->isNumberExcluded($number)) {
+            return;
+        }
+
         // ✅ التحقق من وجود إيقاف مؤقت نشط لهذه الجهة
         if (WhatsAppAutoReplyStop::hasActiveStop($instance->id, $number)) {
 
@@ -818,16 +823,13 @@ class AutoReplyController extends Controller
         }
         WhatsAppAutoReplyStop::where('whats_app_instance_id', $instance->id)->where('contact_number', $number)->delete();
 
-        // ✅ التحقق من كلمات الإيقاف إذا كانت الميزة مفعلة
         if ($aiReply->stop_on_keyword && !empty($aiReply->stop_keywords) && $fromMe) {
             $messageLower = mb_strtolower(trim($message));
 
             foreach ($aiReply->stop_keywords as $keyword) {
                 $keywordLower = mb_strtolower(trim($keyword));
 
-                // التحقق من تطابق الكلمة
                 if ($messageLower === $keywordLower || str_contains($messageLower, $keywordLower)) {
-                    // إنشاء إيقاف جديد
                     WhatsAppAutoReplyStop::createStop(
                         $instance->id,
                         $number,
@@ -843,7 +845,7 @@ class AutoReplyController extends Controller
                         'duration' => $aiReply->stop_duration,
                     ]);
 
-                    return; // نوقف الرد بالذكاء الاصطناعي
+                    return;
                 }
             }
         }
@@ -923,7 +925,7 @@ class AutoReplyController extends Controller
                 [
                     'model' => $aiReply->model,
                     'temperature' => $aiReply->temperature,
-                    'max_tokens' => $aiReply->max_tokens,
+                    'max_tokens' => min(2000, $aiReply->max_tokens),
                 ]
             );
 
@@ -940,7 +942,10 @@ class AutoReplyController extends Controller
 
             // 📤 استخراج النص من النتيجة
             $responseText = $aiResponse['response'];
-
+            $instance->user->deductFromWallet(
+                $instance->user->calculateAICost($aiResponse['usage']),
+                "استخدام خدمة الرد التلقائي - Tokens: {$aiResponse['usage']['total_tokens']}"
+            );
             Log::info('AI Response Generated', $aiResponse);
 
 

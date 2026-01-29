@@ -177,7 +177,55 @@ class User extends Authenticatable
         $limitColumn = 'limit_' . $resource;
         return $subscription->package->$limitColumn;
     }
+    public function canPay(): bool
+    {
+        if ($this->getActiveWallet()?->balance >= 0.5) {
+            return true;
+        }
+        return false;
+    }
 
+    public static function calculateAICost(array $usage): float
+    {
+        // دعم الصيغتين
+        $inputTokens  = $usage['input_tokens']
+            ?? $usage['prompt_tokens']
+            ?? 0;
+
+        $outputTokens = $usage['output_tokens']
+            ?? $usage['completion_tokens']
+            ?? 0;
+
+        // الأسعار
+        $inputCostPer1k  = 0.00015;
+        $outputCostPer1k = 0.0006;
+
+        // الحساب بالدولار
+        $inputCost  = ($inputTokens / 1000) * $inputCostPer1k;
+        $outputCost = ($outputTokens / 1000) * $outputCostPer1k;
+
+        $totalCostUSD = $inputCost + $outputCost;
+
+        // التحويل للدينار
+        $exchangeRate = 25.0;
+        $totalCostLYD = $totalCostUSD * $exchangeRate;
+
+        // عمولة المنصة
+        $platformFee = $totalCostLYD * 0.20;
+
+        return round($totalCostLYD + $platformFee, 4);
+    }
+    public function chargeAIService(string $serviceName, array $usage, float $cost): bool
+    {
+        if (!$this->canPay()) {
+            throw new \Exception('يجيب ان يكون رصيدك اكثر من 0.5 لكي تتمكن من استخدام هذه الخدمة');
+        }
+
+        return $this->deductFromWallet(
+            $cost,
+            "استخدام خدمة {$serviceName} - Tokens: {$usage['total_tokens']}"
+        );
+    }
     /**
      * Check if user can add more of a resource.
      */

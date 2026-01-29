@@ -162,6 +162,11 @@ class WhatsAppInstance extends Model
             ->count();
     }
 
+    public function canPay(): bool
+    {
+        return $this->user->canPay();
+    }
+
     /**
      * الحصول على عدد الرسائل الواردة غير المقروءة
      */
