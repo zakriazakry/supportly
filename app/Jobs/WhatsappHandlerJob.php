@@ -7,6 +7,7 @@ use App\Http\Controllers\Whatsapp\AutoReplyController;
 use App\Models\WhatsAppInstance;
 use App\Services\AiManagerService;
 use App\Services\EvolutionService;
+use App\Services\TokenOptimizerService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -166,7 +167,7 @@ class WhatsappHandlerJob implements ShouldQueue
 
             switch ($messageInfo['type']) {
                 case 'text':
-                    $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService());
+                    $autoReplyController = new AutoReplyController(new EvolutionService(), new AiManagerService(), new TokenOptimizerService());
                     $autoReplyController->whenReceiveTextMessage([
                         'from' => $sender,
                         'form_number' => $phone,
