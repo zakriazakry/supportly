@@ -9,6 +9,7 @@ use App\Models\WhatsAppAutoReplyStop;
 use App\Models\WhatsAppInstance;
 use App\Services\AiManagerService;
 use App\Services\EvolutionService;
+use App\Services\TokenOptimizerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,11 +20,13 @@ class AutoReplyController extends Controller
 {
     protected EvolutionService $evolutionService;
     protected AiManagerService $ai;
+    protected TokenOptimizerService $tokenOptimizer;
 
-    public function __construct(EvolutionService $evolutionService, AiManagerService $ai)
+    public function __construct(EvolutionService $evolutionService, AiManagerService $ai, TokenOptimizerService $tokenOptimizer)
     {
         $this->evolutionService = $evolutionService;
         $this->ai = $ai;
+        $this->tokenOptimizer = $tokenOptimizer;
     }
 
     // ==========================================
@@ -790,6 +793,9 @@ class AutoReplyController extends Controller
         if ($aiReply->isNumberExcluded($number)) {
             return;
         }
+        if (!$instance->user->canPay()) {
+            return;
+        }
 
 
 
@@ -859,29 +865,31 @@ class AutoReplyController extends Controller
             $varSTR = " <name> : {$pushName} <phone> : {$number} <time> : {$time} <date> : {$date} <day> : {$day}";
             $system_prompt = $varSTR  . '\n' . "إسم المستخدم : " . $pushName . "\n رقم المستخدم : " . $number . "\n استخدمه اذا اردت \n" . $aiReply->system_prompt ?? '';
 
-            // � تحويل الرسائل من قاعدة البيانات إلى تنسيق OpenAI
             $formattedMessages = [];
 
-            // �📝 جلب الرسائل السابقة فقط إذا كان include_context مفعلاً
             if ($aiReply->include_context) {
-                $contextCount = $aiReply->context_messages_count ?? 5;
+                $contextCount = min($aiReply->context_messages_count ?? 10, 20);
                 $oldMessages = $instance->messages()
                     ->where('remote_jid', $number)
                     ->orderBy('created_at', 'desc')
-                    ->limit($contextCount * 2) // x2 لأننا نريد رسائل المستخدم والردود
+                    ->limit($contextCount * 2)
                     ->get()
-                    ->reverse(); // نعكسها للحصول على الترتيب الزمني الصحيح
+                    ->reverse();
 
-                // تحويل الرسائل إلى تنسيق OpenAI
                 foreach ($oldMessages as $msg) {
-                    $formattedMessages[] = [
-                        'role' => $msg['from_me'] ? 'assistant' : 'user',
-                        'content' => $msg['message_content'] ?? ''
-                    ];
+                    $content = $this->tokenOptimizer->compressMessage($msg['message_content'] ?? '');
+
+                    if (mb_strlen($content) > 0) {
+                        $formattedMessages[] = [
+                            'role' => $msg['from_me'] ? 'assistant' : 'user',
+                            'content' => $content
+                        ];
+                    }
                 }
+
+                $formattedMessages = $this->tokenOptimizer->createSmartContext($formattedMessages, 1500);
             }
 
-            // ➕ إضافة الرسالة الجديدة
             $formattedMessages[] = [
                 'role' => 'user',
                 'content' => $message
@@ -893,7 +901,6 @@ class AutoReplyController extends Controller
                 $this->evolutionService->markAsRead($instance->instance_name, [$messageKey]);
             }
             $provider = !$whatsapp_openai_support ? 'ollama' : $aiReply->provider;
-            // 🤖 توليد الرد
             $aiResponse = $this->ai->chat(
                 $formattedMessages,
                 $system_prompt ?? '',
@@ -919,6 +926,9 @@ class AutoReplyController extends Controller
 
             // 📤 استخراج النص من النتيجة
             $responseText = $aiResponse['response'];
+
+            $this->tokenOptimizer->logTokenUsage($instance->instance_name, $number, $aiResponse['usage'] ?? []);
+
             $instance->user->deductWalletBalance(
                 $instance->user->calculateAICost($aiResponse['usage']),
                 "استخدام خدمة الرد التلقائي - Tokens: {$aiResponse['usage']['total_tokens']}",
