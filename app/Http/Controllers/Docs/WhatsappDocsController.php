@@ -20,12 +20,15 @@ class WhatsappDocsController extends Controller
         $validator = Validator::make($request->all(), [
             'number' => 'required|string|max:255',
             'text' => 'required|string|max:255',
+            'delay' => 'nullable|numeric',
         ]);
         $instance = $request->instance;
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-        $this->evolutionService->sendChatPresence($instance->instance_name, $request->number);
+        if (isset($request->delay) && $request->delay > 500) {
+            $this->evolutionService->sendChatPresence($instance->instance_name, $request->number, 'composing', $request->delay);
+        }
         $this->evolutionService->sendText($instance->instance_name, $request->number, $request->text);
         return responseFormat("تم إرسال الرسالة");
     }
@@ -65,7 +68,7 @@ class WhatsappDocsController extends Controller
         if ($validator->fails()) {
             return responseFormat($validator->errors()->first(), 422);
         }
-        $tst =  $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
+        $tst = $this->evolutionService->markAsRead($instance->instance_name, [$request->messageKey]);
         return responseFormat($tst['success'] == true ? 'تم التحقق من الرسالة' : 'فشل التحقق من الرسالة');
     }
 }

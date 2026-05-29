@@ -940,7 +940,7 @@ class AutoReplyController extends Controller
                     'cost' => $instance->user->calculateAICost($aiResponse['usage']),
                 ]
             );
-            Log::info('AI Response Generated', $aiResponse);
+            // Log::info('AI Response Generated', $aiResponse);
 
 
             // 💾 تخزين الرسالة الواردة من المستخدم
@@ -986,11 +986,11 @@ class AutoReplyController extends Controller
 
             $aiReply->incrementStats();
 
-            Log::info('AI Reply sent', [
-                'instance' => $instance->instance_name,
-                'to' => $number,
-                'response_length' => strlen($responseText),
-            ]);
+            // Log::info('AI Reply sent', [
+            //     'instance' => $instance->instance_name,
+            //     'to' => $number,
+            //     'response_length' => strlen($responseText),
+            // ]);
         } catch (\Exception $e) {
 
             DB::rollBack(); // ❗ فشل المعاملة

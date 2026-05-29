@@ -169,12 +169,12 @@ class TokenOptimizerService
 
     public function logTokenUsage(string $instanceName, string $number, array $usage): void
     {
-        Log::info('Token Usage', [
-            'instance' => $instanceName,
-            'number' => $number,
-            'prompt_tokens' => $usage['prompt_tokens'] ?? 0,
-            'completion_tokens' => $usage['completion_tokens'] ?? 0,
-            'total_tokens' => $usage['total_tokens'] ?? 0,
-        ]);
+        // Log::info('Token Usage', [
+        //     'instance' => $instanceName,
+        //     'number' => $number,
+        //     'prompt_tokens' => $usage['prompt_tokens'] ?? 0,
+        //     'completion_tokens' => $usage['completion_tokens'] ?? 0,
+        //     'total_tokens' => $usage['total_tokens'] ?? 0,
+        // ]);
     }
 }
